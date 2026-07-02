@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="PT Easymall Software Development">
+    
+    <!-- Primary SEO Metadata -->
+    <title>Legalitas Resmi PT Easymall Software Development</title>
+    <meta name="description" content="Informasi legalitas, NIB, Keputusan AHU, dan legalitas operasional PT Easymall Software Development sebagai pengelola resmi EasyMarket.">
+    <meta name="keywords" content="top up game, pulsa murah, paket data, voucher game, bot whatsapp, bot telegram, web development, ssl certificate, easymarket, produk digital">
+    <link rel="canonical" href="http://139.59.122.230/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://139.59.122.230/">
+    <meta property="og:title" content="Legalitas Resmi PT Easymall Software Development">
+    <meta property="og:description" content="Informasi legalitas, NIB, Keputusan AHU, dan legalitas operasional PT Easymall Software Development sebagai pengelola resmi EasyMarket.">
+    <meta property="og:image" content="/gambar/banner.png">
+    <meta property="og:site_name" content="EasyMarket">
+    <meta property="og:locale" content="id_ID">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="http://139.59.122.230/">
+    <meta property="twitter:title" content="EasyMarket | Top Up Game, Pulsa, & Layanan IT Instan Terlengkap">
+    <meta property="twitter:description" content="Platform top up game murah, pulsa, paket data, SSL, dan jasa automation Bot WhatsApp profesional. Proses cepat dan otomatis!">
+    <meta property="twitter:image" content="/gambar/banner.png">
+
+    <!-- Favicon & App Icons -->
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="manifest" href="site.webmanifest">
+    <meta name="theme-color" content="#4f46e5">
+
+    <!-- Schema.org JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebStore",
+      "name": "EasyMarket",
+      "url": "http://139.59.122.230/",
+      "logo": "http://139.59.122.230/gambar/logoeasyfast.png",
+      "description": "Platform penyedia Produk Digital terpercaya, Otomatisasi Bot WhatsApp/Telegram, dan Layanan IT berkualitas tinggi dengan proses instan.",
+      "telephone": "+628123456789",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "ID"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "http://139.59.122.230/#/search?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="/ecom/css/style.css">
+    <style>
+        /* Drawer Styling */
+        .pay-drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2000;
+            visibility: hidden;
+            transition: visibility 0.3s;
+        }
+
+        .pay-drawer.active {
+            visibility: visible;
+        }
+
+        .drawer-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .pay-drawer.active .drawer-overlay {
+            opacity: 1;
+        }
+
+        .drawer-content {
+            position: absolute;
+            top: 0;
+            right: -480px; /* Initially hidden */
+            width: 100%;
+            max-width: 480px;
+            height: 100%;
+            background: #ffffff;
+            box-shadow: -5px 0 25px rgba(0, 0, 0, 0.15);
+            padding: 2.5rem 2rem;
+            overflow-y: auto;
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .pay-drawer.active .drawer-content {
+            right: 0; /* Slide in */
+        }
+
+        .drawer-close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1.2rem;
+            background: transparent;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            line-height: 1;
+        }
+
+        .drawer-close-btn:hover {
+            color: var(--text-main);
+        }
+
+        /* Product View Styling */
+        .product-main-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            background: #ffffff;
+            margin-bottom: 2rem;
+            margin-top: 1rem;
+        }
+
+        .product-image-sec {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1.5rem;
+            width: 100%;
+        }
+
+        .product-large-img {
+            max-width: 100%;
+            height: auto;
+            max-height: 200px;
+            object-fit: contain;
+            margin-bottom: 1rem;
+        }
+
+        .product-large-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+        }
+
+        .product-details-sec {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-cat-badge {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+        }
+
+        .product-title-text {
+            font-size: 1.6rem;
+            font-weight: 800;
+            line-height: 1.2;
+            color: var(--text-main);
+            margin-bottom: 0.6rem;
+        }
+
+        .product-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 1.2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+
+        .product-price-box {
+            background: #fcfcfc;
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            margin-bottom: 2rem;
+        }
+
+        .product-price-box .price-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .product-price-box .price-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #e03131;
+        }
+
+        .product-price-box .price-strike {
+            text-decoration: line-through;
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-left: 0.5rem;
+        }
+
+        .product-desc-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .product-desc-content {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 2rem;
+        }
+
+        .btn-buy-now {
+            padding: 14px 28px;
+            background: var(--primary);
+            color: #ffffff;
+            border: 1px solid var(--primary);
+            border-radius: var(--radius);
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.15s;
+            width: fit-content;
+        }
+
+        .btn-buy-now:hover {
+            opacity: 0.9;
+        }
+
+        .btn-confirm:hover {
+            opacity: 0.9;
+        }
+
+        .btn-confirm:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-check-status:hover {
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        /* Footer styling details */
+        .site-footer {
+            background-color: #fafafa;
+            border-top: 1px solid var(--border-color);
+            padding: 4rem 0 2rem 0;
+            margin-top: 4rem;
+            color: var(--text-main);
+            font-size: 0.9rem;
+        }
+        
+        .footer-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1.5fr;
+            gap: 2.5rem;
+        }
+        
+        .footer-col h4 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .footer-logo {
+            height: 150px;
+            margin-bottom: 1.2rem;
+            display: block;
+        }
+        
+        .footer-description {
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        
+        .legal-info strong {
+            display: block;
+            margin-top: 1rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+        
+        .legal-info p {
+            color: var(--text-muted);
+            margin-bottom: 0.2rem;
+            font-size: 0.85rem;
+        }
+        
+        .footer-links ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+        
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+        
+        .contact-details p {
+            margin-bottom: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        .contact-details a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .contact-details a:hover {
+            text-decoration: underline;
+        }
+        
+        .footer-search {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.8rem;
+        }
+        
+        .footer-search-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            outline: none;
+            font-size: 0.85rem;
+        }
+        
+        .footer-search-input:focus {
+            border-color: var(--primary);
+        }
+        
+        .footer-search-btn {
+            padding: 8px 16px;
+            background: var(--primary);
+            color: #ffffff;
+            border: 1px solid var(--primary);
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        .footer-bottom {
+            max-width: 1400px;
+            margin: 3rem auto 0 auto;
+            padding: 1.5rem 2rem 0 2rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 900px) {
+            .product-main-layout {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+                padding: 2rem;
+            }
+            .product-image-sec {
+                border-right: none;
+                padding-right: 0;
+                border-bottom: 1px solid var(--border-color);
+                padding-bottom: 2rem;
+            }
+            .recom-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .footer-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            .site-footer {
+                padding: 3rem 0 1.5rem 0;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .recom-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+<style>
+    .main-header {
+        margin-bottom: 0 !important;
+    }
+    .main-content {
+        max-width: 100% !important;
+        padding: 0 !important;
+    }
+    .docs-nav-link:hover {
+        background-color: #f1f3f5;
+        color: var(--primary) !important;
+        text-decoration: none;
+    }
+    .docs-nav-link.active {
+        background-color: #eef2ff !important;
+        color: #4f46e5 !important;
+        font-weight: 600 !important;
+        border-left: 3px solid #4f46e5;
+        border-radius: 0 var(--radius) var(--radius) 0;
+        padding-left: calc(1rem - 3px) !important;
+    }
+    
+    /* Responsive styling for docs layout */
+    @media (max-width: 768px) {
+        .docs-wrapper {
+            flex-direction: column !important;
+        }
+        .docs-sidebar {
+            width: 100% !important;
+            height: auto !important;
+            position: relative !important;
+            top: 0 !important;
+            border-right: none !important;
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.5rem !important;
+        }
+        .docs-content {
+            padding: 2rem 1.5rem !important;
+        }
+    }
+</style>
+</head>
+<body>
+    <!-- Client Safe Header -->
+    <header class="main-header">
+        <div class="container header-container">
+            <a href="#" class="logo" id="headerLogoLink">
+                <img src="/gambar/logoeasyfast.png" alt="EasyMarket Logo" class="logo-img">
+            </a>
+            <nav class="main-nav">
+                <ul class="nav-links">
+                    <li><a href="#" id="headerHomeLink">Home</a></li>
+                    <li><a href="#products" id="headerProductsLink">Products</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions">
+                <div class="search-container">
+                    <input type="text" placeholder="Cari..." class="search-input" id="headerSearchInput">
+                    <button type="button" class="search-btn" id="headerSearchBtn" aria-label="Cari">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                        </svg>
+                    </button>
+                </div>
+                <button type="button" class="btn-cart" id="headerCartBtn" aria-label="Keranjang" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-main); border-radius: var(--radius); padding: 8px 12px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; margin-right: 8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 6px;">
+                        <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M3.102 4l1.313 7h8.17l1.313-7zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                    </svg>
+                    Keranjang
+                </button>
+                <button type="button" class="btn" id="loginBtn">Login</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="docs-wrapper" style="display: flex; min-height: 100vh; background: #ffffff;">
+            
+    <aside class="docs-sidebar" style="width: 280px; flex-shrink: 0; border-right: 1px solid var(--border-color); background: #fafafa; padding: 2rem 1.5rem; position: sticky; top: 68px; height: calc(100vh - 68px); overflow-y: auto; z-index: 10;">
+        <h3 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 1.2rem; font-weight: 700; padding-left: 0.5rem;">Informasi & Legalitas</h3>
+        <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+    
+            <li>
+                <a href="/about" class="docs-nav-link " style="display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 1rem; border-radius: var(--radius); color: var(--text-main); text-decoration: none; font-weight: 500; font-size: 0.9rem; transition: all 0.15s;">
+                    <span style="font-size: 1.1rem; line-height: 1;">ℹ️</span> Tentang Kami
+                </a>
+            </li>
+        
+            <li>
+                <a href="/term" class="docs-nav-link " style="display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 1rem; border-radius: var(--radius); color: var(--text-main); text-decoration: none; font-weight: 500; font-size: 0.9rem; transition: all 0.15s;">
+                    <span style="font-size: 1.1rem; line-height: 1;">📄</span> Syarat & Ketentuan
+                </a>
+            </li>
+        
+            <li>
+                <a href="/condition" class="docs-nav-link " style="display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 1rem; border-radius: var(--radius); color: var(--text-main); text-decoration: none; font-weight: 500; font-size: 0.9rem; transition: all 0.15s;">
+                    <span style="font-size: 1.1rem; line-height: 1;">🤝</span> Kebijakan Refund
+                </a>
+            </li>
+        
+            <li>
+                <a href="/security" class="docs-nav-link " style="display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 1rem; border-radius: var(--radius); color: var(--text-main); text-decoration: none; font-weight: 500; font-size: 0.9rem; transition: all 0.15s;">
+                    <span style="font-size: 1.1rem; line-height: 1;">🛡️</span> Keamanan & Privasi
+                </a>
+            </li>
+        
+            <li>
+                <a href="/legalitas" class="docs-nav-link active" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 1rem; border-radius: var(--radius); color: var(--text-main); text-decoration: none; font-weight: 500; font-size: 0.9rem; transition: all 0.15s;">
+                    <span style="font-size: 1.1rem; line-height: 1;">⚖️</span> Legalitas Resmi
+                </a>
+            </li>
+        
+        </ul>
+    </aside>
+    
+            
+            <main class="docs-content" style="flex: 1; padding: 3rem 4rem; background: #ffffff;">
+                <div style="max-width: 900px; margin: 0 auto;">
+                    
+<div class="footer-page-content" style="line-height: 1.8;">
+    <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--text-main); border-bottom: 2px solid var(--primary); padding-bottom: 0.5rem;">Legalitas Resmi</h2>
+    <p style="font-size: 1.05rem; color: var(--text-muted);">EasyMarket dikelola dan dioperasikan secara sah di bawah payung hukum badan usaha resmi di Indonesia:</p>
+    
+    <div style="background: #fafafa; border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 8px; margin-top: 1.5rem; margin-bottom: 1.5rem;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem; line-height: 2;">
+            <tr>
+                <td style="width: 35%; font-weight: 700; color: var(--text-main); padding: 8px 0;">Nama Perusahaan</td>
+                <td style="color: var(--text-muted); padding: 8px 0;">: PT Easymall Software Development</td>
+            </tr>
+            <tr>
+                <td style="font-weight: 700; color: var(--text-main); padding: 8px 0;">Nomor Induk Berusaha (NIB)</td>
+                <td style="color: var(--text-muted); padding: 8px 0;">: 1209230045612</td>
+            </tr>
+            <tr>
+                <td style="font-weight: 700; color: var(--text-main); padding: 8px 0;">Keputusan AHU</td>
+                <td style="color: var(--text-muted); padding: 8px 0;">: AHU-0034561.AH.01.01.Tahun 2026</td>
+            </tr>
+            <tr>
+                <td style="font-weight: 700; color: var(--text-main); padding: 8px 0;">Sektor Usaha</td>
+                <td style="color: var(--text-muted); padding: 8px 0;">: Perdagangan Eceran Piranti Lunak, Penerbitan Piranti Lunak, Portal Web & Platform Digital</td>
+            </tr>
+            <tr>
+                <td style="font-weight: 700; color: var(--text-main); padding: 8px 0;">Alamat Kantor</td>
+                <td style="color: var(--text-muted); padding: 8px 0;">: Jl. Palagan Tentara Pelajar No. 120, Sleman, Yogyakarta</td>
+            </tr>
+            <tr>
+                <td style="font-weight: 700; color: var(--text-main); padding: 8px 0;">Penanggung Jawab / Owner</td>
+                <td style="color: var(--text-muted); padding: 8px 0;">: Ilham Pradani</td>
+            </tr>
+        </table>
+    </div>
+    
+    <p style="font-size: 0.95rem; color: var(--text-muted);">Sebagai perusahaan yang legal dan patuh pajak, kami berkomitmen untuk menyediakan lingkungan transaksi digital yang 100% aman dan berlandaskan hukum yang berlaku di Negara Kesatuan Republik Indonesia.</p>
+</div>
+        
+                </div>
+            </main>
+        </div>
+        <!-- Product Detail View Container (as a side drawer) -->
+        <div id="productDetailView" class="pay-drawer"></div>
+    </main>
+
+    <!-- Client Safe Footer -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            <!-- Left Column: Logo & Legals -->
+            <div class="footer-col footer-info">
+                <img src="/gambar/logoeasyfast.png" alt="EasyMarket Logo" class="footer-logo">
+                <p class="footer-description">Platform penyedia Produk Digital terpercaya, Otomatisasi Bot WhatsApp/Telegram, dan Layanan IT berkualitas tinggi dengan proses instan.</p>
+            </div>
+
+            <!-- Middle Column 1: Categories -->
+            <div class="footer-col footer-links">
+                <h4>Kategori Produk</h4>
+                <ul>
+                    <li><a href="#products" onclick="footerFilterCategory('all')">✨ Semua Produk</a></li>
+                    <li><a href="#products" onclick="footerFilterCategory('Koala Store')">🎮 Top Up Game</a></li>
+                    <li><a href="#products" onclick="footerFilterCategory('Portal Pulsa')">📱 Pulsa & Paket Data</a></li>
+                    <li><a href="#products" onclick="footerFilterCategory('SSL Store')">🔒 SSL Certificate</a></li>
+                </ul>
+            </div>
+
+            <!-- Middle Column 2: Legal & Info -->
+            <div class="footer-col footer-links">
+                <h4>Informasi & Legalitas</h4>
+                <ul>
+                    <li><a href="/about">ℹ️ Tentang Kami</a></li>
+                    <li><a href="/term">📄 Syarat & Ketentuan</a></li>
+                    <li><a href="/condition">🤝 Kebijakan Refund</a></li>
+                    <li><a href="/security">🛡️ Keamanan & Privasi</a></li>
+                    <li><a href="/legalitas">⚖️ Legalitas Resmi</a></li>
+                </ul>
+            </div>
+
+            <!-- Right Column: Contact & Search -->
+            <div class="footer-col footer-contact">
+                <h4>Hubungi Kami</h4>
+                <div class="contact-details">
+                    <p><strong>WhatsApp:</strong> <a href="https://wa.me/6288971071138" target="_blank">+62 889-7107-1138</a></p>
+                    <p><strong>Email 1:</strong> <a href="mailto:hello@ilhampradani.me">hello@ilhampradani.me</a></p>
+                    <p><strong>Email 2:</strong> <a href="mailto:easymall@ilhampradani.me">easymall@ilhampradani.me</a></p>
+                </div>
+                
+                <h4 style="margin-top: 1.5rem;">Cari Produk</h4>
+                <div class="footer-search">
+                    <input type="text" placeholder="Ketik nama produk..." id="footerSearchInput" class="footer-search-input">
+                    <button type="button" id="footerSearchBtn" class="footer-search-btn">Cari</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2026 PT Easymall Software Development. Seluruh hak cipta dilindungi undang-undang.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/ecom/js/index.js"></script>
+</body>
+</html>

@@ -25,7 +25,7 @@ async function loadTemplates() {
         const waBubbleContainer = document.createElement('div');
         waBubbleContainer.id = 'waBubbleContainer';
         document.body.appendChild(waBubbleContainer);
-        const waRes = await fetch('/ecom/components/include/buble.html');
+        const waRes = await fetch('/ecom/folder_user/buble.html');
         if (waRes.ok) {
             waBubbleContainer.innerHTML = await waRes.text();
         }
