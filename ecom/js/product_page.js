@@ -452,22 +452,25 @@ function setupHeaderActions() {
     };
 
     if (loginBtn) {
-        loginBtn.onclick = () => { window.location.href = '/login'; };
+        const loginUrl = API_BASE_URL ? `${API_BASE_URL}/login` : '/login';
+        const dashboardUrl = API_BASE_URL ? `${API_BASE_URL}/dashboard` : '/dashboard';
+
+        loginBtn.onclick = () => { window.location.href = loginUrl; };
         
         fetch(`${API_BASE_URL}/api/auth/status`)
             .then(res => res.json())
             .then(data => {
                 if (data.logged_in) {
                     loginBtn.textContent = 'Dashboard';
-                    loginBtn.onclick = () => { window.location.href = '/dashboard'; };
+                    loginBtn.onclick = () => { window.location.href = dashboardUrl; };
                 } else {
                     loginBtn.textContent = 'Login';
-                    loginBtn.onclick = () => { window.location.href = '/login'; };
+                    loginBtn.onclick = () => { window.location.href = loginUrl; };
                 }
             })
             .catch(() => {
                 loginBtn.textContent = 'Login';
-                loginBtn.onclick = () => { window.location.href = '/login'; };
+                loginBtn.onclick = () => { window.location.href = loginUrl; };
             });
     }
 }

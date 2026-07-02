@@ -353,7 +353,10 @@ function setupHeaderActions() {
     }
     
     if (loginBtn) {
-        loginBtn.onclick = () => { window.location.href = '/login'; };
+        const loginUrl = API_BASE_URL ? `${API_BASE_URL}/login` : '/login';
+        const dashboardUrl = API_BASE_URL ? `${API_BASE_URL}/dashboard` : '/dashboard';
+
+        loginBtn.onclick = () => { window.location.href = loginUrl; };
         
         // Dynamically detect auth status (handles gracefully if local/file:// or API offline)
         fetch(`${API_BASE_URL}/api/auth/status`)
@@ -361,16 +364,16 @@ function setupHeaderActions() {
             .then(data => {
                 if (data.logged_in) {
                     loginBtn.textContent = 'Dashboard';
-                    loginBtn.onclick = () => { window.location.href = '/dashboard'; };
+                    loginBtn.onclick = () => { window.location.href = dashboardUrl; };
                 } else {
                     loginBtn.textContent = 'Login';
-                    loginBtn.onclick = () => { window.location.href = '/login'; };
+                    loginBtn.onclick = () => { window.location.href = loginUrl; };
                 }
             })
             .catch(() => {
                 // Graceful fallback for standalone frontend hosting
                 loginBtn.textContent = 'Login';
-                loginBtn.onclick = () => { window.location.href = '/login'; };
+                loginBtn.onclick = () => { window.location.href = loginUrl; };
             });
     }
 
