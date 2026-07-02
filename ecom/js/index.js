@@ -353,7 +353,7 @@ function setupHeaderActions() {
     }
     
     if (loginBtn) {
-        const loginUrl = '/login.html';
+        const loginUrl = (window.location.port === '5002') ? '/login' : '/login.html';
         const dashboardUrl = API_BASE_URL ? `${API_BASE_URL}/dashboard` : '/dashboard';
 
         loginBtn.onclick = () => { window.location.href = loginUrl; };
