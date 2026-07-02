@@ -1,0 +1,60 @@
+<!-- WhatsApp Floating Bubble -->
+<a href="https://wa.me/6288971071138" class="wa-floating-bubble" target="_blank" aria-label="Hubungi Kami di WhatsApp">
+    <div class="wa-bubble-badge">Online</div>
+    <div class="wa-bubble-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.69-4.98c-.202-.101-1.202-.594-1.387-.662-.185-.068-.32-.101-.453.1-.133.2-.516.652-.632.783-.117.132-.234.148-.436.047a5.07 5.07 0 0 0-.262-.228 6.53 6.53 0 0 0-1.462-.985 4.97 4.97 0 0 0-.316-.127c-.318-.118-.327-.113-.377-.072-.052.04-.251.277-.306.347-.05.068-.102.078-.184.038-.08-.04-1.202-.592-1.748-1.077-.478-.425-.79-.948-.885-1.112-.095-.164-.01-.254.062-.335.071-.08.185-.211.277-.316.09-.106.12-.177.18-.295.06-.118.03-.222-.015-.31-.045-.09-.413-.997-.566-1.364-.15-.357-.3-.309-.413-.315-.11-.004-.236-.004-.361-.004A1.36 1.36 0 0 0 2.2 5.002c-.366.39-.77.826-.77 1.722 0 1.652 1.2 3.25 1.364 3.47.165.223 2.354 3.597 5.698 5.05.797.346 1.42.553 1.905.708.803.256 1.535.219 2.11.134.64-.096 1.975-.807 2.252-1.587.278-.78.278-1.448.195-1.587-.083-.14-.305-.218-.507-.32"/>
+        </svg>
+    </div>
+</a>
+
+<style>
+.wa-floating-bubble {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 60px;
+    height: 60px;
+    background-color: #25d366;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4);
+    z-index: 9999;
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+}
+
+.wa-floating-bubble:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.6);
+}
+
+.wa-bubble-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wa-bubble-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background-color: #e03131;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    animation: wa-bounce 2s infinite;
+}
+
+@keyframes wa-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+</style>

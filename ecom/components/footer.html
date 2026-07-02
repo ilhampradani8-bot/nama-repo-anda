@@ -1,0 +1,240 @@
+<footer class="site-footer">
+    <div class="footer-container">
+        <!-- Left Column: Logo & Legals -->
+        <div class="footer-col footer-info">
+            <img src="gambar/logoeasyfast.png" alt="EasyMarket Logo" class="footer-logo">
+            <p class="footer-description">Platform penyedia Produk Digital terpercaya, Otomatisasi Bot WhatsApp/Telegram, dan Layanan IT berkualitas tinggi dengan proses instan.</p>
+        </div>
+
+        <!-- Middle Column 1: Categories -->
+        <div class="footer-col footer-links">
+            <h4>Kategori Produk</h4>
+            <ul>
+                <li><a href="#products" onclick="footerFilterCategory('all')">✨ Semua Produk</a></li>
+                <li><a href="#products" onclick="footerFilterCategory('Koala Store')">🎮 Top Up Game</a></li>
+                <li><a href="#products" onclick="footerFilterCategory('Portal Pulsa')">📱 Pulsa & Paket Data</a></li>
+                <li><a href="#products" onclick="footerFilterCategory('SSL Store')">🔒 SSL Certificate</a></li>
+            </ul>
+        </div>
+
+        <!-- Middle Column 2: Legal & Info -->
+        <div class="footer-col footer-links">
+            <h4>Informasi & Legalitas</h4>
+            <ul>
+                <li><a href="/about">ℹ️ Tentang Kami</a></li>
+                <li><a href="/term">📄 Syarat & Ketentuan</a></li>
+                <li><a href="/condition">🤝 Kebijakan Refund</a></li>
+                <li><a href="/security">🛡️ Keamanan & Privasi</a></li>
+                <li><a href="/legalitas">⚖️ Legalitas Resmi</a></li>
+            </ul>
+        </div>
+
+        <!-- Right Column: Contact & Search -->
+        <div class="footer-col footer-contact">
+            <h4>Hubungi Kami</h4>
+            <div class="contact-details">
+                <p><strong>WhatsApp:</strong> <a href="https://wa.me/6288971071138" target="_blank">+62 889-7107-1138</a></p>
+                <p><strong>Email 1:</strong> <a href="mailto:hello@ilhampradani.me">hello@ilhampradani.me</a></p>
+                <p><strong>Email 2:</strong> <a href="mailto:easymall@ilhampradani.me">easymall@ilhampradani.me</a></p>
+            </div>
+            
+            <h4 style="margin-top: 1.5rem;">Cari Produk</h4>
+            <div class="footer-search">
+                <input type="text" placeholder="Ketik nama produk..." id="footerSearchInput" class="footer-search-input">
+                <button type="button" id="footerSearchBtn" class="footer-search-btn">Cari</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer-bottom">
+        <p>&copy; 2026 PT Easymall Software Development. Seluruh hak cipta dilindungi undang-undang.</p>
+    </div>
+</footer>
+
+<style>
+    .site-footer {
+        background-color: #fafafa;
+        border-top: 1px solid var(--border-color);
+        padding: 4rem 0 2rem 0;
+        margin-top: 4rem;
+        color: var(--text-main);
+        font-size: 0.9rem;
+    }
+    
+    .footer-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 2rem;
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1.5fr;
+        gap: 2.5rem;
+    }
+    
+    .footer-col h4 {
+        font-size: 0.9rem;
+        font-weight: 700;
+        margin-bottom: 1.2rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .footer-logo {
+        height: 150px;
+        margin-bottom: 1.2rem;
+        display: block;
+    }
+    
+    .footer-description {
+        color: var(--text-muted);
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+    
+    .legal-info strong {
+        display: block;
+        margin-top: 1rem;
+        font-weight: 600;
+        color: var(--text-main);
+    }
+    
+    .legal-info p {
+        color: var(--text-muted);
+        margin-bottom: 0.2rem;
+        font-size: 0.85rem;
+    }
+    
+    .footer-links ul {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .footer-links li {
+        margin-bottom: 0.8rem;
+    }
+    
+    .footer-links a {
+        color: var(--text-muted);
+        text-decoration: none;
+        transition: color 0.15s;
+    }
+    
+    .footer-links a:hover {
+        color: var(--primary);
+        text-decoration: underline;
+    }
+    
+    .contact-details p {
+        margin-bottom: 0.8rem;
+        color: var(--text-muted);
+    }
+    
+    .contact-details a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+    }
+    
+    .contact-details a:hover {
+        text-decoration: underline;
+    }
+    
+    .footer-search {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.8rem;
+    }
+    
+    .footer-search-input {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+        outline: none;
+        font-size: 0.85rem;
+    }
+    
+    .footer-search-input:focus {
+        border-color: var(--primary);
+    }
+    
+    .footer-search-btn {
+        padding: 8px 16px;
+        background: var(--primary);
+        color: #ffffff;
+        border: 1px solid var(--primary);
+        border-radius: var(--radius);
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+    
+    .footer-bottom {
+        max-width: 1400px;
+        margin: 3rem auto 0 auto;
+        padding: 1.5rem 2rem 0 2rem;
+        border-top: 1px solid var(--border-color);
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 0.8rem;
+    }
+    
+    @media (max-width: 900px) {
+        .footer-container {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        
+        .site-footer {
+            padding: 3rem 0 1.5rem 0;
+        }
+    }
+</style>
+
+<script>
+    // Handle global and delayed search events
+    (function() {
+        function initFooterSearch() {
+            const footerSearchInput = document.getElementById('footerSearchInput');
+            const footerSearchBtn = document.getElementById('footerSearchBtn');
+            const mainSearchInput = document.getElementById('headerSearchInput');
+            
+            if (footerSearchInput && footerSearchBtn) {
+                const triggerSearch = () => {
+                    if (mainSearchInput) {
+                        mainSearchInput.value = footerSearchInput.value;
+                        mainSearchInput.dispatchEvent(new Event('input'));
+                        
+                        const section = document.getElementById('products');
+                        if (section) {
+                            section.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    }
+                };
+                
+                footerSearchBtn.onclick = triggerSearch;
+                footerSearchInput.onkeydown = (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        triggerSearch();
+                    }
+                };
+            }
+        }
+
+        // Run both immediately and on component load to ensure handler binding
+        initFooterSearch();
+        document.addEventListener('componentLoaded', initFooterSearch);
+    })();
+
+    // Function to programmatically select category and scroll
+    function footerFilterCategory(category) {
+        const btn = document.querySelector(`.filter-btn[data-category="${category}"]`);
+        if (btn) {
+            btn.click();
+            const section = document.getElementById('products');
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    }
+</script>

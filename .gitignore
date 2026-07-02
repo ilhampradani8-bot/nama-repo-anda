@@ -1,0 +1,28 @@
+# Ignored directories
+/adminer/
+/api/
+/api_docs/
+/bot/
+/bot-wa/
+/bot-wa-group/
+/dashboard/
+/reseller/
+/rest_api_examples/
+/__pycache__/
+
+# Ignored backend / system / sensitive files
+.env
+*.db
+*.log
+*.py
+*.sql
+__init__.py
+requirements.txt
+README.md
+dashboard.html
+
+
+# OS/IDE files
+.DS_Store
+.vscode/
+.idea/
