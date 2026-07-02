@@ -452,7 +452,7 @@ function setupHeaderActions() {
     };
 
     if (loginBtn) {
-        const loginUrl = API_BASE_URL ? `${API_BASE_URL}/login` : '/login';
+        const loginUrl = '/login.html';
         const dashboardUrl = API_BASE_URL ? `${API_BASE_URL}/dashboard` : '/dashboard';
 
         loginBtn.onclick = () => { window.location.href = loginUrl; };

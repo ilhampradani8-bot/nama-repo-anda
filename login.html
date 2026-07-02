@@ -409,19 +409,14 @@
                     <button type="button" class="auth-tab-btn" id="tabRegisterBtn" onclick="switchTab('register')">Daftar</button>
                 </div>
 
-                {% with messages = get_flashed_messages() %}
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="flash-message">
-                                ⚠️ {{ message }}
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
+                <!-- Flash messages placeholder for client warning -->
+                <div id="flashMessage" class="flash-message" style="display: none;">
+                    ⚠️ <span id="flashMessageText"></span>
+                </div>
 
                 <!-- Login Pane -->
                 <div id="loginPane">
-                    <form id="loginForm" method="POST" autocomplete="off">
+                    <form id="loginForm" action="http://139.59.122.230:5002/login" method="POST" autocomplete="off">
                         <div class="form-group">
                             <label for="username">Username</label>
                             <input type="text" id="username" name="username" class="form-control" placeholder="Masukkan username" required autofocus>
@@ -515,7 +510,7 @@
         window.onload = function() {
             if (typeof google !== 'undefined') {
                 google.accounts.id.initialize({
-                    client_id: "{{ google_client_id }}",
+                    client_id: "812430784237-70vet0sepo0f0eti0cs62nnjd4s89ia8.apps.googleusercontent.com",
                     callback: handleCredentialResponse
                 });
             }
@@ -524,7 +519,7 @@
         function handleCredentialResponse(response) {
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = '/login/google';
+            form.action = 'http://139.59.122.230:5002/login/google';
             
             const input = document.createElement('input');
             input.type = 'hidden';
@@ -545,7 +540,7 @@
         }
 
         function loginWithDiscord() {
-            window.location.href = '/login/discord';
+            window.location.href = 'http://139.59.122.230:5002/login/discord';
         }
 
         function loginAsDemo() {

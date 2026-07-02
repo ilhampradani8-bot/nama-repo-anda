@@ -20,6 +20,8 @@ __init__.py
 requirements.txt
 README.md
 dashboard.html
+login_template.html
+
 
 
 # OS/IDE files
