@@ -2042,6 +2042,9 @@ async fn product_page() -> impl IntoResponse {
 
 #[tokio::main]
 async fn main() {
+    // Load .env FIRST — must happen before any std::env::var() calls
+    let _ = dotenvy::from_path("/root/ecommerce/.env");
+
     // Initialize databases
     let root_path = "/root/ecommerce";
     let transactions_db = format!("{}/dinamis/dashboard/ecommerce.db", root_path);
