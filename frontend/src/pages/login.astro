@@ -438,15 +438,15 @@ import PenggabungUtama from '../layouts/PenggabungUtama.astro';
             }
         }
 
-        let API_BASE_URL = '';
-        if (window.location.port !== '5002' && window.location.protocol !== 'file:') {
-            API_BASE_URL = 'https://api.ilhampradani.me';
-        }
+        // Scoped login API URL — avoids conflict with global API_BASE_URL from index.js
+        const LOGIN_API_URL = (window.location.protocol === 'file:' || window.location.port === '5002')
+            ? 'http://localhost:5002'
+            : 'https://api.ilhampradani.me';
 
         // Set action immediately to prevent empty action 404s on early clicks
         const loginForm = document.getElementById('loginForm');
         if (loginForm) {
-            loginForm.action = API_BASE_URL + '/login';
+            loginForm.action = LOGIN_API_URL + '/login';
         }
 
         window.onload = function() {
@@ -461,7 +461,7 @@ import PenggabungUtama from '../layouts/PenggabungUtama.astro';
         function handleCredentialResponse(response) {
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = API_BASE_URL + '/login/google';
+            form.action = LOGIN_API_URL + '/login/google';
             
             const input = document.createElement('input');
             input.type = 'hidden';

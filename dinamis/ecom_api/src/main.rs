@@ -298,15 +298,15 @@ fn get_redirect_target(headers: &HeaderMap, _default_url: &str) -> String {
                     }
                     // Production: always redirect to the main frontend domain,
                     // NOT the api subdomain the form was submitted to.
-                    if host.contains("ilhampradani.me") || host.contains("mijdigital.my") {
-                        return "https://ilhampradani.me/dashboard".to_string();
+                    if host.contains("easymall.ilhampradani.me") || host.contains("ilhampradani.me") || host.contains("mijdigital.my") {
+                        return "https://easymall.ilhampradani.me/dashboard".to_string();
                     }
                 }
             }
         }
     }
     // Absolute fallback: production frontend
-    "https://ilhampradani.me/dashboard".to_string()
+    "https://easymall.ilhampradani.me/dashboard".to_string()
 }
 
 fn verify_session(state: &AppState, sid: &str) -> Option<SessionData> {
@@ -432,7 +432,7 @@ async fn login_admin(
 
             insert_session(&state, session_id.clone(), email.clone(), username.clone());
 
-            let redirect_target = get_redirect_target(&headers, "https://ilhampradani.me/dashboard");
+            let redirect_target = get_redirect_target(&headers, "https://easymall.ilhampradani.me/dashboard");
             let cookie = Cookie::build(("session_id", session_id))
                 .path("/")
                 .max_age(Duration::days(30))
@@ -540,7 +540,7 @@ async fn login_google_route(
 
     insert_session(&state, session_id.clone(), email.clone(), name.clone());
 
-    let redirect_target = get_redirect_target(&headers, "https://ilhampradani.me/dashboard");
+    let redirect_target = get_redirect_target(&headers, "https://easymall.ilhampradani.me/dashboard");
     let cookie = Cookie::build(("session_id", session_id))
         .path("/")
         .max_age(Duration::days(30))
@@ -2066,6 +2066,7 @@ async fn main() {
             s.contains("localhost")
                 || s.contains("vercel.app")
                 || s.contains("mijdigital.my")
+                || s.contains("easymall.ilhampradani.me")
                 || s.contains("139.59.122.230")
                 || s.contains("ilhampradani.me")
         }))
