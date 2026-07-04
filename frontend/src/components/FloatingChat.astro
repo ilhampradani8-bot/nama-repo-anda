@@ -1,0 +1,239 @@
+---
+// FloatingChat.astro - Floating Capsule Chat Widget
+---
+<div class="floating-chat-widget">
+    <!-- Chat Toggle Capsule -->
+    <button type="button" id="btnFloatingChatToggle" class="chat-capsule-toggle" aria-label="Buka Chat Layanan">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" style="margin-top: 1px;">
+            <path d="M16 8c0 3.866-3.582 7-8 7a8.841 8.841 0 0 1-2.223-.309C3.527 15.635 1.04 16 1.04 16s.761-2.85 1.96-5.125C1.866 9.878 1 8.978 1 8c0-3.866 3.582-7 8-7s8 3.134 8 7M5 8a1 1 0 1 0-2 0 1 1 0 0 0 2 0m4 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0m4 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0"/>
+        </svg>
+        <span>Chat CS</span>
+        <span class="chat-online-dot"></span>
+    </button>
+
+    <!-- Chat Dropdown Menu -->
+    <div id="floatingChatDropdown" class="chat-dropdown-menu">
+        <div class="chat-dropdown-header">
+            <h4>Pilih Layanan Chat</h4>
+            <p>Hubungi CS kami secara instan</p>
+        </div>
+        <div class="chat-dropdown-options">
+            <a href="https://wa.me/6288971071138" target="_blank" class="chat-opt-item whatsapp-opt">
+                <div class="opt-icon-wrapper">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.69-4.98c-.202-.101-1.202-.594-1.387-.662-.185-.068-.32-.101-.453.1-.133.2-.516.652-.632.783-.117.132-.234.148-.436.047a5.07 5.07 0 0 0-.262-.228 6.53 6.53 0 0 0-1.462-.985 4.97 4.97 0 0 0-.316-.127c-.318-.118-.327-.113-.377-.072-.052.04-.251.277-.306.347-.05.068-.102.078-.184.038-.08-.04-1.202-.592-1.748-1.077-.478-.425-.79-.948-.885-1.112-.095-.164-.01-.254.062-.335.071-.08.185-.211.277-.316.09-.106.12-.177.18-.295.06-.118.03-.222-.015-.31-.045-.09-.413-.997-.566-1.364-.15-.357-.3-.309-.413-.315-.11-.004-.236-.004-.361-.004A1.36 1.36 0 0 0 2.2 5.002c-.366.39-.77.826-.77 1.722 0 1.652 1.2 3.25 1.364 3.47.165.223 2.354 3.597 5.698 5.05.797.346 1.42.553 1.905.708.803.256 1.535.219 2.11.134.64-.096 1.975-.807 2.252-1.587.278-.78.278-1.448.195-1.587-.083-.14-.305-.218-.507-.32"/>
+                    </svg>
+                </div>
+                <div class="opt-text">
+                    <strong>WhatsApp CS</strong>
+                    <span>Respon cepat 24 Jam</span>
+                </div>
+            </a>
+            <a href="https://t.me/ilhampradani" target="_blank" class="chat-opt-item live-opt">
+                <div class="opt-icon-wrapper">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8.287 5.906c-.778.324-2.334.994-4.666 2.01-.378.15-.577.298-.595.442-.03.243.275.339.69.47l.175.055c.408.133.958.288 1.243.294.26.006.549-.1.868-.32 2.179-1.471 3.304-2.214 3.374-2.23.05-.012.12-.026.166.016.047.041.042.12.037.141-.03.129-1.227 1.241-1.846 1.817-.193.18-.33.307-.358.336a8.154 8.154 0 0 1-.188.186c-.38.366-.664.64.015 1.088.327.216.589.393.85.571.285.194.57.387.963.614.09.052.176.107.259.162.361.242.661.446.996.414.195-.019.396-.201.497-1.03l.635-4.8c.073-.61-.17-1.026-.648-1.026-.26 0-.533.12-.828.243z"/>
+                    </svg>
+                </div>
+                <div class="opt-text">
+                    <strong>Telegram Live</strong>
+                    <span>Live Chat Support</span>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .floating-chat-widget {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 9998;
+        font-family: inherit;
+    }
+    
+    .chat-capsule-toggle {
+        background: #000000;
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 10px 18px;
+        border-radius: 50px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        cursor: pointer;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .chat-capsule-toggle:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+        background: #111111;
+    }
+    
+    .chat-online-dot {
+        width: 8px;
+        height: 8px;
+        background-color: #25d366;
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 0 0 2px rgba(37, 211, 102, 0.3);
+        animation: chat-pulse 2s infinite;
+    }
+    
+    @keyframes chat-pulse {
+        0% {
+            box-shadow: 0 0 0 0px rgba(37, 211, 102, 0.5);
+        }
+        100% {
+            box-shadow: 0 0 0 6px rgba(37, 211, 102, 0);
+        }
+    }
+    
+    .chat-dropdown-menu {
+        position: absolute;
+        bottom: calc(100% + 12px);
+        right: 0;
+        width: 260px;
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+        animation: chat-fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    .chat-dropdown-menu.active {
+        display: flex;
+    }
+    
+    @keyframes chat-fade-in {
+        from {
+            opacity: 0;
+            transform: translateY(10px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+    
+    .chat-dropdown-header {
+        background: #fafafa;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .chat-dropdown-header h4 {
+        margin: 0 0 3px 0;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--text-main);
+    }
+    
+    .chat-dropdown-header p {
+        margin: 0;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+    
+    .chat-dropdown-options {
+        display: flex;
+        flex-direction: column;
+        padding: 0.5rem;
+    }
+    
+    .chat-opt-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    
+    .chat-opt-item:hover {
+        background: #f8f9fa;
+        text-decoration: none;
+    }
+    
+    .opt-icon-wrapper {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    .whatsapp-opt .opt-icon-wrapper {
+        background-color: rgba(37, 211, 102, 0.1);
+        color: #25d366;
+    }
+    
+    .live-opt .opt-icon-wrapper {
+        background-color: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+    }
+    
+    .opt-text {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+    
+    .opt-text strong {
+        font-size: 0.85rem;
+        color: var(--text-main);
+        font-weight: 600;
+    }
+    
+    .opt-text span {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+    }
+    
+    @media (max-width: 768px) {
+        .floating-chat-widget {
+            bottom: 86px;
+            right: 16px;
+        }
+    }
+</style>
+
+<script is:inline>
+    (function() {
+        function initFloatingChat() {
+            const toggleBtn = document.getElementById('btnFloatingChatToggle');
+            const dropdown = document.getElementById('floatingChatDropdown');
+            if (!toggleBtn || !dropdown) return;
+            
+            toggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('active');
+            });
+            
+            document.addEventListener('click', (e) => {
+                if (!dropdown.contains(e.target) && e.target !== toggleBtn) {
+                    dropdown.classList.remove('active');
+                }
+            });
+        }
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initFloatingChat);
+        } else {
+            initFloatingChat();
+        }
+        
+        document.addEventListener('astro:page-load', initFloatingChat);
+    })();
+</script>

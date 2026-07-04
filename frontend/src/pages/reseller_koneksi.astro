@@ -3,6 +3,7 @@
 import ResellerNavbar from '../components/reseller/ResellerNavbar.astro';
 import ResellerProfileCard from '../components/reseller/ResellerProfileCard.astro';
 import ResellerSidebar from '../components/reseller/ResellerSidebar.astro';
+import BottomNav from '../components/BottomNav.astro';
 ---
 
 <!DOCTYPE html>
@@ -187,8 +188,14 @@ import ResellerSidebar from '../components/reseller/ResellerSidebar.astro';
         }
 
         @media (max-width: 992px) {
+            body {
+                padding-bottom: 74px !important;
+            }
             .container {
                 grid-template-columns: 1fr;
+            }
+            .sidebar-col {
+                display: none !important;
             }
         }
     </style>
@@ -494,5 +501,6 @@ print(response.json())`}</code></pre>
 
         fetchResellerData();
     </script>
+    <BottomNav />
 </body>
 </html>

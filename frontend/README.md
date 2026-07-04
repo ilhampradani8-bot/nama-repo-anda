@@ -12,6 +12,9 @@ Repositori ini berisi kode sumber untuk bagian **Frontend** dari sistem E-Commer
 4. **Desain Premium & Responsive**: Tata letak responsif menggunakan CSS murni (Vanilla CSS) yang hemat resource dan sangat cepat dimuat.
 5. **Autentikasi Terintegrasi**: Halaman login mendukung Single-Sign-On (SSO) Google OAuth, Discord OAuth, dan Autentikasi Demo instan.
 6. **Dashboard Khusus Role**: Pengalihan otomatis (gateway) ke dashboard pengguna biasa (`dashboard_user.astro`) atau dashboard reseller (`dashboard_reseller.astro`).
+7. **Animasi Loading Premium**: Proses fetch data API dilengkapi animasi visual teks "LOADING" bergerak yang mewah (berputar 180 derajat) untuk menggantikan spinner tradisional.
+8. **Halaman Error 404 Interaktif**: Penanganan rute tak dikenal dialihkan ke halaman 404 khusus bertema "Dribbble Lost Dog" yang terintegrasi dengan header & footer utama.
+9. **Tombol Salin Link Produk Bulletproof**: Ditambahkan fitur "Salin Link Produk" di halaman detail yang otomatis memformat tautan ke domain resmi EasyMall. Menggunakan fallback `execCommand` agar tetap berfungsi di browser non-HTTPS / in-app browser.
 
 ---
 
@@ -27,8 +30,8 @@ frontend/
 │   │   │   └── style.css           # File stylesheet utama seluruh halaman
 │   │   └── js/
 │   │       ├── products.json       # Source of Truth data katalog & kategori produk
-│   │       ├── index.js            # Logika katalog, filter, & pencarian halaman utama
-│   │       ├── product_page.js     # Logika detail produk, checkout & status polling QRIS
+│   │       ├── index.js            # Logika katalog, filter, pencarian, & animasi loading utama
+│   │       ├── product_page.js     # Logika detail produk, checkout, status polling QRIS, & rekomendasi
 │   │       └── [other_pages].js    # Logika JavaScript untuk halaman statis pendukung
 │   └── gambar/                     # Aset gambar, logo, banner, dan ikon
 ├── src/
@@ -41,15 +44,16 @@ frontend/
 │   │   └── penggabung_pageincludefooter.astro
 │   └── pages/
 │       ├── index.astro             # Halaman Beranda (Katalog Produk & Filter Kategori)
-│       ├── product.astro           # Halaman Detail Produk & Formulir Checkout/QRIS
+│       ├── product.astro           # Halaman Detail Produk & Formulir Checkout/QRIS + Salin Link
 │       ├── login.astro             # Halaman Portal Autentikasi (Google, Discord, Demo)
+│       ├── 404.astro               # Halaman error 404 kustom bertema Lost Dog
 │       ├── dashboard.astro         # Gateway pengalihan rute dashboard berdasarkan sesi
 │       ├── dashboard_user.astro    # Dasbor untuk Pelanggan/User
 │       ├── dashboard_reseller.astro# Dasbor untuk Reseller
 │       └── [legal_pages].astro     # Halaman legalitas (about, condition, term, security, dll.)
 ├── astro.config.mjs                 # Konfigurasi Astro (output format: file)
 ├── package.json                    # Dependensi NPM & skrip build
-└── vercel.json                     # Konfigurasi deployment & URL rewrites Vercel
+└── vercel.json                     # Konfigurasi deployment, routing kustom, Clean URLs & 404 fallback
 ```
 
 ---
@@ -72,7 +76,8 @@ Semua perintah dijalankan menggunakan terminal dari dalam folder `frontend/`:
 
 ## 🔗 Integrasi Vercel & URL Rewrites
 Proyek ini dilengkapi dengan `vercel.json` yang mengonfigurasi aturan routing sebagai berikut:
-- **Clean URLs**: Menyembunyikan ekstensi `.html` pada URL browser.
+- **Clean URLs**: Menyembunyikan ekstensi `.html` pada URL browser (misal `/dokumentasi` menggantikan `/dokumentasi.html`).
+- **404 Fallback**: Mengarahkan rute yang tidak terdaftar di sistem file Vercel secara otomatis ke `/404.html` dengan mengembalikan status HTTP 404.
 - **Rewrites**: Mengarahkan rute dinamis detail produk (seperti `/product/PROD_CODE`) ke file statis `product.html` agar parameter kode produk dapat diekstrak dan di-render secara dinamis di sisi klien melalui `product_page.js`.
 
 ### ⚠️ Solusi Error "404: NOT_FOUND" di Vercel
@@ -92,4 +97,3 @@ Jika Anda baru pertama kali menghubungkan repositori Git ke Vercel dan menemui e
 Frontend berkomunikasi dengan API Backend Rust Axum EasyMarket yang berjalan di domain produksi **`https://api.ilhampradani.me`**. Penentuan base URL API diatur secara dinamis di sisi klien:
 - Jika diakses dari domain produksi/Vercel, API akan diarahkan ke subdomain produksi `https://api.ilhampradani.me`.
 - Fitur checkout mengirimkan payload order ke `/api/checkout`, memuat kode QRIS, dan melakukan polling status pembayaran setiap 6 detik ke `/api/order/status/<transaction_id>`.
-

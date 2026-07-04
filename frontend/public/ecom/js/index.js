@@ -1,4 +1,6 @@
 // index.js - Unified Client-side SPA Logic for Catalog and Checkout
+window.productViewMode = 'grid';
+
 window.showModernCartModal = function(onConfirm) {
     const existing = document.getElementById('modern-cart-modal');
     if (existing) existing.remove();
@@ -141,15 +143,207 @@ async function loadTemplates() {
 async function initSPA() {
     const grid = document.getElementById('productsGrid');
     try {
-        if (grid) {
-            grid.innerHTML = `
-                <div style="grid-column: 1/-1; text-align: center; padding: 4rem; color: var(--primary);">
-                    <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid rgba(0,0,0,0.1); border-radius: 50%; border-top-color: var(--primary); animation: spin 1s ease-in-out infinite;"></div>
-                    <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
-                    <p style="margin-top: 1rem; font-weight: bold;">Sedang memuat data dari server (API live)... Mohon tunggu.</p>
+        if (grid) grid.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 6rem 0; color: var(--primary); position: relative; min-height: 250px; overflow: hidden; width: 100%;">
+                    <div id="load">
+                      <div>G</div>
+                      <div>N</div>
+                      <div>I</div>
+                      <div>D</div>
+                      <div>A</div>
+                      <div>O</div>
+                      <div>L</div>
+                    </div>
+                    <style>
+                    #load {
+                      position:absolute;
+                      width:600px;
+                      height:36px;
+                      left:50%;
+                      top:40%;
+                      margin-left:-300px;
+                      overflow:visible;
+                      -webkit-user-select:none;
+                      -moz-user-select:none;
+                      -ms-user-select:none;
+                      user-select:none;
+                      cursor:default;
+                    }
+
+                    #load div {
+                      position:absolute;
+                      width:20px;
+                      height:36px;
+                      opacity:0;
+                      font-family: 'Outfit', 'Inter', Helvetica, Arial, sans-serif;
+                      font-weight: 800;
+                      font-size: 1.6rem;
+                      animation:move 2s linear infinite;
+                      -o-animation:move 2s linear infinite;
+                      -moz-animation:move 2s linear infinite;
+                      -webkit-animation:move 2s linear infinite;
+                      transform:rotate(180deg);
+                      -o-transform:rotate(180deg);
+                      -moz-transform:rotate(180deg);
+                      -webkit-transform:rotate(180deg);
+                      color: var(--primary, #000000);
+                    }
+
+                    #load div:nth-child(2) {
+                      animation-delay:0.2s;
+                      -o-animation-delay:0.2s;
+                      -moz-animation-delay:0.2s;
+                      -webkit-animation-delay:0.2s;
+                    }
+                    #load div:nth-child(3) {
+                      animation-delay:0.4s;
+                      -o-animation-delay:0.4s;
+                      -webkit-animation-delay:0.4s;
+                      -moz-animation-delay:0.4s;
+                    }
+                    #load div:nth-child(4) {
+                      animation-delay:0.6s;
+                      -o-animation-delay:0.6s;
+                      -webkit-animation-delay:0.6s;
+                      -moz-animation-delay:0.6s;
+                    }
+                    #load div:nth-child(5) {
+                      animation-delay:0.8s;
+                      -o-animation-delay:0.8s;
+                      -webkit-animation-delay:0.8s;
+                      -moz-animation-delay:0.8s;
+                    }
+                    #load div:nth-child(6) {
+                      animation-delay:1s;
+                      -o-animation-delay:1s;
+                      -webkit-animation-delay:1s;
+                      -moz-animation-delay:1s;
+                    }
+                    #load div:nth-child(7) {
+                      animation-delay:1.2s;
+                      -o-animation-delay:1.2s;
+                      -webkit-animation-delay:1.2s;
+                      -moz-animation-delay:1.2s;
+                    }
+
+                    @keyframes move {
+                      0% {
+                        left:0;
+                        opacity:0;
+                      }
+                      35% {
+                        left: 41%; 
+                        -moz-transform:rotate(0deg);
+                        -webkit-transform:rotate(0deg);
+                        -o-transform:rotate(0deg);
+                        transform:rotate(0deg);
+                        opacity:1;
+                      }
+                      65% {
+                        left:59%; 
+                        -moz-transform:rotate(0deg); 
+                        -webkit-transform:rotate(0deg); 
+                        -o-transform:rotate(0deg);
+                        transform:rotate(0deg); 
+                        opacity:1;
+                      }
+                      100% {
+                        left:100%; 
+                        -moz-transform:rotate(-180deg); 
+                        -webkit-transform:rotate(-180deg); 
+                        -o-transform:rotate(-180deg); 
+                        transform:rotate(-180deg);
+                        opacity:0;
+                      }
+                    }
+
+                    @-moz-keyframes move {
+                      0% {
+                        left:0; 
+                        opacity:0;
+                      }
+                      35% {
+                        left:41%; 
+                        -moz-transform:rotate(0deg); 
+                        transform:rotate(0deg);
+                        opacity:1;
+                      }
+                      65% {
+                        left:59%; 
+                        -moz-transform:rotate(0deg); 
+                        transform:rotate(0deg);
+                        opacity:1;
+                      }
+                      100% {
+                        left:100%; 
+                        -moz-transform:rotate(-180deg); 
+                        -moz-transform:rotate(-180deg); 
+                        transform:rotate(-180deg);
+                        opacity:0;
+                      }
+                    }
+
+                    @-webkit-keyframes move {
+                      0% {
+                        left:0; 
+                        opacity:0;
+                      }
+                      35% {
+                        left:41%; 
+                        -webkit-transform:rotate(0deg); 
+                        transform:rotate(0deg); 
+                        opacity:1;
+                      }
+                      65% {
+                        left:59%; 
+                        -webkit-transform:rotate(0deg); 
+                        transform:rotate(0deg); 
+                        opacity:1;
+                      }
+                      100% {
+                        left:100%;
+                        -webkit-transform:rotate(-180deg); 
+                        transform:rotate(-180deg); 
+                        opacity:0;
+                      }
+                    }
+
+                    @-o-keyframes move {
+                      0% {
+                        left:0; 
+                        opacity:0;
+                      }
+                      35% {
+                        left:41%; 
+                        -o-transform:rotate(0deg); 
+                        transform:rotate(0deg); 
+                        opacity:1;
+                      }
+                      65% {
+                        left:59%; 
+                        -o-transform:rotate(0deg); 
+                        transform:rotate(0deg); 
+                        opacity:1;
+                      }
+                      100% {
+                        left:100%; 
+                        -o-transform:rotate(-180deg); 
+                        -o-transform:rotate(-180deg); 
+                        transform:rotate(-180deg);
+                        opacity:0;
+                      }
+                    }
+                    
+                    @media (max-width: 650px) {
+                      #load {
+                        transform: scale(0.5);
+                        left: 50%;
+                        margin-left: -300px;
+                      }
+                    }
+                    </style>
                 </div>
             `;
-        }
         
         // Load templates first so elements exist in DOM when needed
         await loadTemplates();
@@ -180,6 +374,53 @@ async function initSPA() {
         const searchParam = urlParams.get('search') || '';
         showAllProducts = false;
         renderProducts('all', searchParam);
+
+        // Setup view mode toggles (Grid/List)
+        const btnViewGrid = document.getElementById('btnViewGrid');
+        const btnViewList = document.getElementById('btnViewList');
+        if (btnViewGrid && btnViewList) {
+            btnViewGrid.onclick = () => {
+                if (window.productViewMode === 'grid') return;
+                window.productViewMode = 'grid';
+                btnViewGrid.classList.add('active');
+                btnViewGrid.style.background = 'var(--primary)';
+                btnViewGrid.style.color = 'white';
+                btnViewGrid.style.borderColor = 'var(--primary)';
+                btnViewList.classList.remove('active');
+                btnViewList.style.background = 'transparent';
+                btnViewList.style.color = 'var(--text-muted)';
+                btnViewList.style.borderColor = 'var(--border-color)';
+                
+                if (grid) grid.classList.remove('list-view');
+                
+                const activeBtn = document.querySelector('#categoryFilterContainer .filter-btn.active');
+                const catSlug = activeBtn ? activeBtn.dataset.category : 'all';
+                const searchInput = document.getElementById('headerSearchInput');
+                const searchVal = searchInput ? searchInput.value : '';
+                renderProducts(catSlug, searchVal);
+            };
+
+            btnViewList.onclick = () => {
+                if (window.productViewMode === 'list') return;
+                window.productViewMode = 'list';
+                btnViewList.classList.add('active');
+                btnViewList.style.background = 'var(--primary)';
+                btnViewList.style.color = 'white';
+                btnViewList.style.borderColor = 'var(--primary)';
+                btnViewGrid.classList.remove('active');
+                btnViewGrid.style.background = 'transparent';
+                btnViewGrid.style.color = 'var(--text-muted)';
+                btnViewGrid.style.borderColor = 'var(--border-color)';
+                
+                if (grid) grid.classList.add('list-view');
+                
+                const activeBtn = document.querySelector('#categoryFilterContainer .filter-btn.active');
+                const catSlug = activeBtn ? activeBtn.dataset.category : 'all';
+                const searchInput = document.getElementById('headerSearchInput');
+                const searchVal = searchInput ? searchInput.value : '';
+                renderProducts(catSlug, searchVal);
+            };
+        }
 
         // Listen for SPA hash routing
         window.addEventListener('hashchange', handleRouting);
@@ -338,49 +579,78 @@ function renderProducts(categorySlug = 'all', searchQuery = '') {
     
     displayProducts.forEach(p => {
         const cat = allCategories.find(c => c.slug === p.category_slug);
-        const iconEmoji = `<img src="gambar/logoeasyfast.png" alt="${p.name}" style="height: 70px; width: auto; object-fit: contain;">`;
-        
         const originalPrice = Math.round(p.price * 1.15);
         
         const card = document.createElement('div');
-        card.className = 'card product-card';
-        card.innerHTML = `
-            <div class="card-image-wrapper" style="height: 110px;">
-                ${iconEmoji}
-                ${p.badge ? `<span class="badge ${getBadgeClass(p.badge)}">${p.badge}</span>` : ''}
-            </div>
-            <div class="card-body" style="padding: 0.65rem 0.75rem;">
-                <span class="product-category" style="font-size: 0.68rem; margin-bottom: 2px;">${cat ? cat.name : p.category_slug}</span>
-                <h3 class="card-title" style="font-size: 0.85rem; margin-bottom: 4px; line-height: 1.2; height: 32px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${p.name}</h3>
-                <p class="card-desc" style="font-size: 0.75rem; margin-bottom: 8px; line-height: 1.3; height: 36px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${p.description || ''}</p>
-                <div class="product-rating" style="display: flex; align-items: center; gap: 4px; font-size: 0.7rem; margin-bottom: 8px;">
-                    <span class="stars" style="color: #ff9f43; display: flex; align-items: center; gap: 2px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                        </svg>
-                        4.9
-                    </span>
-                    <span class="sold-count" style="color: var(--text-muted); padding-left: 4px; border-left: 1px solid var(--border-color);">${p.sold_count || '100+'} terjual</span>
+        
+        if (window.productViewMode === 'list') {
+            card.className = 'card product-card list-item-layout';
+            card.style.cssText = 'display: flex; flex-direction: row; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; width: 100%; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; transition: all 0.2s;';
+            card.innerHTML = `
+                <div class="list-left-col" style="flex: 1; min-width: 0; padding-right: 1rem; text-align: left;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                        <span class="product-category" style="font-size: 0.68rem; margin-bottom: 0;">${cat ? cat.name : p.category_slug}</span>
+                        ${p.badge ? `<span class="badge ${getBadgeClass(p.badge)}" style="position: static; font-size: 0.65rem; padding: 1px 4px; border-radius: 4px; color: white; font-weight: 600;">${p.badge}</span>` : ''}
+                    </div>
+                    <h3 class="card-title" style="font-size: 0.9rem; margin-bottom: 2px; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; height: auto;">${p.name}</h3>
+                    <p class="card-desc" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; height: auto;">${p.description || ''}</p>
                 </div>
-                <div class="product-footer" style="padding-top: 6px;">
-                    <div class="price-container">
-                        <span class="price-label" style="font-size: 0.65rem;">Harga terbaik</span>
-                        <div class="price-row" style="display: flex; align-items: center; flex-wrap: wrap; gap: 2px;">
-                            <span class="price-value" style="font-size: 0.88rem; color: #e03131; font-weight: 700;">Rp${formatRupiah(p.price)}</span>
-                            <span class="original-price" style="text-decoration: line-through; color: var(--text-muted); font-size: 0.68rem;">Rp${formatRupiah(originalPrice)}</span>
-                        </div>
+                <div class="list-right-col" style="display: flex; align-items: center; gap: 1.5rem; flex-shrink: 0;">
+                    <div style="text-align: right;">
+                        <div style="font-size: 0.85rem; color: #e03131; font-weight: 700;">Rp${formatRupiah(p.price)}</div>
+                        <div style="text-decoration: line-through; color: var(--text-muted); font-size: 0.68rem;">Rp${formatRupiah(originalPrice)}</div>
                     </div>
                     <div style="display: flex; gap: 4px; align-items: center;">
-                        <button type="button" class="btn btn-buy" style="font-size: 0.7rem; padding: 0.25rem 0.5rem; border-radius: 4px;">Beli</button>
-                        <button type="button" class="btn btn-cart-card" style="font-size: 0.7rem; padding: 0.25rem 0.5rem; border-radius: 4px; background: #e9ecef; color: #495057; border: 1px solid #ced4da; display: inline-flex; align-items: center; justify-content: center;" aria-label="Keranjang">
+                        <button type="button" class="btn btn-buy" style="font-size: 0.75rem; padding: 0.35rem 0.75rem; border-radius: 4px;">Beli</button>
+                        <button type="button" class="btn btn-cart-card" style="font-size: 0.75rem; padding: 0.35rem 0.55rem; border-radius: 4px; background: #e9ecef; color: #495057; border: 1px solid #ced4da; display: inline-flex; align-items: center; justify-content: center;" aria-label="Keranjang">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
                                 <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
                             </svg>
                         </button>
                     </div>
                 </div>
-            </div>
-        `;
+            `;
+        } else {
+            const iconEmoji = `<img src="gambar/logoeasyfast.webp" alt="${p.name}" style="height: 70px; width: auto; object-fit: contain;">`;
+            card.className = 'card product-card';
+            card.innerHTML = `
+                <div class="card-image-wrapper" style="height: 110px;">
+                    ${iconEmoji}
+                    ${p.badge ? `<span class="badge ${getBadgeClass(p.badge)}">${p.badge}</span>` : ''}
+                </div>
+                <div class="card-body" style="padding: 0.65rem 0.75rem;">
+                    <span class="product-category" style="font-size: 0.68rem; margin-bottom: 2px;">${cat ? cat.name : p.category_slug}</span>
+                    <h3 class="card-title" style="font-size: 0.85rem; margin-bottom: 4px; line-height: 1.2; height: 32px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${p.name}</h3>
+                    <p class="card-desc" style="font-size: 0.75rem; margin-bottom: 8px; line-height: 1.3; height: 36px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${p.description || ''}</p>
+                    <div class="product-rating" style="display: flex; align-items: center; gap: 4px; font-size: 0.7rem; margin-bottom: 8px;">
+                        <span class="stars" style="color: #ff9f43; display: flex; align-items: center; gap: 2px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                            </svg>
+                            4.9
+                        </span>
+                        <span class="sold-count" style="color: var(--text-muted); padding-left: 4px; border-left: 1px solid var(--border-color);">${p.sold_count || '100+'} terjual</span>
+                    </div>
+                    <div class="product-footer" style="padding-top: 6px;">
+                        <div class="price-container">
+                            <span class="price-label" style="font-size: 0.65rem;">Harga terbaik</span>
+                            <div class="price-row" style="display: flex; align-items: center; flex-wrap: wrap; gap: 2px;">
+                                <span class="price-value" style="font-size: 0.88rem; color: #e03131; font-weight: 700;">Rp${formatRupiah(p.price)}</span>
+                                <span class="original-price" style="text-decoration: line-through; color: var(--text-muted); font-size: 0.68rem;">Rp${formatRupiah(originalPrice)}</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 4px; align-items: center;">
+                            <button type="button" class="btn btn-buy" style="font-size: 0.7rem; padding: 0.25rem 0.5rem; border-radius: 4px;">Beli</button>
+                            <button type="button" class="btn btn-cart-card" style="font-size: 0.7rem; padding: 0.25rem 0.5rem; border-radius: 4px; background: #e9ecef; color: #495057; border: 1px solid #ced4da; display: inline-flex; align-items: center; justify-content: center;" aria-label="Keranjang">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
         
         card.onclick = (e) => {
             if (e.target.tagName !== 'BUTTON') {

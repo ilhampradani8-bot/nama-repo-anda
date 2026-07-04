@@ -25,17 +25,41 @@ import PenggabungUtama from '../layouts/PenggabungUtama.astro';
             <!-- Products Section -->
             <section id="products" class="section">
                 <div class="container">
-                    <h2 class="section-title">Katalog Produk</h2>
+                    <div class="section-header-row" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem;">
+                        <h2 class="section-title" style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">Katalog Produk</h2>
+                        <div class="view-toggle-buttons" style="display: flex; gap: 0.5rem;">
+                            <button type="button" id="btnViewGrid" class="toggle-btn active" style="background: var(--primary); color: white; border: 1px solid var(--primary); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 4px; transition: all 0.2s;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+                                Card
+                            </button>
+                            <button type="button" id="btnViewList" class="toggle-btn" style="background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 4px; transition: all 0.2s;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                                List
+                            </button>
+                        </div>
+                    </div>
                     
-                    <!-- Category Filter Bar -->
-                    <div class="category-filter-container" id="categoryFilterContainer">
-                        <button type="button" class="filter-btn active" data-category="all">
-                            <svg class="filter-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 4px; display: inline-block; vertical-align: middle;">
-                                <path d="M0 1.5A1.5 1.5 0 0 1 1.5 0h13A1.5 1.5 0 0 1 16 1.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 14.5zM1.5 1a.5.5 0 0 0-.5.5v3h14v-3a.5.5 0 0 0-.5-.5zm14 4h-14v5h14zm0 6h-14v3.5a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5z"/>
-                            </svg> 
-                            Semua
+                    <!-- Category Filter Bar Wrapper -->
+                    <div class="category-slider-wrapper">
+                        <!-- Left Navigation Button -->
+                        <button type="button" id="btnCategorySlideLeft" class="category-slide-btn left-btn" aria-label="Scroll Left">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0"/></svg>
                         </button>
-                        <!-- Will be populated dynamically by JS -->
+
+                        <div class="category-filter-container" id="categoryFilterContainer" style="flex: 1; margin-bottom: 0; padding-bottom: 0.5rem; scroll-behavior: smooth;">
+                            <button type="button" class="filter-btn active" data-category="all">
+                                <svg class="filter-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 4px; display: inline-block; vertical-align: middle;">
+                                    <path d="M0 1.5A1.5 1.5 0 0 1 1.5 0h13A1.5 1.5 0 0 1 16 1.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 14.5zM1.5 1a.5.5 0 0 0-.5.5v3h14v-3a.5.5 0 0 0-.5-.5zm14 4h-14v5h14zm0 6h-14v3.5a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5z"/>
+                                </svg> 
+                                Semua
+                            </button>
+                            <!-- Will be populated dynamically by JS -->
+                        </div>
+
+                        <!-- Right Navigation Button -->
+                        <button type="button" id="btnCategorySlideRight" class="category-slide-btn right-btn" aria-label="Scroll Right">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/></svg>
+                        </button>
                     </div>
                     
                     <!-- Dynamic Products Grid -->
@@ -55,3 +79,128 @@ import PenggabungUtama from '../layouts/PenggabungUtama.astro';
         </div>
     </main>
 </PenggabungUtama>
+
+<style>
+    .category-slider-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 2rem;
+    }
+    .category-slide-btn {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        transition: all 0.25s ease;
+        color: var(--text-main);
+        flex-shrink: 0;
+        z-index: 5;
+    }
+    .category-slide-btn:hover {
+        background: var(--primary);
+        color: #ffffff;
+        border-color: var(--primary);
+        transform: scale(1.1);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    }
+    .category-slide-btn.left-btn {
+        margin-right: 0.75rem;
+    }
+    .category-slide-btn.right-btn {
+        margin-left: 0.75rem;
+    }
+    @media (max-width: 768px) {
+        .category-slide-btn {
+            display: none !important;
+        }
+        .category-slider-wrapper {
+            margin-bottom: 1rem;
+        }
+    }
+</style>
+
+<script is:inline>
+    (function() {
+        function initCategorySlider() {
+            const leftBtn = document.getElementById('btnCategorySlideLeft');
+            const rightBtn = document.getElementById('btnCategorySlideRight');
+            const container = document.getElementById('categoryFilterContainer');
+            
+            if (!leftBtn || !rightBtn || !container) return;
+            
+            leftBtn.addEventListener('click', () => {
+                container.scrollBy({ left: -240, behavior: 'smooth' });
+            });
+            
+            rightBtn.addEventListener('click', () => {
+                container.scrollBy({ left: 240, behavior: 'smooth' });
+            });
+            
+            const updateButtons = () => {
+                const scrollLeft = Math.round(container.scrollLeft);
+                const maxScroll = container.scrollWidth - container.clientWidth;
+                
+                // If there's no overflow, hide both buttons completely
+                if (maxScroll <= 5) {
+                    leftBtn.style.display = 'none';
+                    rightBtn.style.display = 'none';
+                    return;
+                }
+                
+                // Show buttons if overflow is present
+                leftBtn.style.display = 'flex';
+                rightBtn.style.display = 'flex';
+                
+                // Toggle left button opacity/pointer-events
+                if (scrollLeft <= 5) {
+                    leftBtn.style.opacity = '0.3';
+                    leftBtn.style.pointerEvents = 'none';
+                } else {
+                    leftBtn.style.opacity = '1';
+                    leftBtn.style.pointerEvents = 'auto';
+                }
+                
+                // Toggle right button opacity/pointer-events
+                if (scrollLeft >= maxScroll - 5) {
+                    rightBtn.style.opacity = '0.3';
+                    rightBtn.style.pointerEvents = 'none';
+                } else {
+                    rightBtn.style.opacity = '1';
+                    rightBtn.style.pointerEvents = 'auto';
+                }
+            };
+            
+            // Listen to scroll and resize
+            container.addEventListener('scroll', updateButtons, { passive: true });
+            window.addEventListener('resize', updateButtons, { passive: true });
+            
+            // Use MutationObserver to detect when categories are dynamically rendered/injected
+            const observer = new MutationObserver(() => {
+                updateButtons();
+            });
+            observer.observe(container, { childList: true, subtree: true });
+            
+            // Initial call and periodic check fallback
+            updateButtons();
+            setTimeout(updateButtons, 500);
+            setTimeout(updateButtons, 1500);
+            setTimeout(updateButtons, 3000);
+        }
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initCategorySlider);
+        } else {
+            initCategorySlider();
+        }
+        
+        document.addEventListener('astro:page-load', initCategorySlider);
+    })();
+</script>

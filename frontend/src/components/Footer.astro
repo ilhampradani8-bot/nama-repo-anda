@@ -1,55 +1,89 @@
 ---
 // Footer.astro - Shared Footer Component
 ---
-<footer class="site-footer">
+<div class="footer-top-brand-banner" style="width: 100%; background: var(--primary); color: #ffffff; display: flex; align-items: center; justify-content: center; padding: 0.8rem 0; font-weight: 800; letter-spacing: 0.6em; font-size: 1.5rem; text-transform: uppercase; line-height: 1; margin-top: 4rem; border-bottom: 1px solid var(--border-color);">
+    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" style="color: rgba(255,255,255,0.95); margin: 0 12px; flex-shrink: 0;"><path d="M12 2 L15 12 L12 22 L9 12 Z" /><path d="M12 6 C6 3 3 8 9 12 C15 16 18 21 12 22" /><path d="M12 6 C18 3 21 8 15 12 C9 16 6 21 12 22" /><circle cx="12" cy="12" r="2" fill="currentColor" /></svg>
+    EASYMALL
+    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" style="color: rgba(255,255,255,0.95); margin: 0 12px; flex-shrink: 0;"><path d="M12 2 L15 12 L12 22 L9 12 Z" /><path d="M12 6 C6 3 3 8 9 12 C15 16 18 21 12 22" /><path d="M12 6 C18 3 21 8 15 12 C9 16 6 21 12 22" /><circle cx="12" cy="12" r="2" fill="currentColor" /></svg>
+</div>
+<footer class="site-footer" style="margin-top: 0; padding-top: 3rem;">
     <div class="footer-container">
-        <!-- Left Column: Logo & Legals -->
-        <div class="footer-col footer-info">
-            <img src="/gambar/logoeasyfast.png" alt="EasyMarket Logo" class="footer-logo">
-            <p class="footer-description">Platform penyedia Produk Digital terpercaya, Otomatisasi Bot WhatsApp/Telegram, dan Layanan IT berkualitas tinggi dengan proses instan.</p>
+        <!-- Left Column: Logo only -->
+        <div class="footer-col footer-info" style="display: flex; align-items: center; justify-content: flex-start;">
+            <img src="/gambar/logoeasyfast.webp" alt="EasyMarket Logo" class="footer-logo" style="margin-bottom: 0; height: 200px; width: auto; object-fit: contain;">
         </div>
 
-        <!-- Middle Column 1: Categories -->
+        <!-- Column 2: Kategori & Lainnya -->
         <div class="footer-col footer-links">
-            <h4>Kategori Produk</h4>
+            <h4>Kategori</h4>
+            <ul style="margin-bottom: 2rem;">
+                <li><a href="/#products" onclick="footerFilterCategory('all')">Semua Produk</a></li>
+                <li><a href="/#products" onclick="footerFilterCategory('Koala Store')">Top Up Game</a></li>
+                <li><a href="/#products" onclick="footerFilterCategory('Portal Pulsa')">Pulsa & Paket Data</a></li>
+                <li><a href="/#products" onclick="footerFilterCategory('SSL Store')">SSL Certificate</a></li>
+            </ul>
+
+            <h4>Lainnya</h4>
             <ul>
-                <li><a href="/#products" onclick="footerFilterCategory('all')">✨ Semua Produk</a></li>
-                <li><a href="/#products" onclick="footerFilterCategory('Koala Store')">🎮 Top Up Game</a></li>
-                <li><a href="/#products" onclick="footerFilterCategory('Portal Pulsa')">📱 Pulsa & Paket Data</a></li>
-                <li><a href="/#products" onclick="footerFilterCategory('SSL Store')">🔒 SSL Certificate</a></li>
+                <li style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.8rem; font-weight: 500;">CEO Web</li>
+                <li style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.8rem; font-weight: 500;">Academy</li>
+                <li style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500;">Easymall</li>
             </ul>
         </div>
 
-        <!-- Middle Column 2: Legal & Info -->
+        <!-- Column 3: Informasi -->
         <div class="footer-col footer-links">
-            <h4>Informasi & Legalitas</h4>
+            <h4>Informasi</h4>
             <ul>
-                <li><a href="/about">ℹ️ Tentang Kami</a></li>
-                <li><a href="/term">📄 Syarat & Ketentuan</a></li>
-                <li><a href="/condition">🤝 Kebijakan Refund</a></li>
-                <li><a href="/security">🛡️ Keamanan & Privasi</a></li>
-                <li><a href="/legalitas">⚖️ Legalitas Resmi</a></li>
+                <li><a href="/about">Tentang Kami</a></li>
+                <li><a href="/term">Syarat & Ketentuan</a></li>
+                <li><a href="/condition">Kebijakan Refund</a></li>
+                <li><a href="/security">Keamanan & Privasi</a></li>
+                <li><a href="/legalitas">Legalitas Resmi</a></li>
             </ul>
         </div>
 
-        <!-- Right Column: Contact & Search -->
+        <!-- Column 4: Kontak & Search -->
         <div class="footer-col footer-contact">
-            <h4>Hubungi Kami</h4>
-            <div class="contact-details">
-                <p><strong>WhatsApp:</strong> <a href="https://wa.me/6288971071138" target="_blank">+62 889-7107-1138</a></p>
-                <p><strong>Email 1:</strong> <a href="mailto:hello@ilhampradani.me">hello@ilhampradani.me</a></p>
-                <p><strong>Email 2:</strong> <a href="mailto:easymall@ilhampradani.me">easymall@ilhampradani.me</a></p>
-            </div>
-            
-            <h4 style="margin-top: 1.5rem;">Cari Produk</h4>
-            <div class="footer-search">
-                <input type="text" placeholder="Ketik nama produk..." id="footerSearchInput" class="footer-search-input">
-                <button type="button" id="footerSearchBtn" class="footer-search-btn">Cari</button>
+            <h4>Kontak</h4>
+            <div class="contact-details" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="color: #25d366; flex-shrink: 0;"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.69-4.98c-.202-.101-1.202-.594-1.387-.662-.185-.068-.32-.101-.453.1-.133.2-.516.652-.632.783-.117.132-.234.148-.436.047a5.07 5.07 0 0 0-.262-.228 6.53 6.53 0 0 0-1.462-.985 4.97 4.97 0 0 0-.316-.127c-.318-.118-.327-.113-.377-.072-.052.04-.251.277-.306.347-.05.068-.102.078-.184.038-.08-.04-1.202-.592-1.748-1.077-.478-.425-.79-.948-.885-1.112-.095-.164-.01-.254.062-.335.071-.08.185-.211.277-.316.09-.106.12-.177.18-.295.06-.118.03-.222-.015-.31-.045-.09-.413-.997-.566-1.364-.15-.357-.3-.309-.413-.315-.11-.004-.236-.004-.361-.004A1.36 1.36 0 0 0 2.2 5.002c-.366.39-.77.826-.77 1.722 0 1.652 1.2 3.25 1.364 3.47.165.223 2.354 3.597 5.698 5.05.797.346 1.42.553 1.905.708.803.256 1.535.219 2.11.134.64-.096 1.975-.807 2.252-1.587.278-.78.278-1.448.195-1.587-.083-.14-.305-.218-.507-.32"/></svg>
+                    <a href="https://wa.me/6288971071138" target="_blank" style="color: var(--text-muted); font-size: 0.85rem; text-decoration: none;">+62 889-7107-1138</a>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="color: #0d6efd; flex-shrink: 0;"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"/></svg>
+                    <a href="mailto:hello@ilhampradani.me" style="color: var(--text-muted); font-size: 0.85rem; text-decoration: none;">hello@ilhampradani.me</a>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="color: #0d6efd; flex-shrink: 0;"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"/></svg>
+                    <a href="mailto:easymall@ilhampradani.me" style="color: var(--text-muted); font-size: 0.85rem; text-decoration: none;">easymall@ilhampradani.me</a>
+                </div>
+                <h4 style="margin-top: 1.5rem;">Cari Produk</h4>
+                <div class="footer-search">
+                    <input type="text" placeholder="Ketik nama produk..." id="footerSearchInput" class="footer-search-input">
+                    <button type="button" id="footerSearchBtn" class="footer-search-btn">Cari</button>
+                </div>
             </div>
         </div>
     </div>
     
-    <div class="footer-bottom">
+    <div class="footer-bottom" style="margin-top: 2rem;">
+        <!-- Payment Methods Section Row -->
+        <div class="payment-methods-row" style="display: flex; justify-content: center; align-items: center; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
+            <div style="display: flex; gap: 1.25rem; flex-wrap: wrap; justify-content: center; align-items: center;">
+                <img src="/gambar/gambar_footer/Qris-logo.webp" alt="QRIS" style="height: 24px; width: auto; object-fit: contain; filter: grayscale(100%); opacity: 0.7; transition: all 0.2s;" onmouseover="this.style.filter='none'; this.style.opacity='1'" onmouseout="this.style.filter='grayscale(100%)'; this.style.opacity='0.7'">
+                <img src="/gambar/gambar_footer/bca.webp" alt="BCA" style="height: 18px; width: auto; object-fit: contain; filter: grayscale(100%); opacity: 0.7; transition: all 0.2s;" onmouseover="this.style.filter='none'; this.style.opacity='1'" onmouseout="this.style.filter='grayscale(100%)'; this.style.opacity='0.7'">
+                <img src="/gambar/gambar_footer/mandiri.webp" alt="Mandiri" style="height: 14px; width: auto; object-fit: contain; filter: grayscale(100%); opacity: 0.7; transition: all 0.2s;" onmouseover="this.style.filter='none'; this.style.opacity='1'" onmouseout="this.style.filter='grayscale(100%)'; this.style.opacity='0.7'">
+                <img src="/gambar/gambar_footer/bni.webp" alt="BNI" style="height: 15px; width: auto; object-fit: contain; filter: grayscale(100%); opacity: 0.7; transition: all 0.2s;" onmouseover="this.style.filter='none'; this.style.opacity='1'" onmouseout="this.style.filter='grayscale(100%)'; this.style.opacity='0.7'">
+                <img src="/gambar/gambar_footer/bri.webp" alt="BRI" style="height: 18px; width: auto; object-fit: contain; filter: grayscale(100%); opacity: 0.7; transition: all 0.2s;" onmouseover="this.style.filter='none'; this.style.opacity='1'" onmouseout="this.style.filter='grayscale(100%)'; this.style.opacity='0.7'">
+                <img src="/gambar/gambar_footer/gopay.webp" alt="Gopay" style="height: 15px; width: auto; object-fit: contain; filter: grayscale(100%); opacity: 0.7; transition: all 0.2s;" onmouseover="this.style.filter='none'; this.style.opacity='1'" onmouseout="this.style.filter='grayscale(100%)'; this.style.opacity='0.7'">
+                <img src="/gambar/gambar_footer/dana.webp" alt="DANA" style="height: 15px; width: auto; object-fit: contain; filter: grayscale(100%); opacity: 0.7; transition: all 0.2s;" onmouseover="this.style.filter='none'; this.style.opacity='1'" onmouseout="this.style.filter='grayscale(100%)'; this.style.opacity='0.7'">
+                <img src="/gambar/gambar_footer/ovo.webp" alt="OVO" style="height: 15px; width: auto; object-fit: contain; filter: grayscale(100%); opacity: 0.7; transition: all 0.2s;" onmouseover="this.style.filter='none'; this.style.opacity='1'" onmouseout="this.style.filter='grayscale(100%)'; this.style.opacity='0.7'">
+                <img src="/gambar/gambar_footer/linkaja.webp" alt="LinkAja" style="height: 20px; width: auto; object-fit: contain; filter: grayscale(100%); opacity: 0.7; transition: all 0.2s;" onmouseover="this.style.filter='none'; this.style.opacity='1'" onmouseout="this.style.filter='grayscale(100%)'; this.style.opacity='0.7'">
+            </div>
+        </div>
+
         <p>&copy; 2026 PT Easymall Software Development. Seluruh hak cipta dilindungi undang-undang.</p>
     </div>
 </footer>

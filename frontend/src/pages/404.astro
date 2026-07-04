@@ -1,0 +1,133 @@
+---
+// 404.astro - Custom Dribbble Lost Dog 404 Page
+import PenggabungUtama from '../layouts/PenggabungUtama.astro';
+---
+
+<PenggabungUtama title="404 Halaman Tidak Ditemukan | EasyMarket" jsFile="/ecom/js/index.js">
+    <section class="page_404">
+        <div class="container_404">
+            <div class="row_404">	
+                <div class="col_404">
+                    <div class="text-center_404">
+                        <div class="four_zero_four_bg">
+                            <h1 class="text-center">404</h1>
+                        </div>
+                        
+                        <div class="contant_box_404">
+                            <h3 class="h2">Look like you're lost</h3>
+                            <p>the page you are looking for not available!</p>
+                            <a href="/" class="link_404">Go to Home</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</PenggabungUtama>
+
+<style>
+    /*======================
+        404 page style
+    =======================*/
+    .page_404 {
+        padding: 60px 0;
+        background: #fff;
+        font-family: 'Arvo', serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+    }
+
+    .container_404 {
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 15px;
+    }
+
+    .row_404 {
+        display: flex;
+        justify-content: center;
+    }
+
+    .col_404 {
+        width: 100%;
+        max-width: 600px;
+    }
+
+    .text-center_404 {
+        text-align: center;
+    }
+
+    .four_zero_four_bg {
+        background-image: url(https://cdn.dribbble.com/users/285475/screenshots/2083086/dribbble_1.gif);
+        height: 400px;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    .four_zero_four_bg h1 {
+        font-size: 80px;
+        margin: 0;
+        padding-top: 20px;
+        font-weight: 800;
+        color: #1e293b;
+    }
+
+    .four_zero_four_bg h3 {
+        font-size: 80px;
+    }
+
+    .link_404 {
+        color: #fff !important;
+        padding: 12px 30px;
+        background: #39ac31;
+        margin: 20px 0;
+        display: inline-block;
+        border-radius: 4px;
+        font-weight: 600;
+        text-decoration: none;
+        box-shadow: 0 4px 12px rgba(57, 172, 49, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .link_404:hover {
+        background: #2e8b27;
+        box-shadow: 0 6px 16px rgba(57, 172, 49, 0.45);
+        transform: translateY(-2px);
+        text-decoration: none;
+    }
+
+    .contant_box_404 {
+        margin-top: -50px;
+    }
+
+    .contant_box_404 h3 {
+        font-size: 2rem;
+        margin: 10px 0;
+        color: #1e293b;
+    }
+
+    .contant_box_404 p {
+        color: #64748b;
+        font-size: 1rem;
+        margin-bottom: 20px;
+    }
+
+    @media (max-width: 600px) {
+        .page_404 {
+            padding: 40px 0;
+        }
+        .four_zero_four_bg {
+            height: 300px;
+            background-size: contain;
+        }
+        .four_zero_four_bg h1 {
+            font-size: 60px;
+        }
+        .contant_box_404 h3 {
+            font-size: 1.5rem;
+        }
+    }
+</style>

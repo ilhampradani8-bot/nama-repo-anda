@@ -9,6 +9,11 @@ import PenggabungUtama from '../layouts/PenggabungUtama.astro';
     jsFile="/ecom/js/product_page.js"
 >
     <style is:inline>
+        .recom-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr) !important;
+            gap: 1.5rem;
+        }
         @media (max-width: 900px) {
             .product-page-layout {
                 flex-direction: column !important;
@@ -19,6 +24,11 @@ import PenggabungUtama from '../layouts/PenggabungUtama.astro';
             }
             .product-details-col {
                 width: 100% !important;
+            }
+        }
+        @media (max-width: 768px) {
+            .recom-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
             }
         }
     </style>
@@ -44,7 +54,7 @@ import PenggabungUtama from '../layouts/PenggabungUtama.astro';
                     <!-- Recommendations Section -->
                     <div class="recom-section" style="margin-top: 3rem; border-top: 1px solid var(--border-color); padding-top: 2rem;">
                         <h2 class="recom-section-title" style="font-size: 1.3rem; margin-bottom: 1.5rem; font-weight: 700;">Rekomendasi Serupa</h2>
-                        <div class="recom-grid" id="recomGrid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
+                        <div class="recom-grid" id="recomGrid">
                             <!-- Dynamic recommendations populated by JS -->
                         </div>
                     </div>
@@ -76,6 +86,12 @@ import PenggabungUtama from '../layouts/PenggabungUtama.astro';
                                 </svg>
                                 Masukkan Keranjang
                             </button>
+                            <button type="button" class="btn-share" id="shareProductBtn" style="width: 100%; margin-top: 0.75rem; padding: 12px; background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; border-radius: var(--radius); cursor: pointer; font-size: 1rem; font-weight: 700; transition: all 0.15s; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
+                                </svg>
+                                Salin Link Produk
+                            </button>
                             <!-- QRIS Payment Area -->
                             <div id="qrisPaymentArea" style="display: none; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);" class="qris-payment-area">
                                 <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 1rem; text-align: center;">Scan QRIS Untuk Membayar</h4>
@@ -99,4 +115,73 @@ import PenggabungUtama from '../layouts/PenggabungUtama.astro';
             </div>
         </div>
     </main>
+
+    <script is:inline>
+        document.addEventListener('DOMContentLoaded', () => {
+            const btn = document.getElementById('shareProductBtn');
+            if (btn) {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    // Parse product code from current URL
+                    const urlParams = new URLSearchParams(window.location.search);
+                    let productCode = '';
+                    if (urlParams.has('code')) {
+                        productCode = urlParams.get('code');
+                    } else {
+                        const pathParts = window.location.pathname.split('/');
+                        const lastPart = pathParts[pathParts.length - 1] || '';
+                        productCode = lastPart.replace('.html', '');
+                    }
+                    
+                    // Always copy link with the official production domain
+                    const linkToCopy = `https://easymall.ilhampradani.me/product/${productCode}`;
+                    
+                    // Robust copy function with fallback for non-HTTPS and in-app browsers
+                    const copyText = (text) => {
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                            return navigator.clipboard.writeText(text);
+                        } else {
+                            return new Promise((resolve, reject) => {
+                                try {
+                                    const textArea = document.createElement("textarea");
+                                    textArea.value = text;
+                                    textArea.style.position = "fixed";
+                                    textArea.style.top = "0";
+                                    textArea.style.left = "0";
+                                    textArea.style.opacity = "0";
+                                    document.body.appendChild(textArea);
+                                    textArea.focus();
+                                    textArea.select();
+                                    const success = document.execCommand('copy');
+                                    document.body.removeChild(textArea);
+                                    if (success) resolve();
+                                    else reject(new Error('Copy command failed'));
+                                } catch (err) {
+                                    reject(err);
+                                }
+                            });
+                        }
+                    };
+                    
+                    copyText(linkToCopy).then(() => {
+                        const originalText = btn.innerHTML;
+                        btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg> Link Berhasil Disalin!';
+                        btn.style.background = '#dcfce7';
+                        btn.style.color = '#15803d';
+                        btn.style.borderColor = '#bbf7d0';
+                        setTimeout(() => {
+                            btn.innerHTML = originalText;
+                            btn.style.background = '#e0f2fe';
+                            btn.style.color = '#0369a1';
+                            btn.style.borderColor = '#bae6fd';
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Failed to copy link:', err);
+                        alert('Gagal menyalin link secara otomatis. Silakan salin link berikut secara manual:\n\n' + linkToCopy);
+                    });
+                });
+            }
+        });
+    </script>
 </PenggabungUtama>

@@ -4,7 +4,23 @@
 <header class="main-header">
     <div class="container header-container">
         <a href="/" class="logo" id="headerLogoLink">
-            <img src="/gambar/logoeasyfast.png" alt="EasyMarket Logo" class="logo-img">
+            <img src="/gambar/logoeasyfast.webp" alt="EasyMarket Logo" class="logo-img">
+            <div class="logo-divider"></div>
+            <div class="logo-scroller">
+                <div class="logo-scroller-inner">
+                    <span class="scroller-item">Easymall</span>
+                    <span class="scroller-item">Reseller</span>
+                    <span class="scroller-item">Api rust</span>
+                    <span class="scroller-item">Seller</span>
+                    <span class="scroller-item">Store</span>
+                    <span class="scroller-item">Share</span>
+                    <span class="scroller-item">Service</span>
+                    <span class="scroller-item">Product</span>
+                    <span class="scroller-item">Impor</span>
+                    <span class="scroller-item">Ekspor</span>
+                    <span class="scroller-item">Easymall</span>
+                </div>
+            </div>
         </a>
         <nav class="main-nav">
             <ul class="nav-links">
@@ -35,6 +51,68 @@
 </header>
 
 <style>
+    .logo-divider {
+        width: 1px;
+        height: 24px;
+        background-color: var(--border-color);
+        margin: 0 12px;
+        transition: background-color 0.3s ease;
+    }
+    .main-header.transparent-header .logo-divider {
+        background-color: rgba(255, 255, 255, 0.3);
+    }
+    .logo-scroller {
+        height: 30px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        position: relative;
+    }
+    .logo-scroller-inner {
+        display: block;
+        margin: 0;
+        padding: 0;
+        animation: scrollText 20s infinite ease-in-out;
+    }
+    .scroller-item {
+        display: block;
+        height: 30px;
+        line-height: 30px;
+        margin: 0;
+        padding: 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+        font-family: var(--font-sans);
+        white-space: nowrap;
+        transition: color 0.3s ease;
+        letter-spacing: -0.5px;
+        background: linear-gradient(135deg, var(--text-main) 0%, #555555 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .main-header.transparent-header .scroller-item {
+        background: linear-gradient(135deg, #ffffff 0%, #dddddd 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    @keyframes scrollText {
+        0%, 7% { transform: translateY(0); }
+        10%, 17% { transform: translateY(-30px); }
+        20%, 27% { transform: translateY(-60px); }
+        30%, 37% { transform: translateY(-90px); }
+        40%, 47% { transform: translateY(-120px); }
+        50%, 57% { transform: translateY(-150px); }
+        60%, 67% { transform: translateY(-180px); }
+        70%, 77% { transform: translateY(-210px); }
+        80%, 87% { transform: translateY(-240px); }
+        90%, 97% { transform: translateY(-270px); }
+        100% { transform: translateY(-300px); }
+    }
+    @media (max-width: 480px) {
+        .scroller-item {
+            font-size: 1rem;
+        }
+    }
     .search-container {
         position: relative;
     }
@@ -137,7 +215,7 @@
 
             dropdown.innerHTML = matches.map(p => `
                 <div class="autocomplete-item" onclick="window.location.href='/product/${p.code}'">
-                    <img src="/gambar/logoeasyfast.png" alt="${p.name}">
+                    <img src="/gambar/logoeasyfast.webp" alt="${p.name}">
                     <div class="autocomplete-item-info">
                         <span class="autocomplete-item-name">${p.name}</span>
                         <span class="autocomplete-item-price">Rp ${p.price.toLocaleString('id-ID')}</span>
@@ -152,5 +230,44 @@
                 dropdown.style.display = 'none';
             }
         });
+    })();
+</script>
+
+<script is:inline>
+    (function() {
+        function initHeaderTransparency() {
+            const header = document.querySelector('.main-header');
+            const hero = document.getElementById('hero');
+            if (!header) return;
+            
+            if (hero) {
+                document.body.classList.add('has-hero');
+                header.classList.add('transparent-header');
+                
+                const checkScroll = () => {
+                    const heroHeight = hero.offsetHeight;
+                    const headerHeight = header.offsetHeight;
+                    if (window.scrollY > (heroHeight - headerHeight - 40)) {
+                        header.classList.remove('transparent-header');
+                    } else {
+                        header.classList.add('transparent-header');
+                    }
+                };
+                
+                window.addEventListener('scroll', checkScroll, { passive: true });
+                checkScroll();
+            } else {
+                document.body.classList.remove('has-hero');
+                header.classList.remove('transparent-header');
+            }
+        }
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initHeaderTransparency);
+        } else {
+            initHeaderTransparency();
+        }
+        
+        document.addEventListener('astro:page-load', initHeaderTransparency);
     })();
 </script>

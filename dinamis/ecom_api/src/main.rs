@@ -20,6 +20,7 @@ use std::{
 use tower_http::cors::{AllowOrigin, CorsLayer};
 use url::Url;
 use urlencoding::encode;
+use sha2::{Sha256, Digest};
 
 #[derive(Clone)]
 struct AppState {
@@ -211,6 +212,21 @@ fn init_db(db_path: &str) {
     .expect("Failed to create resellers table");
 
     conn.execute(
+        "CREATE TABLE IF NOT EXISTS reseller_api_keys (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            reseller_email TEXT NOT NULL,
+            api_key_hash TEXT UNIQUE NOT NULL,
+            key_preview TEXT NOT NULL,
+            label TEXT NOT NULL,
+            is_active INTEGER DEFAULT 1,
+            expires_at TIMESTAMP NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    )
+    .expect("Failed to create reseller_api_keys table");
+
+    conn.execute(
         "CREATE TABLE IF NOT EXISTS sessions (
             session_id TEXT PRIMARY KEY,
             email TEXT NOT NULL,
@@ -256,27 +272,41 @@ fn init_db(db_path: &str) {
     .expect("Failed to create keranjang table");
 }
 
-fn get_redirect_target(headers: &HeaderMap, default_url: &str) -> String {
+fn get_redirect_target(headers: &HeaderMap, _default_url: &str) -> String {
+    // Determine the correct frontend origin from the Referer header.
+    // The API lives on api.ilhampradani.me (port 5002), but the frontend lives
+    // on ilhampradani.me. We must always redirect back to the FRONTEND domain.
     if let Some(referer) = headers.get(header::REFERER) {
         if let Ok(referer_str) = referer.to_str() {
             if let Ok(parsed_url) = Url::parse(referer_str) {
                 if let Some(host) = parsed_url.host_str() {
-                    if host.contains("vercel.app")
-                        || host.contains("localhost")
-                        || host.contains("mijdigital.my")
-                        || host.contains("ilhampradani.me")
-                    {
+                    // Localhost dev — redirect back to the same host (dev server)
+                    if host.contains("localhost") || host.contains("127.0.0.1") {
                         return format!(
-                            "{}://{}/dashboard.html",
+                            "{}://{}/dashboard",
                             parsed_url.scheme(),
                             parsed_url.authority()
                         );
+                    }
+                    // Vercel preview deployments
+                    if host.contains("vercel.app") {
+                        return format!(
+                            "{}://{}/dashboard",
+                            parsed_url.scheme(),
+                            parsed_url.authority()
+                        );
+                    }
+                    // Production: always redirect to the main frontend domain,
+                    // NOT the api subdomain the form was submitted to.
+                    if host.contains("ilhampradani.me") || host.contains("mijdigital.my") {
+                        return "https://ilhampradani.me/dashboard".to_string();
                     }
                 }
             }
         }
     }
-    default_url.to_string()
+    // Absolute fallback: production frontend
+    "https://ilhampradani.me/dashboard".to_string()
 }
 
 fn verify_session(state: &AppState, sid: &str) -> Option<SessionData> {
@@ -402,7 +432,7 @@ async fn login_admin(
 
             insert_session(&state, session_id.clone(), email.clone(), username.clone());
 
-            let redirect_target = get_redirect_target(&headers, "/dashboard.html");
+            let redirect_target = get_redirect_target(&headers, "https://ilhampradani.me/dashboard");
             let cookie = Cookie::build(("session_id", session_id))
                 .path("/")
                 .max_age(Duration::days(30))
@@ -510,7 +540,7 @@ async fn login_google_route(
 
     insert_session(&state, session_id.clone(), email.clone(), name.clone());
 
-    let redirect_target = get_redirect_target(&headers, "/dashboard.html");
+    let redirect_target = get_redirect_target(&headers, "https://ilhampradani.me/dashboard");
     let cookie = Cookie::build(("session_id", session_id))
         .path("/")
         .max_age(Duration::days(30))
@@ -830,6 +860,218 @@ async fn dashboard_data_route(
         resellers,
     })
     .into_response()
+}
+
+// Reseller API Key structs & handlers
+#[derive(Serialize, Deserialize, Clone)]
+struct ResellerApiKey {
+    id: i64,
+    reseller_email: String,
+    key_preview: String,
+    label: String,
+    is_active: i32,
+    expires_at: String,
+    created_at: String,
+}
+
+#[derive(Deserialize)]
+struct GenerateKeyRequest {
+    label: String,
+    duration_days: i32,
+}
+
+#[derive(Serialize)]
+struct GenerateKeyResponse {
+    success: bool,
+    raw_key: String,
+    expires_at: String,
+}
+
+#[derive(Deserialize)]
+struct ToggleKeyRequest {
+    id: i64,
+    is_active: i32,
+}
+
+// Handler: GET /api/reseller/api-keys
+async fn get_api_keys_route(
+    jar: CookieJar,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    let sess = if let Some(sid) = session_id {
+        verify_session(&state, &sid)
+    } else {
+        None
+    };
+
+    if sess.is_none() {
+        return (StatusCode::UNAUTHORIZED, "Unauthorized").into_response();
+    }
+    let user_sess = sess.unwrap();
+
+    let conn = match Connection::open(&state.transactions_db_path) {
+        Ok(c) => c,
+        Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, "Database connection error").into_response(),
+    };
+
+    let mut keys = vec![];
+    let mut stmt = match conn.prepare("SELECT id, reseller_email, key_preview, label, is_active, expires_at, created_at FROM reseller_api_keys WHERE reseller_email = ? ORDER BY created_at DESC") {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, "Database error").into_response(),
+    };
+
+    let rows = stmt.query_map(params![user_sess.email], |row| {
+        Ok(ResellerApiKey {
+            id: row.get(0)?,
+            reseller_email: row.get(1)?,
+            key_preview: row.get(2)?,
+            label: row.get(3)?,
+            is_active: row.get(4)?,
+            expires_at: row.get(5)?,
+            created_at: row.get(6)?,
+        })
+    });
+
+    if let Ok(r_rows) = rows {
+        for r in r_rows.flatten() {
+            keys.push(r);
+        }
+    }
+
+    Json(keys).into_response()
+}
+
+// Handler: POST /api/reseller/api-keys/generate
+async fn generate_api_key_route(
+    jar: CookieJar,
+    State(state): State<AppState>,
+    Json(payload): Json<GenerateKeyRequest>,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    let sess = if let Some(sid) = session_id {
+        verify_session(&state, &sid)
+    } else {
+        None
+    };
+
+    if sess.is_none() {
+        return (StatusCode::UNAUTHORIZED, "Unauthorized").into_response();
+    }
+    let user_sess = sess.unwrap();
+
+    let conn = match Connection::open(&state.transactions_db_path) {
+        Ok(c) => c,
+        Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, "Database connection error").into_response(),
+    };
+
+    // Generate random secure token
+    let random_str: String = rand::thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(32)
+        .map(char::from)
+        .collect();
+    let raw_key = format!("em_live_{}", random_str);
+
+    // Hash the token using SHA-256 for secure storage
+    let mut hasher = Sha256::new();
+    hasher.update(raw_key.as_bytes());
+    let hash_result = format!("{:x}", hasher.finalize());
+
+    let key_preview = format!("em_live_{}...****", &random_str[0..8]);
+
+    // Calculate expiry modifier for SQLite
+    let modifier = format!("+{} days", payload.duration_days);
+
+    let insert_result = conn.execute(
+        "INSERT INTO reseller_api_keys (reseller_email, api_key_hash, key_preview, label, is_active, expires_at) VALUES (?, ?, ?, ?, ?, datetime('now', ?))",
+        params![user_sess.email, hash_result, key_preview, payload.label, 1, modifier],
+    );
+
+    if insert_result.is_err() {
+        return (StatusCode::INTERNAL_SERVER_ERROR, "Failed to save key").into_response();
+    }
+
+    // Get the calculated expires_at time back
+    let expires_at: String = conn.query_row(
+        "SELECT expires_at FROM reseller_api_keys WHERE api_key_hash = ?",
+        params![hash_result],
+        |row| row.get(0),
+    ).unwrap_or_else(|_| "".to_string());
+
+    Json(GenerateKeyResponse {
+        success: true,
+        raw_key,
+        expires_at,
+    }).into_response()
+}
+
+// Handler: POST /api/reseller/api-keys/toggle
+async fn toggle_api_key_route(
+    jar: CookieJar,
+    State(state): State<AppState>,
+    Json(payload): Json<ToggleKeyRequest>,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    let sess = if let Some(sid) = session_id {
+        verify_session(&state, &sid)
+    } else {
+        None
+    };
+
+    if sess.is_none() {
+        return (StatusCode::UNAUTHORIZED, "Unauthorized").into_response();
+    }
+    let user_sess = sess.unwrap();
+
+    let conn = match Connection::open(&state.transactions_db_path) {
+        Ok(c) => c,
+        Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, "Database connection error").into_response(),
+    };
+
+    let result = conn.execute(
+        "UPDATE reseller_api_keys SET is_active = ? WHERE id = ? AND reseller_email = ?",
+        params![payload.is_active, payload.id, user_sess.email],
+    );
+
+    match result {
+        Ok(_) => Json(serde_json::json!({ "success": true })).into_response(),
+        Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Failed to update status").into_response(),
+    }
+}
+
+// Handler: DELETE /api/reseller/api-keys/:id
+async fn delete_api_key_route(
+    jar: CookieJar,
+    State(state): State<AppState>,
+    axum::extract::Path(id): axum::extract::Path<i64>,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    let sess = if let Some(sid) = session_id {
+        verify_session(&state, &sid)
+    } else {
+        None
+    };
+
+    if sess.is_none() {
+        return (StatusCode::UNAUTHORIZED, "Unauthorized").into_response();
+    }
+    let user_sess = sess.unwrap();
+
+    let conn = match Connection::open(&state.transactions_db_path) {
+        Ok(c) => c,
+        Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, "Database connection error").into_response(),
+    };
+
+    let result = conn.execute(
+        "DELETE FROM reseller_api_keys WHERE id = ? AND reseller_email = ?",
+        params![id, user_sess.email],
+    );
+
+    match result {
+        Ok(_) => Json(serde_json::json!({ "success": true })).into_response(),
+        Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Failed to delete key").into_response(),
+    }
 }
 
 // Handler: API Checkout
@@ -1841,6 +2083,10 @@ async fn main() {
         .route("/login/discord/callback", get(login_discord_callback_route))
         .route("/logout", get(logout_route))
         .route("/api/dashboard/data", get(dashboard_data_route))
+        .route("/api/reseller/api-keys", get(get_api_keys_route))
+        .route("/api/reseller/api-keys/generate", post(generate_api_key_route))
+        .route("/api/reseller/api-keys/toggle", post(toggle_api_key_route))
+        .route("/api/reseller/api-keys/:id", delete(delete_api_key_route))
         .route("/api/checkout", post(checkout_route))
         .route("/api/order/status/:transaction_id", get(order_status_route))
         .route("/api/cart", get(get_cart).post(add_to_cart).delete(clear_cart))

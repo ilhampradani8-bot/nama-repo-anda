@@ -208,7 +208,7 @@ function renderSearchResults(queryText) {
     grid.innerHTML = '';
     filtered.forEach(p => {
         const cat = allCategories.find(c => c.slug === p.category_slug);
-        const iconEmoji = `<img src="/gambar/logoeasyfast.png" alt="${p.name}" style="height: 70px; width: auto; object-fit: contain;">`;
+        const iconEmoji = `<img src="/gambar/logoeasyfast.webp" alt="${p.name}" style="height: 70px; width: auto; object-fit: contain;">`;
         const originalPrice = Math.round(p.price * 1.15);
         
         const card = document.createElement('div');

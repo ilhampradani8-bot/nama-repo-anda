@@ -183,7 +183,7 @@ function renderProductDetails(product, category) {
     const layout = document.getElementById('productViewLayout');
     if (!layout) return;
 
-    const iconEmoji = `<img src="/gambar/logoeasyfast.png" alt="${product.name}" style="max-width: 100%; height: auto; max-height: 200px; object-fit: contain; margin-bottom: 1rem;">`;
+    const iconEmoji = `<img src="/gambar/logoeasyfast.webp" alt="${product.name}" style="max-width: 100%; height: auto; max-height: 200px; object-fit: contain; margin-bottom: 1rem;">`;
     const originalPrice = Math.round(product.price * 1.15);
 
     let specHtml = '';
@@ -527,8 +527,8 @@ function renderRecommendations(currentProduct, allProducts, allCategories) {
         sameCat = allProducts.filter(p => p.code !== currentProduct.code);
     }
 
-    // Limit to 2 items
-    const recs = sameCat.slice(0, 2);
+    // Limit to 4 items
+    const recs = sameCat.slice(0, 4);
 
     if (recs.length === 0) {
         grid.innerHTML = '<div style="grid-column:1/-1; color:var(--text-muted);">Tidak ada rekomendasi lainnya.</div>';
@@ -544,7 +544,7 @@ function renderRecommendations(currentProduct, allProducts, allCategories) {
         card.style.cursor = 'pointer';
         card.innerHTML = `
             <div class="card-image-wrapper" style="height: 100px;">
-                <img src="/gambar/logoeasyfast.png" alt="${p.name}" style="height: 60px; width: auto; object-fit: contain;">
+                <img src="/gambar/logoeasyfast.webp" alt="${p.name}" style="height: 60px; width: auto; object-fit: contain;">
             </div>
             <div class="card-body" style="padding: 0.6rem;">
                 <span style="font-size: 0.65rem; color: var(--text-muted);">${cat ? cat.name : p.category_slug}</span>

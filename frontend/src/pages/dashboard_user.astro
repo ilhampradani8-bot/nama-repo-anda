@@ -4,8 +4,7 @@ import UserNavbar from '../components/dashboard/UserNavbar.astro';
 import UserProfileCard from '../components/dashboard/UserProfileCard.astro';
 import UserSidebar from '../components/dashboard/UserSidebar.astro';
 import WelcomeCard from '../components/dashboard/WelcomeCard.astro';
-import SearchCard from '../components/dashboard/SearchCard.astro';
-import TransactionTable from '../components/dashboard/TransactionTable.astro';
+import BottomNav from '../components/BottomNav.astro';
 ---
 
 <!DOCTYPE html>
@@ -18,6 +17,9 @@ import TransactionTable from '../components/dashboard/TransactionTable.astro';
     <!-- Favicon & App Icons -->
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" is:inline></script>
     
     <style>
         :root {
@@ -66,53 +68,103 @@ import TransactionTable from '../components/dashboard/TransactionTable.astro';
             gap: 1.5rem;
         }
 
-        /* Classic Table Styling */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: #ffffff;
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
         }
 
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 0.9rem;
+        .stat-card {
+            background: #ffffff;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        }
+
+        .stat-icon-wrapper {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .stat-icon-wrapper.blue { background-color: #e7f1ff; }
+        .stat-icon-wrapper.green { background-color: #e8f9ee; }
+        .stat-icon-wrapper.purple { background-color: #f3ebff; }
+
+        .stat-details {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: 700;
             color: #212529;
         }
 
-        th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-            color: #495057;
+        /* Chart Card */
+        .chart-card {
+            background: #ffffff;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        }
+
+        .chart-header {
+            background: #f8f9fa;
+            padding: 1rem 1.5rem;
             border-bottom: 2px solid var(--border-color);
         }
 
-        tr:hover td {
-            background-color: #f1f3f5;
-        }
-
-        code {
-            font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-            font-size: 0.85rem;
-            background-color: #e9ecef;
-            padding: 2px 4px;
-            border-radius: 3px;
+        .chart-header h4 {
+            font-size: 1rem;
+            font-weight: 700;
             color: #212529;
+            margin-bottom: 2px;
         }
 
-        .no-data {
-            padding: 3rem;
-            text-align: center;
+        .chart-header p {
+            font-size: 0.8rem;
             color: #6c757d;
-            font-size: 0.95rem;
-            background: #ffffff;
+            margin: 0;
+        }
+
+        .chart-body {
+            padding: 1.5rem;
+            position: relative;
+            height: 320px;
+            width: 100%;
         }
 
         /* Responsive Layout */
         @media (max-width: 768px) {
+            body {
+                padding-bottom: 74px !important;
+            }
             .container {
                 grid-template-columns: 1fr;
+            }
+            .sidebar-col {
+                display: none !important;
             }
         }
     </style>
@@ -134,11 +186,47 @@ import TransactionTable from '../components/dashboard/TransactionTable.astro';
             <!-- Welcome Info -->
             <WelcomeCard />
 
-            <!-- Search Transaction -->
-            <SearchCard />
+            <!-- Stats Grid Row -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper blue">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0d6efd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    </div>
+                    <div class="stat-details">
+                        <span class="stat-label">Total Belanja</span>
+                        <h3 class="stat-value" id="stat-total-spent">Rp 0</h3>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper green">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#198754" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                    </div>
+                    <div class="stat-details">
+                        <span class="stat-label">Total Transaksi</span>
+                        <h3 class="stat-value" id="stat-total-tx">0 Transaksi</h3>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper purple">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6f42c1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.778-7.778zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+                    </div>
+                    <div class="stat-details">
+                        <span class="stat-label">Produk Dibeli</span>
+                        <h3 class="stat-value" id="stat-total-products">0 Produk</h3>
+                    </div>
+                </div>
+            </div>
 
-            <!-- Transactions Table -->
-            <TransactionTable />
+            <!-- Chart Card -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h4>📈 Grafik Tren Pengeluaran Belanja</h4>
+                    <p>Visualisasi tren total belanja harian Anda</p>
+                </div>
+                <div class="chart-body">
+                    <canvas id="userSpendingChart"></canvas>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -150,6 +238,7 @@ import TransactionTable from '../components/dashboard/TransactionTable.astro';
 
         let transactionsData = [];
         let userEmail = '';
+        let myChartInstance = null;
 
         function formatRupiah(num) {
             if (num === null || num === undefined) return "Rp 0";
@@ -181,66 +270,149 @@ import TransactionTable from '../components/dashboard/TransactionTable.astro';
                     const res = await dataRes.json();
                     if (res.success) {
                         transactionsData = res.transactions || [];
-                        renderTransactions(transactionsData);
+                        renderDashboardStatsAndCharts(transactionsData);
                     } else {
-                        showNoData();
+                        renderDashboardStatsAndCharts([]);
                     }
                 } else {
-                    showNoData();
+                    renderDashboardStatsAndCharts([]);
                 }
             } catch (err) {
                 console.error(err);
-                showNoData();
+                renderDashboardStatsAndCharts([]);
             }
         }
 
-        function renderTransactions(list) {
-            const container = document.getElementById('table-container');
-            if (list.length === 0) {
-                container.innerHTML = '<div class="no-data">Belum ada transaksi tercatat.</div>';
-                return;
+        function renderDashboardStatsAndCharts(list) {
+            // 1. Calculate Stats
+            let totalSpent = 0;
+            let uniqueProducts = new Set();
+            
+            list.forEach(t => {
+                totalSpent += parseFloat(t.amount || 0);
+                if (t.product_name) {
+                    uniqueProducts.add(t.product_name);
+                }
+            });
+
+            document.getElementById('stat-total-spent').textContent = formatRupiah(totalSpent);
+            document.getElementById('stat-total-tx').textContent = list.length + ' Transaksi';
+            document.getElementById('stat-total-products').textContent = uniqueProducts.size + ' Produk';
+
+            // 2. Prepare Chart Data (Group by date)
+            const dailyData = {};
+            
+            // Populate last 7 days as default with 0 values
+            const last7Days = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const dateString = d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' });
+                last7Days.push(dateString);
+                dailyData[dateString] = 0;
             }
 
-            container.innerHTML = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID Transaksi</th>
-                            <th>Produk</th>
-                            <th>Varian</th>
-                            <th>Total Bayar</th>
-                            <th>Tanggal</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${list.map(t => `
-                            <tr>
-                                <td><code>${t.transaction_id}</code></td>
-                                <td>${t.product_name || '-'}</td>
-                                <td>${t.variant_name || '-'}</td>
-                                <td><span style="color: #28a745; font-weight: bold;">${formatRupiah(t.amount)}</span></td>
-                                <td>${t.created_at}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-        }
+            // Fill actual transaction data
+            list.forEach(t => {
+                if (t.created_at) {
+                    const datePart = t.created_at.split(' ')[0]; // YYYY-MM-DD
+                    if (datePart) {
+                        const parts = datePart.split('-');
+                        if (parts.length === 3) {
+                            const formattedDate = `${parts[2]}/${parts[1]}`; // DD/MM
+                            if (dailyData[formattedDate] !== undefined) {
+                                dailyData[formattedDate] += parseFloat(t.amount || 0);
+                            } else {
+                                dailyData[formattedDate] = parseFloat(t.amount || 0);
+                            }
+                        }
+                    }
+                }
+            });
 
-        function filterTransactions() {
-            const wa = document.getElementById('searchWa').value.trim();
-            if (!wa) {
-                renderTransactions(transactionsData);
-                return;
+            // Get labels and values sorted chronologically
+            const allDates = Object.keys(dailyData).sort((a, b) => {
+                const aParts = a.split('/');
+                const bParts = b.split('/');
+                return new Date(2026, aParts[1] - 1, aParts[0]) - new Date(2026, bParts[1] - 1, bParts[0]);
+            });
+
+            const chartLabels = allDates;
+            const chartDataValues = allDates.map(date => dailyData[date]);
+
+            // 3. Render Chart via Chart.js
+            const ctx = document.getElementById('userSpendingChart').getContext('2d');
+            if (myChartInstance) {
+                myChartInstance.destroy();
             }
 
-            // Filter transactions matching the WhatsApp input number
-            const filtered = transactionsData.filter(t => t.whatsapp_id && t.whatsapp_id.includes(wa));
-            renderTransactions(filtered);
-        }
-
-        function showNoData() {
-            document.getElementById('table-container').innerHTML = '<div class="no-data">Gagal memuat transaksi. Silakan masuk kembali.</div>';
+            myChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'Pengeluaran',
+                        data: chartDataValues,
+                        borderColor: '#0d6efd',
+                        backgroundColor: 'rgba(13, 110, 253, 0.05)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#0d6efd',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Total: ' + formatRupiah(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    if (value >= 1000000) {
+                                        return 'Rp ' + (value / 1000000).toFixed(1) + 'jt';
+                                    } else if (value >= 1000) {
+                                        return 'Rp ' + (value / 1000).toFixed(0) + 'rb';
+                                    }
+                                    return 'Rp ' + value;
+                                },
+                                font: {
+                                    size: 10
+                                }
+                            },
+                            grid: {
+                                color: '#f1f3f5'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 10
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         async function performLogout() {
@@ -252,6 +424,7 @@ import TransactionTable from '../components/dashboard/TransactionTable.astro';
 
         fetchUserData();
     </script>
+    <BottomNav />
 </body>
 </html>
 

@@ -2,6 +2,8 @@
 // PageUtama.astro - Shared HTML layout for EasyMarket
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import BottomNav from '../components/BottomNav.astro';
+import FloatingChat from '../components/FloatingChat.astro';
 
 interface Props {
 	title: string;
@@ -34,7 +36,7 @@ const {
     <meta property="og:url" content="http://139.59.122.230/">
     <meta property="og:title" content={title}>
     <meta property="og:description" content={description}>
-    <meta property="og:image" content="/gambar/banner.png">
+    <meta property="og:image" content="/gambar/banner.webp">
     <meta property="og:site_name" content="EasyMarket">
     <meta property="og:locale" content="id_ID">
 
@@ -43,7 +45,7 @@ const {
     <meta name="twitter:url" content="http://139.59.122.230/">
     <meta name="twitter:title" content={title}>
     <meta name="twitter:description" content={description}>
-    <meta name="twitter:image" content="/gambar/banner.png">
+    <meta name="twitter:image" content="/gambar/banner.webp">
 
     <!-- Favicon & App Icons -->
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -277,7 +279,7 @@ const {
             margin: 0 auto;
             padding: 0 2rem;
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1.5fr;
+            grid-template-columns: 1.5fr 1fr 1.2fr 1.5fr;
             gap: 2.5rem;
         }
         
@@ -418,6 +420,40 @@ const {
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Mobile Bottom Nav Global Responsiveness */
+        @media (max-width: 768px) {
+            body {
+                padding-bottom: 74px !important;
+            }
+            .main-header .main-nav {
+                display: none !important;
+            }
+            .main-header .header-actions #loginBtn {
+                display: none !important;
+            }
+            .main-header .header-actions .btn-cart {
+                display: none !important;
+            }
+            .header-container {
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                gap: 0.5rem !important;
+            }
+            .main-header {
+                padding: 0.4rem 0 !important;
+                margin-bottom: 1rem !important;
+            }
+            .logo-img {
+                height: 38px !important;
+            }
+            .search-input {
+                width: 90px !important;
+            }
+            .search-input:focus {
+                width: 120px !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -428,6 +464,12 @@ const {
 
     <!-- Client Safe Footer -->
     <Footer />
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <BottomNav />
+
+    <!-- Floating Chat Capsule Widget -->
+    <FloatingChat />
 
     <!-- Scripts -->
     <script is:inline src={jsFile}></script>

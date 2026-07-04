@@ -1,0 +1,152 @@
+---
+// BottomNav.astro - Dynamic Bottom Navigation Bar for Mobile
+const pathname = Astro.url.pathname;
+
+let type = 'public';
+if (pathname.includes('reseller')) {
+    type = 'reseller';
+} else if (pathname.includes('dashboard_user') || pathname.includes('dashboard_pesanan') || pathname.includes('dashboard_produk') || pathname.includes('dashboard_pengaturan')) {
+    type = 'user';
+} else if (pathname.includes('dashboard_keranjang')) {
+    // If user is in keranjang, it could be public cart or user dashboard cart.
+    // Let's make it user dashboard style if they are logged in, or public cart otherwise.
+    type = 'user'; 
+}
+---
+
+<nav class="mobile-bottom-nav">
+    {type === 'public' && (
+        <>
+            <a href="/" class={`nav-item ${pathname === '/' ? 'active' : ''}`}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span>Beranda</span>
+            </a>
+            <a href="/#products" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <span>Produk</span>
+            </a>
+            <a href="/dashboard_keranjang.html" class={`nav-item ${pathname.includes('keranjang') ? 'active' : ''}`}>
+                <div class="cart-icon-wrapper">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+                </div>
+                <span>Keranjang</span>
+            </a>
+            <a href="/dokumentasi.html" class={`nav-item ${pathname.includes('dokumentasi') ? 'active' : ''}`}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                <span>API Docs</span>
+            </a>
+            <a href="/dashboard.html" class={`nav-item ${pathname.includes('login') || pathname.includes('dashboard_') ? 'active' : ''}`}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span>Akun</span>
+            </a>
+        </>
+    )}
+
+    {type === 'reseller' && (
+        <>
+            <a href="/dashboard_reseller.html" class={`nav-item ${pathname.includes('dashboard_reseller') ? 'active' : ''}`}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+                <span>Overview</span>
+            </a>
+            <a href="/reseller_koneksi.html" class={`nav-item ${pathname.includes('reseller_koneksi') ? 'active' : ''}`}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <span>Koneksi API</span>
+            </a>
+            <a href="/reseller_penjualan.html" class={`nav-item ${pathname.includes('reseller_penjualan') ? 'active' : ''}`}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                <span>Data</span>
+            </a>
+            <a href="/reseller_laporan.html" class={`nav-item ${pathname.includes('reseller_laporan') ? 'active' : ''}`}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                <span>Laporan</span>
+            </a>
+            <a href="/reseller_keuntungan.html" class={`nav-item ${pathname.includes('reseller_keuntungan') ? 'active' : ''}`}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <span>Profit</span>
+            </a>
+        </>
+    )}
+
+    {type === 'user' && (
+        <>
+            <a href="/dashboard_user.html" class={`nav-item ${pathname.includes('dashboard_user') ? 'active' : ''}`}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span>Dasbor</span>
+            </a>
+            <a href="/dashboard_pesanan.html" class={`nav-item ${pathname.includes('dashboard_pesanan') ? 'active' : ''}`}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>Pesanan</span>
+            </a>
+            <a href="/dashboard_keranjang.html" class={`nav-item ${pathname.includes('dashboard_keranjang') ? 'active' : ''}`}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+                <span>Keranjang</span>
+            </a>
+            <a href="/" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                <span>Belanja</span>
+            </a>
+            <a href="/dashboard_pengaturan.html" class={`nav-item ${pathname.includes('dashboard_pengaturan') ? 'active' : ''}`}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <span>Setting</span>
+            </a>
+        </>
+    )}
+</nav>
+
+<style>
+    .mobile-bottom-nav {
+        display: none;
+    }
+
+    @media (max-width: 768px) {
+        .mobile-bottom-nav {
+            display: flex;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-top: 1px solid #dee2e6;
+            z-index: 1999;
+            justify-content: space-around;
+            align-items: center;
+            padding: 4px 0;
+            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 0.725rem;
+            font-weight: 600;
+            flex-grow: 1;
+            height: 100%;
+            gap: 4px;
+            transition: color 0.15s ease;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            color: #4f46e5;
+            text-decoration: none;
+        }
+
+        .nav-item svg {
+            transition: transform 0.2s;
+        }
+
+        .nav-item.active svg {
+            transform: scale(1.1);
+        }
+        
+        .cart-icon-wrapper {
+            position: relative;
+        }
+    }
+</style>

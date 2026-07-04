@@ -3,6 +3,7 @@
 import UserNavbar from '../components/dashboard/UserNavbar.astro';
 import UserProfileCard from '../components/dashboard/UserProfileCard.astro';
 import UserSidebar from '../components/dashboard/UserSidebar.astro';
+import BottomNav from '../components/BottomNav.astro';
 ---
 
 <!DOCTYPE html>
@@ -183,8 +184,14 @@ import UserSidebar from '../components/dashboard/UserSidebar.astro';
         }
 
         @media (max-width: 768px) {
+            body {
+                padding-bottom: 74px !important;
+            }
             .container {
                 grid-template-columns: 1fr;
+            }
+            .sidebar-col {
+                display: none !important;
             }
         }
     </style>
@@ -415,5 +422,6 @@ import UserSidebar from '../components/dashboard/UserSidebar.astro';
 
         fetchUserData();
     </script>
+    <BottomNav />
 </body>
 </html>
