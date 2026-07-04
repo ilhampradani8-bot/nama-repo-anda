@@ -457,9 +457,13 @@
             API_BASE_URL = 'https://api.ilhampradani.me';
         }
 
-        window.onload = function() {
-            document.getElementById('loginForm').action = API_BASE_URL + '/login';
+        // Set action immediately to prevent empty action 404s on early clicks
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.action = API_BASE_URL + '/login';
+        }
 
+        window.onload = function() {
             if (typeof google !== 'undefined') {
                 google.accounts.id.initialize({
                     client_id: "812430784237-70vet0sepo0f0eti0cs62nnjd4s89ia8.apps.googleusercontent.com",
