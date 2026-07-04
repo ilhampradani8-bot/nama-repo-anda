@@ -18,7 +18,7 @@
 *.sql
 __init__.py
 requirements.txt
-README.md
+/README.md
 dashboard_template.html
 login_template.html
 
