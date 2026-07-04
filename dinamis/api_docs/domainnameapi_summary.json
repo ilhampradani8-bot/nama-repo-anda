@@ -1,0 +1,41 @@
+{
+  "api_name": "Domain Name API (Domainnameapi)",
+  "description": "API Reseller Domain untuk melakukan pendaftaran, perpanjangan, transfer, dan manajemen nama domain.",
+  "auth_method": "Username & Password Reseller (dikirim dalam request body / WSDL header)",
+  "payment_method": {
+    "type": "Deposit-Based (Wholesale Reseller Balance)",
+    "description": "Domain Name API menggunakan sistem saldo prabayar (deposit). Sebagai reseller, Anda harus mengisi saldo/deposit terlebih dahulu di portal admin Domain Name API (melalui kartu kredit atau transfer bank). Setiap registrasi atau perpanjangan domain akan otomatis memotong saldo deposit reseller Anda.",
+    "has_direct_qris": false,
+    "direct_qris_explanation": "Tidak ada metode pembayaran langsung (seperti QRIS instan per transaksi) untuk pembeli akhir. Untuk menerima pembayaran QRIS langsung dari pembeli, Anda harus mengintegrasikan sistem billing Anda sendiri (seperti WHMCS atau WiseCP) dengan payment gateway lokal (seperti Tripay, Tokopay, atau Midtrans)."
+  },
+  "endpoints": {
+    "REST_API": {
+      "base_url": "https://api.domainresellerapi.com",
+      "swagger_doc": "https://api.domainresellerapi.com/swagger/index.html",
+      "ote_sandbox_swagger": "https://ote.domainresellerapi.com/swagger/index.html"
+    },
+    "SOAP_API": {
+      "base_url": "https://api.domainnameapi.com/Domainapi.svc",
+      "wsdl_url": "https://api.domainnameapi.com/DomainApi.svc?wsdl",
+      "ote_sandbox_wsdl": "https://ote-api.domainnameapi.com/Domainapi.svc?wsdl"
+    }
+  },
+  "core_operations": {
+    "GetResellerDetails": {
+      "description": "Mengambil detail profil akun reseller Anda, termasuk sisa saldo deposit saat ini.",
+      "request_example": "api.GetResellerDetails()"
+    },
+    "GetList": {
+      "description": "Mengambil daftar seluruh domain yang terdaftar di bawah akun reseller Anda.",
+      "request_example": "api.GetList()"
+    },
+    "SyncFromRegistry": {
+      "description": "Melakukan sinkronisasi data domain (seperti tanggal kedaluwarsa, status domain) langsung dari registry pusat.",
+      "request_example": "api.SyncFromRegistry()"
+    },
+    "ModifyPrivacyProtectionStatus": {
+      "description": "Mengubah status WHOIS Privacy Protection (menyembunyikan detail kontak pemilik domain).",
+      "request_example": "api.ModifyPrivacyProtectionStatus(domainName, status)"
+    }
+  }
+}

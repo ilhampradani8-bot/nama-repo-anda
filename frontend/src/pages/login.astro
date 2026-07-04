@@ -1,0 +1,505 @@
+---
+// login.astro
+---
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | EasyMarket</title>
+    
+    <!-- Favicon & App Icons -->
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="theme-color" content="#4f46e5">
+
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Google Fonts (Outfit) -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --text-main: #ffffff;
+            --text-muted: #9ca3af;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --radius: 16px;
+            --font-sans: 'Outfit', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-sans);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 40%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 3rem 2.5rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), #10b981);
+        }
+
+        .btn-back-store {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 2rem;
+            transition: color 0.2s;
+        }
+
+        .btn-back-store:hover {
+            color: var(--primary);
+        }
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .brand-logo {
+            height: 52px;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 2px 8px rgba(99, 102, 241, 0.3));
+        }
+
+        .brand-header h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #ffffff 60%, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-header p {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        /* Auth Tabs Toggle */
+        .auth-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+            gap: 1.5rem;
+        }
+
+        .auth-tab-btn {
+            background: none;
+            border: none;
+            padding-bottom: 0.75rem;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            position: relative;
+            transition: color 0.15s;
+        }
+
+        .auth-tab-btn:hover {
+            color: var(--text-main);
+        }
+
+        .auth-tab-btn.active {
+            color: var(--primary);
+        }
+
+        .auth-tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--primary);
+        }
+
+        /* Form styling */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            color: #ffffff;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 14px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .toggle-password:hover {
+            color: var(--primary);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 700;
+            margin-top: 0.5rem;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+            transition: all 0.2s;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.35);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            font-weight: 700;
+            margin: 1.75rem 0;
+            letter-spacing: 0.08em;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .divider:not(:empty)::before {
+            margin-right: 1rem;
+        }
+
+        .divider:not(:empty)::after {
+            margin-left: 1rem;
+        }
+
+        /* Social buttons */
+        .social-buttons-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .btn-social {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+
+        .btn-social:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-demo {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            color: #10b981;
+            border: 1.5px dashed rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+
+        .btn-demo:hover {
+            background: rgba(16, 185, 129, 0.05);
+            border-color: #10b981;
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.1);
+        }
+
+        .flash-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .register-info-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem 1.5rem;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .register-info-box h3 {
+            color: #ffffff;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-card">
+        <a href="/" class="btn-back-store">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+            </svg>
+            Kembali ke Toko
+        </a>
+        
+        <div class="brand-header">
+            <img src="/gambar/logoeasyfast.png" alt="EasyMarket Logo" class="brand-logo">
+            <h1>EasyMarket Portal</h1>
+            <p>Kelola pesanan dan otomasi toko Anda</p>
+        </div>
+
+        <div class="auth-tabs">
+            <button type="button" class="auth-tab-btn active" id="tabLoginBtn" onclick="switchTab('login')">Masuk</button>
+            <button type="button" class="auth-tab-btn" id="tabRegisterBtn" onclick="switchTab('register')">Daftar</button>
+        </div>
+
+        <!-- Flash messages -->
+        <div id="flashMessage" class="flash-message" style="display: none;">
+            <span>⚠️</span> <span id="flashMessageText"></span>
+        </div>
+
+        <!-- Login Pane -->
+        <div id="loginPane">
+            <form id="loginForm" method="POST" autocomplete="off">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" class="form-control" placeholder="Masukkan username" required autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="password" name="password" class="form-control" placeholder="Masukkan password" required>
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility()">LIHAT</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">Masuk</button>
+                
+                <div class="divider">ATAU</div>
+
+                <div class="social-buttons-grid">
+                    <!-- Google Auth Button -->
+                    <button type="button" class="btn-social" onclick="loginWithGoogle()">
+                        <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+                        </svg>
+                        Masuk dengan Google
+                    </button>
+
+                    <!-- Discord Auth Button -->
+                    <button type="button" class="btn-social" onclick="loginWithDiscord()">
+                        <svg viewBox="0 0 127.14 96.36" width="18" height="18" fill="#5865F2" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a77.7,77.7,0,0,0,6.63-10.85,68.43,68.43,0,0,1-10.5-5A51.74,51.74,0,0,0,31,78.29a75.7,75.7,0,0,0,65.17,0,51.74,51.74,0,0,0,2.83,2.22,68.43,68.43,0,0,1-10.5,5,77.7,77.7,0,0,0,6.63,10.85,105.73,105.73,0,0,0,31-18.83C129.85,48,123.6,25.29,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.9,46,53.9,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.14,46,96.14,53,91,65.69,84.69,65.69Z"/>
+                        </svg>
+                        Masuk dengan Discord
+                    </button>
+
+                    <!-- Demo Button -->
+                    <button type="button" class="btn-demo" onclick="loginAsDemo()">Masuk sebagai Demo (1-Click)</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Register Pane -->
+        <div id="registerPane" style="display: none;">
+            <div class="register-info-box">
+                <h3>Registrasi Ditutup</h3>
+                <p style="margin-bottom: 1rem;">Pendaftaran akun administrator secara manual dinonaktifkan untuk menjaga keamanan platform EasyMarket.</p>
+                <p style="font-weight: 600; color: var(--primary); margin-bottom: 1.5rem;">Masuk dengan akun Google atau Discord Anda untuk membuat profil secara instan!</p>
+                <button type="button" class="btn-submit" onclick="switchTab('login')">Kembali ke Login</button>
+            </div>
+        </div>
+    </div>
+
+    <script is:inline>
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const toggleBtn = document.querySelector('.toggle-password');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleBtn.textContent = 'SEMBUNYIKAN';
+            } else {
+                passwordInput.type = 'password';
+                toggleBtn.textContent = 'LIHAT';
+            }
+        }
+
+        function switchTab(tab) {
+            const loginPane = document.getElementById('loginPane');
+            const registerPane = document.getElementById('registerPane');
+            const tabLoginBtn = document.getElementById('tabLoginBtn');
+            const tabRegisterBtn = document.getElementById('tabRegisterBtn');
+
+            if (tab === 'login') {
+                loginPane.style.display = 'block';
+                registerPane.style.display = 'none';
+                tabLoginBtn.classList.add('active');
+                tabRegisterBtn.classList.remove('active');
+            } else {
+                loginPane.style.display = 'none';
+                registerPane.style.display = 'block';
+                tabLoginBtn.classList.remove('active');
+                tabRegisterBtn.classList.add('active');
+            }
+        }
+
+        let API_BASE_URL = '';
+        if (window.location.port !== '5002' && window.location.protocol !== 'file:') {
+            API_BASE_URL = 'https://api.ilhampradani.me';
+        }
+
+        window.onload = function() {
+            document.getElementById('loginForm').action = API_BASE_URL + '/login';
+
+            if (typeof google !== 'undefined') {
+                google.accounts.id.initialize({
+                    client_id: "812430784237-70vet0sepo0f0eti0cs62nnjd4s89ia8.apps.googleusercontent.com",
+                    callback: handleCredentialResponse
+                });
+            }
+        };
+
+        function handleCredentialResponse(response) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = API_BASE_URL + '/login/google';
+            
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'credential';
+            input.value = response.credential;
+            
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        function loginWithGoogle() {
+            if (typeof google !== 'undefined') {
+                google.accounts.id.prompt();
+            } else {
+                alert("Gagal memuat pustaka Google Sign-In. Silakan muat ulang halaman.");
+            }
+        }
+
+        function loginWithDiscord() {
+            window.location.href = API_BASE_URL + '/login/discord';
+        }
+
+        function loginAsDemo() {
+            document.getElementById('username').value = 'demo';
+            document.getElementById('password').value = 'demo';
+            document.getElementById('loginForm').submit();
+        }
+    </script>
+</body>
+</html>

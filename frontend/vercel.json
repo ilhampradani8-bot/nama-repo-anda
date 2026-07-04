@@ -1,0 +1,7 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://api.ilhampradani.me/api/$1" },
+    { "source": "/product/:code", "destination": "/product.html" }
+  ]
+}

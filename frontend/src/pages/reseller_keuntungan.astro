@@ -1,0 +1,285 @@
+---
+// reseller_keuntungan.astro
+import ResellerNavbar from '../components/reseller/ResellerNavbar.astro';
+import ResellerProfileCard from '../components/reseller/ResellerProfileCard.astro';
+import ResellerSidebar from '../components/reseller/ResellerSidebar.astro';
+import ResellerStatsGrid from '../components/reseller/ResellerStatsGrid.astro';
+---
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keuntungan Reseller | EasyMarket Partner</title>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --border-color: #dee2e6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1140px;
+            width: 100%;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+            flex-grow: 1;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 1.5rem;
+        }
+
+        .sidebar-col {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: #ffffff;
+            border: 2px solid #dee2e6;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: #f8f9fa;
+            padding: 0.75rem 1.25rem;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: bold;
+            font-size: 1rem;
+            color: #212529;
+        }
+
+        .card-body {
+            padding: 1.25rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #ffffff;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        tr:hover td {
+            background-color: #f1f3f5;
+        }
+
+        code {
+            font-family: monospace;
+            font-size: 0.85rem;
+            background-color: #e9ecef;
+            padding: 2px 4px;
+            border-radius: 3px;
+            color: #212529;
+        }
+
+        .no-data {
+            padding: 3rem;
+            text-align: center;
+            color: #6c757d;
+        }
+
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem 1rem;
+            color: #007bff;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0, 123, 255, 0.1);
+            border-top-color: #007bff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <ResellerNavbar />
+
+    <div class="container">
+        <div class="sidebar-col">
+            <ResellerProfileCard />
+            <ResellerSidebar activeTab="keuntungan" />
+        </div>
+
+        <div class="content-area">
+            <ResellerStatsGrid />
+
+            <div class="card">
+                <div class="card-header">💰 Rincian Pembagian Profit Penjualan</div>
+                <div class="card-body">
+                    <div id="table-container" style="overflow-x: auto;">
+                        <div class="loading-spinner">
+                            <div class="spinner"></div>
+                            Memuat data profit...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script is:inline>
+        let API_BASE_URL = '';
+        if (window.location.port !== '5002' && window.location.protocol !== 'file:') {
+            API_BASE_URL = 'https://api.ilhampradani.me';
+        }
+
+        function formatRupiah(num) {
+            if (num === null || num === undefined) return "Rp 0";
+            return "Rp " + parseInt(num, 10).toLocaleString('id-ID');
+        }
+
+        async function fetchResellerData() {
+            try {
+                const authRes = await fetch(`${API_BASE_URL}/api/auth/status`, { credentials: 'include' });
+                if (!authRes.ok) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+                const authData = await authRes.json();
+                if (!authData.logged_in) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                document.getElementById('reseller-name').textContent = authData.name;
+                document.getElementById('reseller-email').textContent = authData.email;
+                document.getElementById('avatar-initial').textContent = authData.name.charAt(0).toUpperCase();
+
+                const dataRes = await fetch(`${API_BASE_URL}/api/dashboard/data`, { credentials: 'include' });
+                if (dataRes.ok) {
+                    const data = await dataRes.json();
+                    if (data.success) {
+                        // Populate stats grid
+                        document.getElementById('stat-orders').textContent = data.total_orders;
+                        document.getElementById('stat-sales').textContent = formatRupiah(data.total_sales);
+                        document.getElementById('stat-profit').textContent = formatRupiah(data.total_profit);
+
+                        renderProfits(data.transactions || [], data.profits || []);
+                    } else {
+                        showNoData();
+                    }
+                } else {
+                    showNoData();
+                }
+            } catch (err) {
+                console.error(err);
+                showNoData();
+            }
+        }
+
+        function renderProfits(transactions, profits) {
+            const container = document.getElementById('table-container');
+            if (transactions.length === 0) {
+                container.innerHTML = '<div class="no-data">Belum ada transaksi profit tercatat.</div>';
+                return;
+            }
+
+            // Map profits by transaction_id for easy lookup
+            const profitMap = new Map();
+            profits.forEach(p => {
+                profitMap.set(p.transaction_id, p.profit_amount);
+            });
+
+            container.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID Transaksi</th>
+                            <th>Nama Produk</th>
+                            <th>Harga Checkout</th>
+                            <th>Keuntungan Bersih (Margin)</th>
+                            <th>Tanggal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${transactions.map(t => {
+                            // Find corresponding profit or calculate a mock markup (e.g. 5% of amount)
+                            const profitVal = profitMap.get(t.transaction_id) || Math.round(t.amount * 0.05);
+                            return `
+                                <tr>
+                                    <td><code>${t.transaction_id}</code></td>
+                                    <td>${t.product_name || '-'}</td>
+                                    <td>${formatRupiah(t.amount)}</td>
+                                    <td><span style="color: #28a745; font-weight: bold;">+${formatRupiah(profitVal)}</span></td>
+                                    <td>${t.created_at}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function showNoData() {
+            document.getElementById('table-container').innerHTML = '<div class="no-data">Gagal memuat data profit.</div>';
+        }
+
+        async function performLogout() {
+            try {
+                await fetch(`${API_BASE_URL}/logout`, { credentials: 'include' });
+            } catch(e){}
+            window.location.href = '/login.html';
+        }
+
+        fetchResellerData();
+    </script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+{
+  "api_name": "Miracle Gaming API",
+  "base_url": "https://api.miraclegaming.store",
+  "auth_method": "API Key (POST parameter 'api_key') & IP Whitelist",
+  "content_type": "application/json",
+  "endpoints": {
+    "get_services": {
+      "path": "/service",
+      "method": "POST",
+      "description": "Mendapatkan daftar layanan/produk game yang tersedia beserta kodenya.",
+      "request": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "api_key": "STRING (Wajib - API Key Anda)"
+        }
+      },
+      "response_success": {
+        "status": true,
+        "msg": "Berhasil Mendapatkan Data Layanan",
+        "data": [
+          {
+            "id": "MLBB_ID_CP",
+            "nama_layanan": "Coupon Pass",
+            "kategori": "Mobile Legends",
+            "harga": 71438,
+            "harga_gold": 68840,
+            "harga_silver": 68890,
+            "harga_pro": 68790,
+            "status": "aktif"
+          }
+        ]
+      },
+      "response_failed": {
+        "status": false,
+        "msg": "api_key tidak ditemukan",
+        "data": []
+      }
+    },
+    "create_order": {
+      "path": "/order",
+      "method": "POST",
+      "description": "Melakukan pembelian produk/top up game secara otomatis.",
+      "request": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "api_key": "STRING (Wajib - API Key Anda)",
+          "service_id": "STRING (Wajib - Kode layanan produk)",
+          "target": "STRING (Wajib - ID Akun | ID Zona, contoh: '983232342|9923' atau ID saja '123456')",
+          "kontak": "STRING (Wajib - Nomor HP pembeli, contoh: '08151769999')",
+          "idtrx": "STRING (Wajib - Unique ID transaksi dari bot/aplikasi Anda)",
+          "callback": "STRING (Opsional - URL Callback)"
+        }
+      },
+      "response_success": {
+        "status": true,
+        "msg": "Pesanan berhasil! Pesanan akan diproses",
+        "data": {
+          "id": "ORDER16460568XXXX",
+          "service_name": "28 Diamond",
+          "service_id": "ML86",
+          "target": "983232342|9923",
+          "kontak": "08151769999",
+          "keterangan": "",
+          "status": "pending"
+        }
+      },
+      "response_failed": {
+        "status": false,
+        "msg": "idtrx sudah ada",
+        "data": []
+      }
+    },
+    "check_status": {
+      "path": "/status",
+      "method": "POST",
+      "description": "Mengecek status order / serial number (SN) dari transaksi.",
+      "request": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "api_key": "STRING (Wajib - API Key Anda)",
+          "order_id": "STRING (Wajib - Invoice ID dari Miracle Gaming)"
+        }
+      },
+      "response_success": {
+        "status": true,
+        "msg": "berhasil mengecek status",
+        "data": {
+          "id": "ORDER1723492316XXX",
+          "keterangan": "123456-SN-SAMPLE",
+          "status": "success"
+        }
+      },
+      "list_status": [
+        "pending",
+        "processing",
+        "success",
+        "cancel",
+        "refund"
+      ],
+      "response_failed": {
+        "status": false,
+        "msg": "order_id tidak ditemukan",
+        "data": []
+      }
+    },
+    "check_balance": {
+      "path": "/saldo",
+      "method": "POST",
+      "description": "Mengecek sisa saldo/balance akun Miracle Gaming Anda.",
+      "request": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "api_key": "STRING (Wajib - API Key Anda)"
+        }
+      },
+      "response_success": {
+        "status": true,
+        "msg": "berhasil",
+        "data": {
+          "saldo": 30740
+        }
+      },
+      "response_failed": {
+        "status": false,
+        "msg": "api_key tidak ditemukan",
+        "data": []
+      }
+    }
+  }
+}

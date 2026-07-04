@@ -28,3 +28,13 @@ login_template.html
 .DS_Store
 .vscode/
 .idea/
+
+# Node.js / Astro / Vercel
+**/node_modules/
+**/dist/
+**/.astro/
+**/.vercel/
+
+# Rust
+**/target/
+

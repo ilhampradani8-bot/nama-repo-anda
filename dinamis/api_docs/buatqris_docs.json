@@ -1,0 +1,86 @@
+{
+  "api_base_url": "https://app.buatqris.site/api.php",
+  "endpoints": {
+    "create_qris": {
+      "description": "Buat transaksi QRIS baru",
+      "method": "POST",
+      "headers": {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      "payload": {
+        "action": "api_create_qris",
+        "account_id": "YOUR_ACCOUNT_ID",
+        "secret_token": "YOUR_SECRET_TOKEN",
+        "amount": "number",
+        "description": "string",
+        "qris_method": "qris_two"
+      },
+      "response_example": {
+        "success": true,
+        "data": {
+          "transaction_id": "TRX-XXXX-123",
+          "qr_url": "https://app.buatqris.site/poto/qris/TRX-XXXX-123",
+          "qris_image": "data:image/png;base64,iVBOR...",
+          "payment_url": "https://app.buatqris.site/?trx=TRX-XXXX-123",
+          "amount": 10000,
+          "total_amount": 10200,
+          "status": "pending"
+        }
+      }
+    },
+    "check_status": {
+      "description": "Cek status pembayaran (disarankan polling setiap 5-10 detik)",
+      "method": "POST",
+      "headers": {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      "payload": {
+        "action": "api_check_status",
+        "account_id": "YOUR_ACCOUNT_ID",
+        "secret_token": "YOUR_SECRET_TOKEN",
+        "transaction_id": "string"
+      },
+      "response_status_values": [
+        "pending",
+        "success",
+        "expired",
+        "failed"
+      ]
+    },
+    "withdraw": {
+      "description": "Ajukan penarikan saldo ke rekening bank / e-wallet",
+      "method": "POST",
+      "headers": {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      "payload": {
+        "action": "api_withdraw",
+        "account_id": "YOUR_ACCOUNT_ID",
+        "secret_token": "YOUR_SECRET_TOKEN",
+        "amount": "number",
+        "bank_name": "string (contoh: 'BCA', 'Dana', 'GoPay')",
+        "bank_account": "string (no. rekening / no. HP e-wallet)",
+        "bank_holder": "string (nama pemilik rekening)"
+      },
+      "admin_fees": {
+        "Bank (BRI/BCA/BNI/BSI/Jago/Mandiri/Maybank/Permata/Danamon)": "GRATIS",
+        "GoPay": "GRATIS",
+        "Dana/OVO/ShopeePay": "Rp 2.500"
+      }
+    }
+  },
+  "display_qr_methods": {
+    "method_1": {
+      "name": "Pasang Langsung (Rekomendasi)",
+      "description": "Gunakan URL dari 'qr_url' dan pasang langsung di tag <img> html tanpa perlu library."
+    },
+    "method_2": {
+      "name": "Render base64",
+      "description": "Gunakan 'qris_image' sebagai fallback base64 jika 'qr_url' gagal dimuat."
+    },
+    "method_3": {
+      "name": "Redirect Halaman",
+      "description": "Redirect pengguna langsung ke 'payment_url'."
+    }
+  }
+}

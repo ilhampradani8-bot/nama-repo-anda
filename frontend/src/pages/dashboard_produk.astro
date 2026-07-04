@@ -1,0 +1,285 @@
+---
+// dashboard_produk.astro
+import UserNavbar from '../components/dashboard/UserNavbar.astro';
+import UserProfileCard from '../components/dashboard/UserProfileCard.astro';
+import UserSidebar from '../components/dashboard/UserSidebar.astro';
+---
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produk Saya | EasyMarket</title>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --border-color: #dee2e6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1140px;
+            width: 100%;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+            flex-grow: 1;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 1.5rem;
+        }
+
+        .sidebar-col {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: #ffffff;
+            border: 2px solid #dee2e6;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: #f8f9fa;
+            padding: 0.75rem 1.25rem;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: bold;
+            font-size: 1rem;
+            color: #212529;
+        }
+
+        .card-body {
+            padding: 1.25rem;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .product-item {
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 1rem;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .product-item-title {
+            font-weight: bold;
+            font-size: 1rem;
+            color: #212529;
+        }
+
+        .product-item-meta {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+
+        .product-item-badge {
+            align-self: flex-start;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .key-box {
+            background: #f8f9fa;
+            border: 1px dashed #ced4da;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #495057;
+            word-break: break-all;
+            margin-top: 5px;
+        }
+
+        .no-data {
+            padding: 3rem;
+            text-align: center;
+            color: #6c757d;
+            grid-column: 1 / -1;
+        }
+
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem 1rem;
+            color: #007bff;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0, 123, 255, 0.1);
+            border-top-color: #007bff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <UserNavbar />
+
+    <div class="container">
+        <div class="sidebar-col">
+            <UserProfileCard />
+            <UserSidebar activeTab="produk" />
+        </div>
+
+        <div class="content-area">
+            <div class="card">
+                <div class="card-header">🔑 Lisensi & Produk Aktif Saya</div>
+                <div class="card-body">
+                    <div id="product-container" class="product-grid">
+                        <div class="loading-spinner" style="grid-column: 1/-1;">
+                            <div class="spinner"></div>
+                            Memuat produk aktif...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script is:inline>
+        let API_BASE_URL = '';
+        if (window.location.port !== '5002' && window.location.protocol !== 'file:') {
+            API_BASE_URL = 'https://api.ilhampradani.me';
+        }
+
+        async function fetchUserData() {
+            try {
+                const authRes = await fetch(`${API_BASE_URL}/api/auth/status`, { credentials: 'include' });
+                if (!authRes.ok) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+                const authData = await authRes.json();
+                if (!authData.logged_in) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                document.getElementById('user-name').textContent = authData.name;
+                document.getElementById('user-email').textContent = authData.email;
+                document.getElementById('avatar-initial').textContent = authData.name.charAt(0).toUpperCase();
+
+                const dataRes = await fetch(`${API_BASE_URL}/api/dashboard/data`, { credentials: 'include' });
+                if (dataRes.ok) {
+                    const res = await dataRes.json();
+                    if (res.success) {
+                        renderActiveProducts(res.transactions || []);
+                    } else {
+                        showNoData();
+                    }
+                } else {
+                    showNoData();
+                }
+            } catch (err) {
+                console.error(err);
+                showNoData();
+            }
+        }
+
+        function renderActiveProducts(transactions) {
+            const container = document.getElementById('product-container');
+            // Filter to show transactions as simulated digital license items
+            // e.g. game vouchers, SSL, token, script licenses
+            const activeItems = transactions.filter(t => 
+                t.product_name && (
+                    t.product_name.toLowerCase().includes('ssl') || 
+                    t.product_name.toLowerCase().includes('bot') || 
+                    t.product_name.toLowerCase().includes('voucher') ||
+                    t.product_name.toLowerCase().includes('lisensi') ||
+                    t.product_name.toLowerCase().includes('token')
+                )
+            );
+
+            if (activeItems.length === 0) {
+                container.innerHTML = '<div class="no-data">Belum ada produk aktif atau lisensi digital terdaftar.</div>';
+                return;
+            }
+
+            container.innerHTML = activeItems.map(item => {
+                // Generate a dummy code key for classic UI visualization
+                let dummyKey = 'KEY-' + item.transaction_id.substring(4, 12).toUpperCase() + '-ACTIVE';
+                if (item.product_name.toLowerCase().includes('ssl')) {
+                    dummyKey = 'SSL-CERT-' + item.transaction_id.substring(4, 10).toUpperCase() + '-LIC';
+                }
+                
+                return `
+                    <div class="product-item">
+                        <span class="product-item-badge">Aktif</span>
+                        <div class="product-item-title">${item.product_name}</div>
+                        <div class="product-item-meta">Varian: ${item.variant_name || '-'}</div>
+                        <div class="product-item-meta">ID Transaksi: <code>${item.transaction_id}</code></div>
+                        <div class="product-item-meta" style="margin-top: 5px; font-weight: bold; color: #212529;">Serial Number / Kode Akses:</div>
+                        <div class="key-box">${dummyKey}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showNoData() {
+            document.getElementById('product-container').innerHTML = '<div class="no-data">Gagal memuat produk aktif.</div>';
+        }
+
+        async function performLogout() {
+            try {
+                await fetch(`${API_BASE_URL}/logout`, { credentials: 'include' });
+            } catch(e){}
+            window.location.href = '/login.html';
+        }
+
+        fetchUserData();
+    </script>
+</body>
+</html>

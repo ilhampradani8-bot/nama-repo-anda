@@ -1,0 +1,267 @@
+---
+// dashboard_pengaturan.astro
+import UserNavbar from '../components/dashboard/UserNavbar.astro';
+import UserProfileCard from '../components/dashboard/UserProfileCard.astro';
+import UserSidebar from '../components/dashboard/UserSidebar.astro';
+---
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengaturan Akun | EasyMarket</title>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --border-color: #dee2e6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1140px;
+            width: 100%;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+            flex-grow: 1;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 1.5rem;
+        }
+
+        .sidebar-col {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: #ffffff;
+            border: 2px solid #dee2e6;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: #f8f9fa;
+            padding: 0.75rem 1.25rem;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: bold;
+            font-size: 1rem;
+            color: #212529;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Classic Form Styling */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #495057;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            outline: none;
+            background-color: #f8f9fa;
+            color: #495057;
+        }
+
+        .form-control:focus {
+            border-color: #80bdff;
+            background-color: #ffffff;
+        }
+
+        .form-control[readonly] {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .checkbox-group input {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            font-size: 0.9rem;
+            color: #495057;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .btn-save {
+            padding: 8px 20px;
+            background: #28a745;
+            color: white;
+            border: 1px solid #28a745;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-save:hover {
+            background: #218838;
+            border-color: #1e7e34;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <UserNavbar />
+
+    <div class="container">
+        <div class="sidebar-col">
+            <UserProfileCard />
+            <UserSidebar activeTab="pengaturan" />
+        </div>
+
+        <div class="content-area">
+            <div class="card">
+                <div class="card-header">⚙️ Pengaturan Profil & Keamanan</div>
+                <div class="card-body">
+                    <form onsubmit="saveSettings(event)">
+                        <div class="form-group">
+                            <label for="usernameInput">Nama Lengkap</label>
+                            <input type="text" id="usernameInput" class="form-control" placeholder="Nama Anda">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="emailInput">Alamat Surel (Email)</label>
+                            <input type="email" id="emailInput" class="form-control" readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phoneInput">Nomor WhatsApp Kontak</label>
+                            <input type="text" id="phoneInput" class="form-control" placeholder="Contoh: 081234567890">
+                        </div>
+
+                        <hr style="border: 0; border-top: 1px solid #dee2e6; margin: 1.5rem 0;" />
+
+                        <div class="form-group">
+                            <label style="font-weight: bold; margin-bottom: 0.75rem;">Preferensi Notifikasi</label>
+                            
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="notifyEmail" checked>
+                                <label for="notifyEmail">Kirim rincian invoice / transaksi ke Email saya</label>
+                            </div>
+
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="notifyWA" checked>
+                                <label for="notifyWA">Kirim status pesanan realtime ke WhatsApp saya</label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-save">Simpan Perubahan</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script is:inline>
+        let API_BASE_URL = '';
+        if (window.location.port !== '5002' && window.location.protocol !== 'file:') {
+            API_BASE_URL = 'https://api.ilhampradani.me';
+        }
+
+        async function fetchUserData() {
+            try {
+                const authRes = await fetch(`${API_BASE_URL}/api/auth/status`, { credentials: 'include' });
+                if (!authRes.ok) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+                const authData = await authRes.json();
+                if (!authData.logged_in) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                document.getElementById('user-name').textContent = authData.name;
+                document.getElementById('user-email').textContent = authData.email;
+                document.getElementById('avatar-initial').textContent = authData.name.charAt(0).toUpperCase();
+
+                // Populate input fields
+                document.getElementById('usernameInput').value = authData.name;
+                document.getElementById('emailInput').value = authData.email;
+                
+                // Set default dummy phone
+                document.getElementById('phoneInput').value = '081234567890';
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function saveSettings(e) {
+            e.preventDefault();
+            const newName = document.getElementById('usernameInput').value.trim();
+            if (!newName) {
+                alert('Nama lengkap tidak boleh kosong!');
+                return;
+            }
+            alert('Sukses! Pengaturan akun Anda berhasil diperbarui secara lokal.');
+            window.location.reload();
+        }
+
+        async function performLogout() {
+            try {
+                await fetch(`${API_BASE_URL}/logout`, { credentials: 'include' });
+            } catch(e){}
+            window.location.href = '/login.html';
+        }
+
+        fetchUserData();
+    </script>
+</body>
+</html>

@@ -1,0 +1,325 @@
+---
+// dashboard_pesanan.astro
+import UserNavbar from '../components/dashboard/UserNavbar.astro';
+import UserProfileCard from '../components/dashboard/UserProfileCard.astro';
+import UserSidebar from '../components/dashboard/UserSidebar.astro';
+---
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesanan Saya | EasyMarket</title>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --border-color: #dee2e6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1140px;
+            width: 100%;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+            flex-grow: 1;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 1.5rem;
+        }
+
+        .sidebar-col {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: #ffffff;
+            border: 2px solid #dee2e6;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: #f8f9fa;
+            padding: 0.75rem 1.25rem;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: bold;
+            font-size: 1rem;
+            color: #212529;
+        }
+
+        .card-body {
+            padding: 1.25rem;
+        }
+
+        /* Filter Controls */
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.25rem;
+        }
+
+        .filter-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            outline: none;
+            font-size: 0.9rem;
+        }
+
+        .filter-input:focus {
+            border-color: #80bdff;
+        }
+
+        .btn-filter {
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            border: 1px solid #007bff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .btn-filter:hover {
+            background: #0069d9;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #ffffff;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        tr:hover td {
+            background-color: #f1f3f5;
+        }
+
+        code {
+            font-family: monospace;
+            font-size: 0.85rem;
+            background-color: #e9ecef;
+            padding: 2px 4px;
+            border-radius: 3px;
+            color: #212529;
+        }
+
+        .no-data {
+            padding: 3rem;
+            text-align: center;
+            color: #6c757d;
+        }
+
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem 1rem;
+            color: #007bff;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0, 123, 255, 0.1);
+            border-top-color: #007bff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <UserNavbar />
+
+    <div class="container">
+        <div class="sidebar-col">
+            <UserProfileCard />
+            <UserSidebar activeTab="pesanan" />
+        </div>
+
+        <div class="content-area">
+            <div class="card">
+                <div class="card-header">📦 Riwayat Pesanan Saya</div>
+                <div class="card-body">
+                    <div class="filter-group">
+                        <input type="text" id="searchOrderInput" class="filter-input" placeholder="Cari berdasarkan nama produk atau ID transaksi...">
+                        <button class="btn-filter" onclick="searchOrders()">Cari</button>
+                    </div>
+
+                    <div id="table-container">
+                        <div class="loading-spinner">
+                            <div class="spinner"></div>
+                            Memuat pesanan...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script is:inline>
+        let API_BASE_URL = '';
+        if (window.location.port !== '5002' && window.location.protocol !== 'file:') {
+            API_BASE_URL = 'https://api.ilhampradani.me';
+        }
+
+        let ordersData = [];
+
+        function formatRupiah(num) {
+            if (num === null || num === undefined) return "Rp 0";
+            return "Rp " + parseInt(num, 10).toLocaleString('id-ID');
+        }
+
+        async function fetchUserData() {
+            try {
+                const authRes = await fetch(`${API_BASE_URL}/api/auth/status`, { credentials: 'include' });
+                if (!authRes.ok) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+                const authData = await authRes.json();
+                if (!authData.logged_in) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                document.getElementById('user-name').textContent = authData.name;
+                document.getElementById('user-email').textContent = authData.email;
+                document.getElementById('avatar-initial').textContent = authData.name.charAt(0).toUpperCase();
+
+                const dataRes = await fetch(`${API_BASE_URL}/api/dashboard/data`, { credentials: 'include' });
+                if (dataRes.ok) {
+                    const res = await dataRes.json();
+                    if (res.success) {
+                        ordersData = res.transactions || [];
+                        renderOrders(ordersData);
+                    } else {
+                        showNoData();
+                    }
+                } else {
+                    showNoData();
+                }
+            } catch (err) {
+                console.error(err);
+                showNoData();
+            }
+        }
+
+        function renderOrders(list) {
+            const container = document.getElementById('table-container');
+            if (list.length === 0) {
+                container.innerHTML = '<div class="no-data">Belum ada pesanan ditemukan.</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th>ID Transaksi</th>
+                            <th>Nama Produk</th>
+                            <th>Varian</th>
+                            <th>Total Bayar</th>
+                            <th>Tanggal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${list.map(o => `
+                            <tr>
+                                <td><code>${o.transaction_id}</code></td>
+                                <td>${o.product_name || '-'}</td>
+                                <td>${o.variant_name || '-'}</td>
+                                <td><span style="color: #28a745; font-weight: bold;">${formatRupiah(o.amount)}</span></td>
+                                <td>${o.created_at}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function searchOrders() {
+            const query = document.getElementById('searchOrderInput').value.trim().toLowerCase();
+            if (!query) {
+                renderOrders(ordersData);
+                return;
+            }
+
+            const filtered = ordersData.filter(o => 
+                (o.transaction_id && o.transaction_id.toLowerCase().includes(query)) ||
+                (o.product_name && o.product_name.toLowerCase().includes(query)) ||
+                (o.variant_name && o.variant_name.toLowerCase().includes(query))
+            );
+            renderOrders(filtered);
+        }
+
+        function showNoData() {
+            document.getElementById('table-container').innerHTML = '<div class="no-data">Gagal memuat daftar pesanan.</div>';
+        }
+
+        async function performLogout() {
+            try {
+                await fetch(`${API_BASE_URL}/logout`, { credentials: 'include' });
+            } catch(e){}
+            window.location.href = '/login.html';
+        }
+
+        fetchUserData();
+    </script>
+</body>
+</html>

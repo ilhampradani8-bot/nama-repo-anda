@@ -1,0 +1,134 @@
+{
+  "api_name": "Digiflazz Buyer API",
+  "base_url": "https://api.digiflazz.com/v1",
+  "auth_method": "Username, API Key, and MD5 Signature (Dynamic per Request)",
+  "content_type": "application/json",
+  "signature_formulae": {
+    "cek_saldo": "MD5(username + api_key + 'depo')",
+    "daftar_harga": "MD5(username + api_key + 'pricelist')",
+    "deposit": "MD5(username + api_key + 'deposit')",
+    "transaksi": "MD5(username + api_key + ref_id)",
+    "cek_status": "MD5(username + api_key + ref_id)"
+  },
+  "endpoints": {
+    "cek_saldo": {
+      "path": "/depo",
+      "method": "POST",
+      "description": "Mengecek sisa saldo deposit akun Digiflazz.",
+      "request": {
+        "body": {
+          "cmd": "depo",
+          "username": "STRING (Wajib - Username Digiflazz Anda)",
+          "sign": "STRING (Wajib - MD5(username + api_key + 'depo'))"
+        }
+      },
+      "response_success": {
+        "data": {
+          "deposit": 1000000
+        }
+      }
+    },
+    "daftar_harga": {
+      "path": "/price-list",
+      "method": "POST",
+      "description": "Mengambil daftar produk prabayar/pascabayar, harga modal, status aktif, dan kode SKU produk.",
+      "request": {
+        "body": {
+          "cmd": "prepaid",
+          "username": "STRING (Wajib - Username Digiflazz)",
+          "sign": "STRING (Wajib - MD5(username + api_key + 'pricelist'))",
+          "code": "STRING (Opsional - Kode SKU produk spesifik)"
+        }
+      },
+      "response_success": {
+        "data": [
+          {
+            "product_name": "Telkomsel Promo 5.000",
+            "category": "Pulsa",
+            "brand": "Telkomsel",
+            "seller_sku_code": "xld5000",
+            "price": 5100,
+            "buyer_product_status": true,
+            "seller_product_status": true,
+            "desc": "Pulsa transfer Telkomsel 5rb"
+          }
+        ]
+      }
+    },
+    "transaksi_topup": {
+      "path": "/transaction",
+      "method": "POST",
+      "description": "Melakukan transaksi pembelian pulsa, kuota, e-wallet, voucher game, atau topup prabayar lainnya.",
+      "request": {
+        "body": {
+          "username": "STRING (Wajib - Username Digiflazz)",
+          "buyer_sku_code": "STRING (Wajib - Kode SKU produk dari pricelist)",
+          "customer_no": "STRING (Wajib - Nomor HP atau ID Pelanggan target)",
+          "ref_id": "STRING (Wajib - Kode unik transaksi dari sistem Anda)",
+          "sign": "STRING (Wajib - MD5(username + api_key + ref_id))",
+          "testing": "BOOLEAN (Opsional - Set true untuk transaksi test/sandbox)"
+        }
+      },
+      "response_success": {
+        "data": {
+          "ref_id": "TRX-20260624001",
+          "customer_no": "081234567890",
+          "buyer_sku_code": "xld5000",
+          "status": "Pending",
+          "rc": "39",
+          "sn": "",
+          "price": 5100,
+          "message": "Transaksi Diproses"
+        }
+      }
+    },
+    "cek_status_transaksi": {
+      "path": "/transaction",
+      "method": "POST",
+      "description": "Melakukan pengecekan status transaksi yang telah dilakukan berdasarkan ref_id.",
+      "request": {
+        "body": {
+          "username": "STRING (Wajib - Username Digiflazz)",
+          "buyer_sku_code": "STRING (Wajib - Kode SKU produk dari transaksi)",
+          "customer_no": "STRING (Wajib - Nomor HP atau ID Pelanggan target)",
+          "ref_id": "STRING (Wajib - Kode unik transaksi dari sistem Anda)",
+          "sign": "STRING (Wajib - MD5(username + api_key + ref_id))",
+          "cmd": "status"
+        }
+      },
+      "response_success": {
+        "data": {
+          "ref_id": "TRX-20260624001",
+          "customer_no": "081234567890",
+          "buyer_sku_code": "xld5000",
+          "status": "Sukses",
+          "rc": "00",
+          "sn": "1234567890123",
+          "price": 5100,
+          "message": "Transaksi Sukses"
+        }
+      }
+    },
+    "deposit_saldo": {
+      "path": "/deposit",
+      "method": "POST",
+      "description": "Mengajukan tiket deposit saldo otomatis via bank transfer.",
+      "request": {
+        "body": {
+          "username": "STRING (Wajib - Username Digiflazz)",
+          "amount": "INTEGER (Wajib - Nominal deposit, minimal 10000)",
+          "Bank": "STRING (Wajib - BCA / BNI / BRI / Mandiri)",
+          "owner_name": "STRING (Wajib - Nama pemilik rekening pengirim)",
+          "sign": "STRING (Wajib - MD5(username + api_key + 'deposit'))"
+        }
+      },
+      "response_success": {
+        "data": {
+          "rc": "00",
+          "amount": 100123,
+          "notes": "Silahkan transfer Rp 100.123 ke BCA Rekening 123456789 a/n PT Digiflazz"
+        }
+      }
+    }
+  }
+}

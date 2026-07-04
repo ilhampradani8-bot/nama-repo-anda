@@ -1,0 +1,55 @@
+---
+// Footer.astro - Shared Footer Component
+---
+<footer class="site-footer">
+    <div class="footer-container">
+        <!-- Left Column: Logo & Legals -->
+        <div class="footer-col footer-info">
+            <img src="/gambar/logoeasyfast.png" alt="EasyMarket Logo" class="footer-logo">
+            <p class="footer-description">Platform penyedia Produk Digital terpercaya, Otomatisasi Bot WhatsApp/Telegram, dan Layanan IT berkualitas tinggi dengan proses instan.</p>
+        </div>
+
+        <!-- Middle Column 1: Categories -->
+        <div class="footer-col footer-links">
+            <h4>Kategori Produk</h4>
+            <ul>
+                <li><a href="/#products" onclick="footerFilterCategory('all')">✨ Semua Produk</a></li>
+                <li><a href="/#products" onclick="footerFilterCategory('Koala Store')">🎮 Top Up Game</a></li>
+                <li><a href="/#products" onclick="footerFilterCategory('Portal Pulsa')">📱 Pulsa & Paket Data</a></li>
+                <li><a href="/#products" onclick="footerFilterCategory('SSL Store')">🔒 SSL Certificate</a></li>
+            </ul>
+        </div>
+
+        <!-- Middle Column 2: Legal & Info -->
+        <div class="footer-col footer-links">
+            <h4>Informasi & Legalitas</h4>
+            <ul>
+                <li><a href="/about">ℹ️ Tentang Kami</a></li>
+                <li><a href="/term">📄 Syarat & Ketentuan</a></li>
+                <li><a href="/condition">🤝 Kebijakan Refund</a></li>
+                <li><a href="/security">🛡️ Keamanan & Privasi</a></li>
+                <li><a href="/legalitas">⚖️ Legalitas Resmi</a></li>
+            </ul>
+        </div>
+
+        <!-- Right Column: Contact & Search -->
+        <div class="footer-col footer-contact">
+            <h4>Hubungi Kami</h4>
+            <div class="contact-details">
+                <p><strong>WhatsApp:</strong> <a href="https://wa.me/6288971071138" target="_blank">+62 889-7107-1138</a></p>
+                <p><strong>Email 1:</strong> <a href="mailto:hello@ilhampradani.me">hello@ilhampradani.me</a></p>
+                <p><strong>Email 2:</strong> <a href="mailto:easymall@ilhampradani.me">easymall@ilhampradani.me</a></p>
+            </div>
+            
+            <h4 style="margin-top: 1.5rem;">Cari Produk</h4>
+            <div class="footer-search">
+                <input type="text" placeholder="Ketik nama produk..." id="footerSearchInput" class="footer-search-input">
+                <button type="button" id="footerSearchBtn" class="footer-search-btn">Cari</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer-bottom">
+        <p>&copy; 2026 PT Easymall Software Development. Seluruh hak cipta dilindungi undang-undang.</p>
+    </div>
+</footer>

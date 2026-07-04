@@ -1,0 +1,419 @@
+---
+// dashboard_keranjang.astro
+import UserNavbar from '../components/dashboard/UserNavbar.astro';
+import UserProfileCard from '../components/dashboard/UserProfileCard.astro';
+import UserSidebar from '../components/dashboard/UserSidebar.astro';
+---
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keranjang Belanja | EasyMarket</title>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --border-color: #dee2e6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1140px;
+            width: 100%;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+            flex-grow: 1;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 1.5rem;
+        }
+
+        .sidebar-col {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: #ffffff;
+            border: 2px solid #dee2e6;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: #f8f9fa;
+            padding: 0.75rem 1.25rem;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: bold;
+            font-size: 1rem;
+            color: #212529;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-body {
+            padding: 1.25rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #ffffff;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        tr:hover td {
+            background-color: #f1f3f5;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: #ffffff;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .btn-delete:hover {
+            background: #bb2d3b;
+        }
+
+        .cart-summary {
+            margin-top: 1.5rem;
+            padding: 1.25rem;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .total-price {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #212529;
+        }
+
+        .btn-checkout {
+            padding: 10px 24px;
+            background: #28a745;
+            color: white;
+            border: 1px solid #28a745;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .btn-checkout:hover {
+            background: #218838;
+        }
+
+        .no-data {
+            padding: 3rem;
+            text-align: center;
+            color: #6c757d;
+        }
+
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem 1rem;
+            color: #007bff;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0, 123, 255, 0.1);
+            border-top-color: #007bff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <UserNavbar />
+
+    <div class="container">
+        <div class="sidebar-col">
+            <UserProfileCard />
+            <UserSidebar activeTab="keranjang" />
+        </div>
+
+        <div class="content-area">
+            <div class="card">
+                <div class="card-header">
+                    <span>🛒 Keranjang Belanja Saya</span>
+                    <button class="btn-delete" style="background: #6c757d;" onclick="clearCart()">Kosongkan Keranjang</button>
+                </div>
+                <div class="card-body">
+                    <div id="cart-container" style="overflow-x: auto;">
+                        <div class="loading-spinner">
+                            <div class="spinner"></div>
+                            Memuat keranjang belanja...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script is:inline>
+        let API_BASE_URL = '';
+        if (window.location.port !== '5002' && window.location.protocol !== 'file:') {
+            API_BASE_URL = 'https://api.ilhampradani.me';
+        }
+
+        let cartItems = [];
+
+        function formatRupiah(num) {
+            if (num === null || num === undefined) return "Rp 0";
+            return "Rp " + parseInt(num, 10).toLocaleString('id-ID');
+        }
+
+        async function fetchUserData() {
+            try {
+                const authRes = await fetch(`${API_BASE_URL}/api/auth/status`, { credentials: 'include' });
+                if (!authRes.ok) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+                const authData = await authRes.json();
+                if (!authData.logged_in) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                document.getElementById('user-name').textContent = authData.name;
+                document.getElementById('user-email').textContent = authData.email;
+                document.getElementById('avatar-initial').textContent = authData.name.charAt(0).toUpperCase();
+
+                await fetchCartItems();
+            } catch (err) {
+                console.error(err);
+                showNoData();
+            }
+        }
+
+        async function fetchCartItems() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/cart`, { credentials: 'include' });
+                if (res.ok) {
+                    cartItems = await res.json();
+                    renderCart();
+                } else {
+                    showNoData();
+                }
+            } catch (e) {
+                console.error(e);
+                showNoData();
+            }
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-container');
+            if (cartItems.length === 0) {
+                container.innerHTML = '<div class="no-data">Keranjang belanja Anda kosong. <a href="/" style="color: #007bff; text-decoration: underline;">Mulai belanja</a></div>';
+                return;
+            }
+
+            let total = 0;
+            const rows = cartItems.map(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                return `
+                    <tr>
+                        <td>
+                            <div style="font-weight: bold;">${item.product_name}</div>
+                            <div style="font-size: 0.8rem; color: #6c757d;">Kode: <code>${item.product_code}</code> | Varian: ${item.variant_name || '-'}</div>
+                        </td>
+                        <td>${formatRupiah(item.price)}</td>
+                        <td>${item.quantity}</td>
+                        <td style="font-weight: bold; color: #28a745;">${formatRupiah(itemTotal)}</td>
+                        <td>
+                            <button class="btn-delete" onclick="deleteItem(${item.id})">Hapus</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Produk</th>
+                            <th>Harga</th>
+                            <th>Jumlah</th>
+                            <th>Total</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows}
+                    </tbody>
+                </table>
+                <div class="cart-summary">
+                    <div>
+                        <div style="font-size: 0.9rem; color: #6c757d;">Total Pembayaran:</div>
+                        <div class="total-price">${formatRupiah(total)}</div>
+                    </div>
+                    <button class="btn-checkout" onclick="checkoutCart(${total})">Bayar Sekarang</button>
+                </div>
+            `;
+        }
+
+        async function deleteItem(id) {
+            if (!confirm('Apakah Anda yakin ingin menghapus item ini?')) return;
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/cart/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                if (res.ok) {
+                    await fetchCartItems();
+                } else {
+                    alert('Gagal menghapus item.');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function clearCart() {
+            if (cartItems.length === 0) return;
+            if (!confirm('Apakah Anda yakin ingin mengosongkan keranjang?')) return;
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/cart`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                if (res.ok) {
+                    await fetchCartItems();
+                } else {
+                    alert('Gagal mengosongkan keranjang.');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function checkoutCart(total) {
+            const targetPhone = prompt("Masukkan nomor WhatsApp target untuk menerima rincian invoice / token akses:");
+            if (!targetPhone) return;
+
+            // Trigger checkout for the first item as demo integration, or batch checkout
+            try {
+                window.startLoadingBar();
+                
+                // Let's loop and checkout each item
+                for (const item of cartItems) {
+                    const payload = {
+                        provider: "digiflazz", // default gateway
+                        product_code: item.product_code,
+                        variant_code: item.variant_code || item.product_code,
+                        product_name: item.product_name,
+                        variant_name: item.variant_name || "",
+                        amount: item.price,
+                        target: targetPhone,
+                        whatsapp_id: targetPhone
+                    };
+
+                    await fetch(`${API_BASE_URL}/api/checkout`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload),
+                        credentials: 'include'
+                    });
+                }
+
+                // Clear cart on success
+                await fetch(`${API_BASE_URL}/api/cart`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                alert('Checkout sukses! Pembayaran Anda sedang diproses. Silakan cek pesan WhatsApp Anda.');
+                window.location.href = '/dashboard_pesanan.html';
+            } catch (err) {
+                console.error(err);
+                alert('Gagal melakukan checkout.');
+            } finally {
+                window.stopLoadingBar();
+            }
+        }
+
+        function showNoData() {
+            document.getElementById('cart-container').innerHTML = '<div class="no-data">Gagal memuat keranjang belanja.</div>';
+        }
+
+        async function performLogout() {
+            try {
+                await fetch(`${API_BASE_URL}/logout`, { credentials: 'include' });
+            } catch(e){}
+            window.location.href = '/login.html';
+        }
+
+        fetchUserData();
+    </script>
+</body>
+</html>

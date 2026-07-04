@@ -1,0 +1,156 @@
+---
+// Header.astro - Navigation Header Component
+---
+<header class="main-header">
+    <div class="container header-container">
+        <a href="/" class="logo" id="headerLogoLink">
+            <img src="/gambar/logoeasyfast.png" alt="EasyMarket Logo" class="logo-img">
+        </a>
+        <nav class="main-nav">
+            <ul class="nav-links">
+                <li><a href="/" id="headerHomeLink">Home</a></li>
+                <li><a href="/#products" id="headerProductsLink">Products</a></li>
+                <li><a href="/dokumentasi.html" id="headerDocsLink">Dokumentasi API</a></li>
+            </ul>
+        </nav>
+        <div class="header-actions">
+            <div class="search-container">
+                <input type="text" placeholder="Cari..." class="search-input" id="headerSearchInput" autocomplete="off">
+                <button type="button" class="search-btn" id="headerSearchBtn" aria-label="Cari">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                    </svg>
+                </button>
+                <div id="search-autocomplete-dropdown" class="autocomplete-dropdown" style="display: none;"></div>
+            </div>
+            <button type="button" class="btn-cart" id="headerCartBtn" aria-label="Keranjang" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-main); border-radius: var(--radius); padding: 8px 12px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; margin-right: 8px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 6px;">
+                    <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M3.102 4l1.313 7h8.17l1.313-7zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                </svg>
+                Keranjang
+            </button>
+            <button type="button" class="btn" id="loginBtn">Login</button>
+        </div>
+    </div>
+</header>
+
+<style>
+    .search-container {
+        position: relative;
+    }
+    .autocomplete-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #ffffff;
+        border: 2px solid #dee2e6;
+        border-radius: 4px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        z-index: 1000;
+        max-height: 250px;
+        overflow-y: auto;
+        margin-top: 4px;
+    }
+    .autocomplete-item {
+        padding: 8px 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        border-bottom: 1px solid #eee;
+        transition: background 0.1s;
+    }
+    .autocomplete-item:last-child {
+        border-bottom: none;
+    }
+    .autocomplete-item:hover {
+        background: #f8f9fa;
+    }
+    .autocomplete-item img {
+        width: 32px;
+        height: 32px;
+        object-fit: contain;
+    }
+    .autocomplete-item-info {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+    .autocomplete-item-name {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #212529;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .autocomplete-item-price {
+        font-size: 0.75rem;
+        color: #e03131;
+        font-weight: bold;
+    }
+</style>
+
+<script is:inline>
+    (function() {
+        let products = [];
+        const input = document.getElementById('headerSearchInput');
+        const dropdown = document.getElementById('search-autocomplete-dropdown');
+
+        if (!input || !dropdown) return;
+
+        let API_BASE_URL = '';
+        if (window.location.protocol === 'file:') {
+            API_BASE_URL = 'https://api.ilhampradani.me';
+        }
+
+        async function loadProducts() {
+            if (products.length > 0) return;
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/products`);
+                if (res.ok) {
+                    const data = await res.json();
+                    products = data.products || [];
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        input.addEventListener('focus', loadProducts);
+
+        input.addEventListener('input', async () => {
+            await loadProducts();
+            const text = input.value.trim().toLowerCase();
+            if (text.length < 3) {
+                dropdown.style.display = 'none';
+                return;
+            }
+
+            const matches = products.filter(p => p.name.toLowerCase().includes(text)).slice(0, 5);
+            if (matches.length === 0) {
+                dropdown.style.display = 'block';
+                dropdown.innerHTML = '<div style="padding: 10px; font-size: 0.8rem; color: #6c757d; text-align: center;">Tidak ada hasil ditemukan</div>';
+                return;
+            }
+
+            dropdown.innerHTML = matches.map(p => `
+                <div class="autocomplete-item" onclick="window.location.href='/product/${p.code}'">
+                    <img src="/gambar/logoeasyfast.png" alt="${p.name}">
+                    <div class="autocomplete-item-info">
+                        <span class="autocomplete-item-name">${p.name}</span>
+                        <span class="autocomplete-item-price">Rp ${p.price.toLocaleString('id-ID')}</span>
+                    </div>
+                </div>
+            `).join('');
+            dropdown.style.display = 'block';
+        });
+
+        document.addEventListener('click', (e) => {
+            if (e.target !== input && e.target !== dropdown && !dropdown.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+    })();
+</script>

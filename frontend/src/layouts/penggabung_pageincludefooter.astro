@@ -1,0 +1,70 @@
+---
+// penggabung_pageincludefooter.astro - Layout for pages linked from the footer
+import PenggabungUtama from './PenggabungUtama.astro';
+import Sidebar from '../components/Sidebar.astro';
+
+interface Props {
+	title: string;
+	description?: string;
+	activePage: string;
+}
+
+const { title, description, activePage } = Astro.props;
+---
+
+<PenggabungUtama title={title} description={description} jsFile={`/ecom/js/${activePage}.js`}>
+    <style is:inline>
+        .main-header {
+            margin-bottom: 0 !important;
+        }
+        .main-content {
+            max-width: 100% !important;
+            padding: 0 !important;
+        }
+        .docs-nav-link:hover {
+            background-color: #f1f3f5;
+            color: var(--primary) !important;
+            text-decoration: none;
+        }
+        .docs-nav-link.active {
+            background-color: #eef2ff !important;
+            color: #4f46e5 !important;
+            font-weight: 600 !important;
+            border-left: 3px solid #4f46e5;
+            border-radius: 0 var(--radius) var(--radius) 0;
+            padding-left: calc(1rem - 3px) !important;
+        }
+        
+        @media (max-width: 768px) {
+            .docs-wrapper {
+                flex-direction: column !important;
+            }
+            .docs-sidebar {
+                width: 100% !important;
+                height: auto !important;
+                position: relative !important;
+                top: 0 !important;
+                border-right: none !important;
+                border-bottom: 1px solid var(--border-color);
+                padding: 1.5rem !important;
+            }
+            .docs-content {
+                padding: 2rem 1.5rem !important;
+            }
+        }
+    </style>
+
+    <main class="main-content">
+        <div class="docs-wrapper" style="display: flex; min-height: 100vh; background: #ffffff;">
+            
+            <Sidebar activePage={activePage} />
+            
+            <main class="docs-content" style="flex: 1; padding: 3rem 4rem; background: #ffffff;">
+                <div style="max-width: 900px; margin: 0 auto;">
+                    <slot />
+                </div>
+            </main>
+
+        </div>
+    </main>
+</PenggabungUtama>

@@ -1,0 +1,57 @@
+---
+// index.astro
+import PenggabungUtama from '../layouts/PenggabungUtama.astro';
+---
+
+<PenggabungUtama 
+    title="EasyMarket | Top Up Game, Pulsa, & Layanan IT Instan Terlengkap" 
+    description="EasyMarket adalah platform top up game murah, pulsa, paket data instan, SSL certificate, serta layanan IT & Bot WhatsApp automation profesional."
+    jsFile="/ecom/js/index.js"
+>
+    <main class="main-content">
+        <!-- Catalog View Container (visible by default) -->
+        <div id="catalogView">
+            <!-- Hero Section -->
+            <section id="hero" class="hero">
+                <div class="container">
+                    <h1 class="hero-title">Produk Digital</h1>
+                    <p class="hero-subtitle">Cepat, aman, dan minimalis. Website ini dirancang khusus untuk kecepatan tinggi dan kemudahan penggunaan. Nikmati semua transaksi yang serba cepat, instan, dan lancar tanpa hambatan!</p>
+                    <div class="hero-cta">
+                        <a href="#products" class="btn">Lihat Produk</a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Products Section -->
+            <section id="products" class="section">
+                <div class="container">
+                    <h2 class="section-title">Katalog Produk</h2>
+                    
+                    <!-- Category Filter Bar -->
+                    <div class="category-filter-container" id="categoryFilterContainer">
+                        <button type="button" class="filter-btn active" data-category="all">
+                            <svg class="filter-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 4px; display: inline-block; vertical-align: middle;">
+                                <path d="M0 1.5A1.5 1.5 0 0 1 1.5 0h13A1.5 1.5 0 0 1 16 1.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 14.5zM1.5 1a.5.5 0 0 0-.5.5v3h14v-3a.5.5 0 0 0-.5-.5zm14 4h-14v5h14zm0 6h-14v3.5a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5z"/>
+                            </svg> 
+                            Semua
+                        </button>
+                        <!-- Will be populated dynamically by JS -->
+                    </div>
+                    
+                    <!-- Dynamic Products Grid -->
+                    <div class="grid-cards" id="productsGrid">
+                        <!-- Will be populated dynamically by JS -->
+                        <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-muted);">
+                            Memuat produk...
+                        </div>
+                    </div>
+                    
+                    <!-- Learn More Container -->
+                    <div id="learnMoreContainer" style="text-align: center; margin-top: 2.5rem; display: none;">
+                        <button type="button" id="btnLearnMore" class="btn" style="padding: 0.75rem 2rem; background: transparent; border: 2px solid var(--primary); color: var(--primary); font-weight: 700; border-radius: var(--radius); cursor: pointer; transition: all 0.2s;">Tampilkan Selengkapnya</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</PenggabungUtama>

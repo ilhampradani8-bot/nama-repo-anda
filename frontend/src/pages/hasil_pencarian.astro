@@ -1,0 +1,34 @@
+---
+// hasil_pencarian.astro
+import PenggabungUtama from '../layouts/PenggabungUtama.astro';
+---
+
+<PenggabungUtama 
+    title="EasyMarket | Hasil Pencarian Produk" 
+    description="Temukan produk digital terbaik, voucher game, pulsa, dan paket data di EasyMarket dengan pencarian instan."
+    jsFile="/ecom/js/hasil_pencarian.js"
+>
+    <main class="main-content">
+        <section class="section" style="padding-top: 3rem; min-height: 70vh;">
+            <div class="container">
+                <div style="margin-bottom: 2rem;">
+                    <a href="/" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: var(--primary); font-weight: 600; font-size: 0.9rem; margin-bottom: 1rem;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+                        </svg>
+                        Kembali ke Beranda
+                    </a>
+                    <h2 id="searchTitle" style="font-size: 1.75rem; font-weight: 800; color: var(--text-main); margin: 0;">Hasil Pencarian</h2>
+                    <p id="searchSub" style="color: var(--text-muted); font-size: 0.95rem; margin-top: 4px;">Mencari produk...</p>
+                </div>
+
+                <!-- Dynamic Products Grid -->
+                <div class="grid-cards" id="searchGrid">
+                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-muted);">
+                        Memuat hasil pencarian...
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</PenggabungUtama>

@@ -1,0 +1,142 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "EasyMarket White-Label Developer API",
+    "description": "API untuk integrasi transaksi pulsa, paket data, PLN, dan top-up game secara otomatis dan white-label.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.ilhampradani.me",
+      "description": "Production Server"
+    }
+  ],
+  "paths": {
+    "/api/products": {
+      "get": {
+        "summary": "Dapatkan Pricelist Produk",
+        "description": "Mengambil daftar seluruh produk beserta kode produk (variant_code), kategori, harga, dan status.",
+        "parameters": [
+          {
+            "name": "category_slug",
+            "in": "query",
+            "required": false,
+            "description": "Filter berdasarkan kategori (e.g. pulsa, data, pln, game, ssl, productivity, music)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar produk berhasil diambil",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "products": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "product_code": { "type": "string" },
+                          "variant_code": { "type": "string" },
+                          "name": { "type": "string" },
+                          "price": { "type": "integer" },
+                          "category": { "type": "string" },
+                          "status": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/checkout": {
+      "post": {
+        "summary": "Buat Transaksi Baru (Checkout)",
+        "description": "Membuat pesanan baru dan menghasilkan data QRIS untuk pembayaran.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["reseller_key", "whatsapp_id", "product_code", "variant_code", "target", "amount"],
+                "properties": {
+                  "reseller_key": { "type": "string", "example": "DEMO_RESELLER_KEY_X987HSD23" },
+                  "whatsapp_id": { "type": "string", "example": "081234567890" },
+                  "product_code": { "type": "string", "example": "MOBILE_LEGENDS" },
+                  "variant_code": { "type": "string", "example": "ml_86" },
+                  "target": { "type": "string", "example": "12345678(1234)" },
+                  "amount": { "type": "integer", "example": 19600 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Transaksi berhasil dibuat",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "transaction_id": { "type": "string" },
+                    "qr_image_url": { "type": "string" },
+                    "amount": { "type": "integer" },
+                    "provider": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/order/status/{transaction_id}": {
+      "get": {
+        "summary": "Cek Status Transaksi",
+        "description": "Mengecek status pembayaran QRIS dan status fulfillment dari pesanan.",
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "required": true,
+            "description": "ID Transaksi yang didapat saat checkout",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Status transaksi saat ini",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "status": { "type": "string", "example": "paid" },
+                    "message": { "type": "string", "example": "Fulfillment sukses dikirim ke nomor tujuan" },
+                    "sn": { "type": "string", "example": "SN-99823102381203" },
+                    "amount": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

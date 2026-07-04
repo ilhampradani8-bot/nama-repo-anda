@@ -1,0 +1,2250 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0-oas3
+  title: Billfazz API Documentation
+  x-logo:
+    url: https://billfazz.com/_next/image?url=%2Fimages%2Flg_billfazz_dynamic.svg&w=3840&q=75
+    width: 50%
+  contact:
+    email: partners@billfazz.com
+  description: >
+    # Introduction 
+
+    ----
+
+    Billfazz is a financial service solution that focuses on providing a Payment Point Online Bank (PPOB) system that can help clients to sell data packages, pulsa, telephone bills, BPJS, PLN (tokens and bills), and etc. 
+    This is an API documentation that can be used for the integration system process between Billfazz and Clients (for all services).
+
+    ## Overview 
+
+    This section contain an overview of the data provided and the API Purpose.
+
+
+    * Getting Started - Introduces you to the operations offered by the API.
+
+
+    * API Calls - Explore the API Billfazz here
+
+
+    * Field Reference - Describes the type of information provided by the API
+
+
+    * Sandbox Mode - Each Product type sometimes has different response in
+    reference or result object key. Feel free to use this feature. 
+
+
+    * Response Code (RC) - Describes the response code in body response  
+
+
+    * HTTP Status Code - Some HTTP Status code will return another code (except
+    200) such as 401, 403, etc. This section will describes each of them.
+    
+    
+    * Frequently Asked Questions (FAQ) - Here are answers to some frequently
+    asked questions.
+
+
+    * Contact Us - If you need support or need to get in touch, this is the
+    place to look.
+
+
+    # Getting Started
+
+    ----
+
+    Here the list you should know.
+
+    ## Base URL
+
+    All URLs referenced in the documentation has the following base:
+
+
+    **Development URL**
+
+    >
+    [https://secure.billfazz.com/sandbox/api/v1/](https://secure.billfazz.com/sandbox/api/v1/)
+
+
+    **Production URL**
+
+    > 
+    Production URL & Credential will send through Email after development.
+
+
+    ## Authentication
+
+
+    The Billfazz API is served over HTTPS. To ensure data privacy, unencrypted
+    HTTP is not supported. Each Endpoint should require Authentication with the
+    following method: 
+
+
+    * [Basic HTTP
+    Authentication](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication)
+    
+    Use APIKey as the **value** was given to you and input into Password Basic
+    Authentication, you can leave it **blank value** in Username section.
+
+    ~~You can generate your own APIKey by Login into Dashboard > Configuration >
+    Generate API Key~~
+
+
+    ## IP Whitelisting
+
+    Billfazz supports whitelisting client IPs to restrict API access. Requests from non-whitelisted IPs receive HTTP 401 Unauthorized with:
+
+    ```
+
+    {
+      "code": "ClientUnauthorizedError",
+      "message": "Invalid IP"
+    }
+
+    ```
+
+    Integrations should handle this error without treating it as a transaction failure when calling the status-check endpoint.
+
+
+    # Transaction Flow
+
+    ----
+
+    Our Transaction using an Asynchronous model which mean the first response
+    given as 'Pending' status. You can receive the End-Status of Transaction
+    using Advice endpoint or your Callback URL. You can provide Callback URL in
+    Request body Transaction API.
+
+
+    # Callback Format
+
+    ----
+
+    A Callback will be triggered after your Transaction changed status into
+    End-status (Success, Failed).
+
+    ## Prepaid
+
+
+    <blockquote>
+      All prepaid product except PLN Prepaid, Game, and Ewallet has same structure with Mobile Prepaid.
+      <br>
+      <b>Note:</b> <code>reference.referenceNo</code> is the serial number issued by the operator for the successful transaction.
+    </blockquote>
+
+
+    ### Mobile Prepaid (Success)
+
+    ```
+
+    {  
+      "orderId":44,
+      "destinationNo":"081330201994",
+      "productCode":"TLKM5",
+      "price":5550,
+      "balance" : 2110299,
+      "refId":"ORDER-01",
+      "status":"success",
+      "reference":{  
+        "referenceNo":"9182918928010921"
+      }
+    }
+
+    ```
+
+    ### Mobile Prepaid (Failed)
+
+    ```
+
+    {  
+      "orderId":50,
+      "destinationNo":"081320201994",
+      "productCode":"TLKM5",
+      "price":5550,
+      "balance" : 2110299,
+      "refId":"ORDER-02",
+      "status":"failed",
+      "code":"TransactionFailed",
+      "message":"Transaction is failed, please try again in a few minutes."
+    }
+
+    ```
+
+    ### Electricity Prepaid (Success)
+
+    ```
+
+    {  
+      "orderId":45,
+      "destinationNo":"56301991814",
+      "productCode":"PLN20",
+      "price":20250,
+      "balance" : 2110299,
+      "suggestionFee" : 2750,
+      "refId":"ORDER-03",
+      "status":"success",
+      "reference":{  
+        "referenceNo": '0BF211100000000808B',
+        "voucher":"1547-6998-0582-4395-9100/JOHN DOE/R1M/900VA/34.0KWH"
+      },
+      "result" : {
+        "headerBill" : {
+          "meterNo": "56301991814",
+          "subscriberId": "12345678901",
+          "name": "JOHN DOE",
+          "segmentPower": "R1M /00000900VA",
+          "token": "1547 6998 0582 4395 9100",
+          "totalKWH": "34.0",
+          "amount": 20000,
+          "informationText":
+            "Informasi Hubungi Contact Center 123 Atau Hub. PLN Terdekat : 021-32145678",
+          "ppn":0,
+          "ppj":1482,
+          "angsuran":0,
+          "materai":0,
+          "rptoken":18518,
+        }   
+      }
+    }
+
+    ```
+
+    ### Electricity  Prepaid (Failed)
+
+    ```
+
+    {  
+      "orderId":51,
+      "destinationNo":"56201921814",
+      "productCode":"PLN20",
+      "price":20250,
+      "balance" : 2110299,
+      "refId":"ORDER-04",
+      "status":"failed",
+      "code":"TransactionFailed",
+      "message":"Transaction is failed, please try again in a few minutes."
+    }
+
+    ```
+
+    ### Game (Success) - Ragnarok & Mobile Legend
+
+    ```
+
+    {
+      "orderId":46,
+      "destinationNo":"user30",
+      "productCode":"MOBILE_LEGEND19",
+      "price":20000,
+      "balance" : 2110299,
+      "refId":"ORDER-05",
+      "status":"success",
+      "reference":{
+        "serial":"ABCD-EFGH-IJKL-MNOP"
+      }
+    }
+
+    ```
+
+    ### Game (Success) - Other Games
+
+    ```
+
+    {
+      "orderId":50,
+      "destinationNo":"081565334455",
+      "productCode":"STEAM12",
+      "price":15000,
+      "balance" : 2110299,
+      "refId":"ORDER-06",
+      "status":"success",
+      "reference":{
+        "serial":"ABCD-EFGH-IJKL-MNOP",
+        "pin":"9182918928010921"
+      }
+    }
+
+    ```
+
+    ### Game (Failed)
+
+    ```
+
+    {
+      "orderId":52,
+      "destinationNo":"081555334455",
+      "productCode":"STEAM12",
+      "price":15000,
+      "balance" : 2110299,
+      "refId":"ORDER-07",
+      "status":"failed",
+      "code":"TransactionFailed",
+      "message":"Transaction is failed, please try again in a few minutes."
+    }
+
+    ```
+
+    ### Voucher (Success)
+
+    ```
+
+    {
+      "orderId":91,
+      "destinationNo":"081565334455",
+      "productCode":"ALFAMART10",
+      "price":10125,
+      "balance" : 2110299,
+      "refId":"ORDER-10",
+      "status":"success",
+      "reference":{
+        "referenceNo":"ABCD12345678 / 2020-04-02",
+      }
+    }
+
+    ```
+
+    ### Voucher (Failed)
+
+    ```
+
+    {
+      "orderId":92,
+      "destinationNo":"081555334455",
+      "productCode":"ALFAMART10",
+      "price":10125,
+      "balance" : 2110299,
+      "refId":"ORDER-11",
+      "status":"failed",
+      "code":"TransactionFailed",
+      "message":"Transaction is failed, please try again in a few minutes."
+    }
+
+    ```
+
+
+    ### eWallet (Success)
+
+    ```
+
+    {
+      "orderId":7,
+      "destinationNo":"0812007760005",
+      "productCode":"LINKAJA10",
+      "price":11000,
+      "balance" : 2110299,
+      "refId":"18",
+      "status":"success",
+      "reference":{
+        "referenceNo":"1587543484710"
+      },
+      "result": { 
+        "headerBill": { 
+          "name": "-", 
+          "amount": 25000 
+        }
+      }
+    }
+
+    ```
+
+    ### eWallet (Failed)
+
+    ```
+
+    {
+      "orderId":9,
+      "destinationNo":"0813107760005",
+      "productCode":"LINKAJA10",
+      "price":11000,
+      "balance" : 2110299,
+      "refId":"20",
+      "status":"failed",
+      "code":"TransactionFailed",
+      "message":"Transaction is failed,please try again in a few minutes."
+    }
+
+    ```
+
+    ### Emoney (Success)
+
+    ```
+    {
+      "orderId":7,
+      "destinationNo":"6032345678901234",
+      "productCode":"MANDIRI_ETOLL100",
+      "price":11000,
+      "balance" : 2110299,
+      "refId":"18",
+      "status":"success",
+      "reference":{
+        "referenceNo":"31924765"
+      }
+    }
+
+    ```
+
+    ### Emoney (Failed)
+
+    ```
+    {
+      "orderId":9,
+      "destinationNo":"6012345678901234",
+      "productCode":"MANDIRI_ETOLL100",
+      "price":11000,
+      "balance" : 2110299,
+      "refId":"20",
+      "status":"failed",
+      "code":"TransactionFailed",
+      "message":"Transaction is failed,please try again in a few minutes."
+    }
+
+    ```
+
+    ### Game open amount (Success) 
+
+    ```
+    {
+      "orderId":265,
+      "destinationNo":"081291345168",
+      "productCode":"GPLAY_OPEN_AMOUNT",
+      "price":9900,
+      "refId":"4f8e5eaa-a9dc-4fe0-aed2-032c1bb0b6d7",
+      "amount":10000,
+      "status":"success",
+      "balance":6565686,
+      "reference":{
+          "serial":"6369334012823775616",
+          "referenceNo":"164007415739217505",
+          "voucherCode":"KTD2 B7BR 6RBG 6NYW"
+      },
+    }
+
+    ```
+
+    ### Game open amount (Failed) 
+
+    ```
+
+    {
+      "code": "TransactionFailed",
+      "price": 20097,
+      "refId": "1696300833",
+      "amount": 20300,
+      "status": "failed",
+      "balance": 20909640570,
+      "message": "Transaction is failed, please try again in a few minutes.",
+      "orderId": 291,
+      "productCode": "GPLAY_OPEN_AMOUNT",
+      "destinationNo": "0813220010000"
+    }
+
+
+    ```
+
+    ### Game close amount (Success) 
+
+    ```
+
+    {
+      "orderId": 286,
+      "destinationNo": "08132110000",
+      "productCode": "MOBILE_LEGEND50_GP",
+      "price": 16401,
+      "refId": "1696207854",
+      "status": "success",
+      "balance": 4809534,
+      "reference": {
+          "serial": "2455761234AX1",
+          "referenceNo": "1696207855825",
+          "voucherCode": "1231 3212 9942 0001 37333"
+      }
+    }
+    
+    ```
+
+    ### Game close amount (Failed) 
+
+    ```
+
+    {
+      "orderId": 291,
+      "destinationNo": "0813220010000",
+      "productCode": "GPLAY_OPEN_AMOUNT",
+      "price": 20097,
+      "refId": "1696300833",
+      "status": "failed",
+      "balance": 20909640570,
+      "code": "TransactionFailed",
+      "message": "Transaction is failed, please try again in a few minutes.",
+      "amount": 20300
+    }
+    
+    ```
+
+    ### eWallet Inquiry (Success)
+
+    ```
+
+    {
+      "orderId": 20,
+      "destinationNo": "081394123456",
+      "productCode": "OVO",
+      "price": 99300,
+      "refId": "170e7440-1bc8-4959-8918-d6825fef3d6b",
+      "status": "success",
+      "balance": 9993488181,
+      "reference": {
+          "referenceNo": "1658214250676"
+      },
+      "result": {
+          "totalAdmin": -700,
+          "totalBill": 100000,
+          "headerBill": {
+              "name": "JOHN DOE GP-081394123456",
+              "amount": 98500,
+              "billQty": 1
+          },
+          "detailBill": []
+      },
+      "amount": 100000
+    }
+
+    ```
+
+    ### eWallet Inquiry (Failed)
+
+    ```
+
+    {
+      "orderId": 21,
+      "destinationNo": "081344123456",
+      "productCode": "OVO",
+      "price": 99300,
+      "refId": "24f53dbd-601a-4318-af11-9b925c4592f1",
+      "status": "failed",
+      "balance": 9993587481,
+      "code": "ExceedAccountLimit",
+      "message": "Transaction amount exceed account limit.",
+      "amount": 100000
+    }
+
+    ```
+
+    ## Postpaid
+
+    ### BPJS (Success)
+
+    ```
+
+    {  
+      "orderId":10,
+      "destinationNo":"8800112233445",
+      "productCode":"BPJSKS",
+      "month":1,
+      "price":162500,
+      "balance" : 2110299,
+      "refId":"ORDER-03",
+      "status":"success",
+      "reference":{  
+        "referenceNo":"FF2B322BCF7D7BA9"
+      },
+      "result":{  
+        "totalAdmin":2500,
+        "totalBill":160000,
+        "headerBill":{
+          "name":"SUBSCRIBER NAME",
+          "period":"01",
+          "branchCode":"0901",
+          "branchName":"JAKARTA PUSAT",
+          "totalParticipant":"2",
+          "billQty":1
+        },
+        "detailBill":[]
+      }
+    }
+
+    ```
+
+    ### BPJS (Failed)
+
+    ```
+
+    {  
+      "orderId":15,
+      "destinationNo":"8801212121212",
+      "productCode":"BPJSKS",
+      "month":1,
+      "price":162500,
+      "balance" : 2110299,
+      "refId":"ORDER-04",
+      "status":"failed",
+      "code":"TransactionFailed",
+      "message":"Transaction is failed, please try again in a few minutes."
+    }
+
+    ```
+
+    ### PDAM Postpaid (Success)
+
+    <blockquote>
+      Some data will be updated after payment success. "informationText" will appear after payment success.
+    </blockquote>
+
+
+    ```
+
+    {  
+      "orderId":83,
+      "destinationNo":"10011092012",
+      "productCode":"PDAMKOTA_SURABAYA",
+      "price":36790,
+      "balance" : 2110299,
+      "refId":"ORDER-11",
+      "status":"success",
+      "reference":{  
+        "referenceNo":"1547794830708"
+      },
+      "result":{  
+        "totalAdmin":1300,
+        "totalBill":35490,
+        "headerBill":{  
+          "name":"JOHN SMITH",
+          "period":"122014",
+          "address":"WONOKROMO S.S BARU 2 8",
+          "tariffCode": "3A",
+          "branchName":"PDAM SURABAYA",
+          "stampDuty":0,
+          "informationText" : "-",
+          "billQty":1
+        },
+        "detailBill":[  
+          {  
+            "period":"122014",
+            "firstMeter":"4589",
+            "lastMeter":"4613",
+            "amount":27240,
+            "penalty":7500,
+            "miscAmount":750
+          }
+        ]
+      }
+    }
+
+    ```
+
+    ### PDAM Postpaid (Failed)
+
+    ```
+
+    {  
+      "orderId":84,
+      "destinationNo":"10150091102",
+      "productCode":"PDAMKOTA_SURABAYA",
+      "price":36790,
+      "balance" : 2110299,
+      "refId":"ORDER-12",
+      "status":"failed",
+      "code":"TransactionFailed",
+      "message":"Transaction is failed, please try again in a few minutes."
+    }
+
+    ```
+
+    ### Electricity Postpaid (Success)
+
+    <blockquote>
+      "remainingBillQty", "firstMeter", "lastMeter", and "informationText" will appear after payment success.
+    </blockquote>
+
+
+    ```
+
+    {  
+      "orderId":52,
+      "destinationNo":"530000000001",
+      "productCode":"PP_PLN",
+      "price":302500,
+      "balance" : 2110299,
+      "refId":"ORDER-07",
+      "status":"success",
+      "reference":{  
+        "referenceNo":"1547710004676AGF15477100046769971000"
+      },
+      "result":{  
+        "totalAdmin":2500,
+        "totalBill":300000,
+        "headerBill":{  
+          "name":"JOHN DOE",
+          "period":"102016",
+          "segment":"R1",
+          "power":"1300",
+          "firstMeter":"00080000",
+          "lastMeter":"00080000",
+          "billQty":1,
+          "remainingBillQty":0,
+          "informationText" : "RINCIAN TAGIHAN DAPAT DIAKSES DI www.pln.co.id INFORMASI HUBUNGI CALL CENTER : 123 ATAU HUB. PLN TERDEKAT"
+        },
+        "detailBill":[  
+          {  
+            "period":"102016",
+            "amount":300000,
+            "penalty":0
+          }
+        ]
+      }
+    }
+
+    ```
+
+    ### Electricity Postpaid (Failed)
+
+    ```
+
+    {  
+      "orderId":55,
+      "destinationNo":"543010921091",
+      "productCode":"PP_PLN",
+      "price":302500,
+      "balance" : 2110299,
+      "refId":"ORDER-08",
+      "status":"failed",
+      "code":"TransactionFailed",
+      "message":"Transaction is failed, please try again in a few minutes."
+    }
+
+
+    ```
+
+    ### Mobile Postpaid (Success)
+
+    ```
+
+    {  
+      "orderId":53,
+      "destinationNo":"0881123456",
+      "productCode":"PP_SMART",
+      "price":55000,
+      "balance" : 2110299,
+      "refId":"ORDER-05",
+      "status":"success",
+      "reference":{  
+        "referenceNo":"1547711166491"
+      },
+      "result":{  
+        "totalAdmin":0,
+        "totalBill":55000,
+        "headerBill":{  
+          "name":"SUBSCRIBER NAME",
+          "period":"-",
+          "billQty":1
+        },
+        "detailBill":[]
+      }
+    }
+
+    ```
+
+    ### Mobile Postpaid (Failed)
+
+    ```
+
+    {  
+      "orderId":54,
+      "destinationNo":"088410291921",
+      "productCode":"PP_SMART",
+      "price":55000,
+      "balance" : 2110299,
+      "refId":"ORDER-06",
+      "status":"failed",
+      "code":"TransactionFailed",
+      "message":"Transaction is failed, please try again in a few minutes."
+    }
+
+    ```
+
+    ### Telephone Postpaid (Success)
+
+    ```
+
+    {  
+      "orderId":56,
+      "destinationNo":"0214511234",
+      "productCode":"PP_TELKOMPSTN",
+      "price":313400,
+      "balance" : 2110299,
+      "refId":"ORDER-05",
+      "status":"success",
+      "reference":{  
+        "referenceNo":"1243712390878"
+      },
+      "result":{  
+        "totalAdmin":1300,
+        "totalBill":312100,
+        "headerBill":{  
+          "name":"JOHN DOE",
+          "period":"032019",
+          "areaCode":"0021",
+          "divre":"02",
+          "datel":"0005",
+          "billQty":1
+        },
+        "detailBill":[
+          {
+            "period":"032019",
+            "amount":312100
+          }
+        ]
+      }
+    }
+
+    ```
+
+    ### Telephone Postpaid (Failed)
+
+    ```
+
+    {  
+      "orderId":57,
+      "destinationNo":"0617321234",
+      "productCode":"PP_TELKOMPSTN",
+      "price":312100,
+      "balance" : 2110299,
+      "refId":"ORDER-06",
+      "status":"failed",
+      "code":"TransactionFailed",
+      "message":"Transaction is failed, please try again in a few minutes."
+    }
+
+    ```
+
+    ### TV Postpaid (Success)
+
+    ```
+
+    {  
+      "orderId":63,
+      "destinationNo":"111601234",
+      "productCode":"PP_TVIDVS",
+      "price":124100,
+      "balance" : 2110299,
+      "refId":"ORDER-05",
+      "status":"success",
+      "reference":{  
+        "referenceNo":"1243711190880"
+      },
+      "result":{  
+        "totalAdmin":-800,
+        "totalBill":124900,
+        "headerBill":{  
+          "name":"SUBSCRIBER NAME",
+          "period":"-",
+          "billQty":1,
+          "informationText": "-"
+        },
+        "detailBill":[]
+      }
+    }
+
+    ```
+
+    ### TV Postpaid (Failed)
+
+    ```
+
+    {  
+      "orderId":64,
+      "destinationNo":"111701234",
+      "productCode":"PP_TVIDVS",
+      "price":124100,
+      "balance" : 2110299,
+      "refId":"ORDER-06",
+      "status":"failed",
+      "code":"TransactionFailed",
+      "message":"Transaction is failed, please try again in a few minutes."
+    }
+
+    ```
+
+    ### Multifinance Postpaid (Success)
+
+    ```
+
+    {  
+      "orderId":90,
+      "destinationNo":"63911234",
+      "productCode":"PP_FNRADANA",
+      "price":519050,
+      "balance":2110299,
+      "refId":"ORDER-11",
+      "status":"success",
+      "reference":{  
+        "referenceNo":"1547794112233"
+      },
+      "result":{  
+        "totalAdmin":1400,
+        "totalBill":517650,
+        "headerBill":{  
+          "name":"JOHN DOE",
+          "period":"018",
+          "itemName":"HONDA VARIO CW",
+          "policeNo":"B4980ABC",
+          "minPayment":0,
+          "maxPayment":0,
+          "billQty":1,
+          "informationText":
+            "RADANA FINANCE MENYATAKAN TANDA TERIMA INI SBG BUKTI PEMBAYARAN YANG SAH CALL CENTER RADANA FINANCE (021) 5050-3333"
+        },
+        "detailBill":[  
+          {  
+            "tenor":"035",
+            "installment":510000,
+            "penalty":7650,
+            "miscAmount":0,
+            "collFee":0,
+            "dueDate":"25102020"
+          }
+        ]
+      }
+    }
+
+    ```
+
+    ### Multifinance Postpaid (Failed)
+
+    ```
+
+    {  
+      "orderId":91,
+      "destinationNo":"63941234",
+      "productCode":"PP_FNRADANA",
+      "price":519050,
+      "balance" : 2110299,
+      "refId":"ORDER-12",
+      "status":"failed",
+      "code":"TransactionFailed",
+      "message":"Transaction is failed, please try again in a few minutes."
+    }
+
+    ```
+
+    ### GAS Postpaid (Success)
+
+    ```
+
+    {  
+      "orderId":61,
+      "destinationNo":"0100092010",
+      "productCode":"PERTAGAS",
+      "price":34100,
+      "balance" : 2110299,
+      "refId":"ORDER-09",
+      "status":"success",
+      "reference":{  
+        "referenceNo":"244183135447"
+      },
+      "result":{  
+        "totalAdmin":1900,
+        "totalBill":32200,
+        "headerBill":{  
+          "name":"JOHN DOE",
+          "period":"092017",
+          "tariffCode":"RT1",
+          "billQty":1
+        },
+        "detailBill":[  
+          {  
+            "firstMeter":"006538"
+            "lastMeter":"006573",
+            "usage":35
+          }
+        ]
+      }
+    }
+
+    ```
+
+    ### GAS Postpaid (Failed)
+
+    ```
+
+    {  
+      "orderId":62,
+      "destinationNo":"0102092010",
+      "productCode":"PERTAGAS",
+      "price":34100,
+      "balance" : 2110299,
+      "refId":"ORDER-10",
+      "status":"failed",
+      "code":"TransactionFailed",
+      "message":"Transaction is failed, please try again in a few minutes."
+    }
+
+    ```
+
+    ### SPP (Success)
+
+    ```
+
+    {  
+      "orderId":101,
+      "destinationNo":"60002001",
+      "productCode":"SPP_IPMI_IBS",
+      "price":680250,
+      "balance" : 2110299,
+      "refId":"ORDER-09",
+      "status":"success",
+      "reference":{  
+        "referenceNo":"244183176890"
+      },
+      "result":{  
+        "totalAdmin":1750,
+        "totalBill":678500,
+        "headerBill":{  
+          "name":"JOHN DOE",
+          "period":"-",
+          "billQty":1
+        },
+        "detailBill":[  
+          {  
+            "id":"63372eab-1f1c-4b01-9889-1a366d904cf3",
+            "name":"Buku Matematika",
+            "dueDate":"25102017",
+            "amount":75000,
+            "penalty":0
+          },
+          {  
+            "id":"63372eab-1f1c-4b01-9889-1a366d904cf4",
+            "name":"Buku Fisika",
+            "dueDate":"25102017",
+            "amount":78500,
+            "penalty":0
+          },
+          {  
+            "id":"63372eab-1f1c-4b01-9889-1a366d904cf5",
+            "name":"SPP Bulan Oktober",
+            "dueDate":"25102017",
+            "amount":500000,
+            "penalty":25000
+          }
+        ]
+      }
+    }
+
+    ```
+
+    ### SPP (Failed)
+
+    ```
+
+    {  
+      "orderId":102,
+      "destinationNo":"90002001",
+      "productCode":"SPP_IPMI_IBS",
+      "price":680250,
+      "balance" : 2110299,
+      "refId":"ORDER-10",
+      "status":"failed",
+      "code":"TransactionFailed",
+      "message":"Transaction is failed, please try again in a few minutes."
+    }
+
+     ```
+
+    ### E-Samsat (Success) *(under development)*
+
+    <blockquote>
+      "NTB" will appear after payment success.
+    </blockquote>
+
+
+    ```
+
+    {  
+      "orderId":191,
+      "destinationNo":"96501234",
+      "productCode":"ESAMSAT_JAWA_BARAT",
+      "price":503000,
+      "balance" : 2110299,
+      "refId":"ORDER-18",
+      "status":"success",
+      "reference":{  
+        "referenceNo":"578183879000"
+      },
+      "result":{  
+        "totalAdmin":3000,
+        "totalBill":700000,
+        "headerBill":{
+          "idNo":"9000123456789000",
+          "name":"JOHN DOE",
+          "address":"JALAN MANGGA NO 5",
+          "belongingNo":"001",
+          "vehicleIdNo":"1234560000-NO-RANGKA",
+          "machineNo":"1234560000-NO-MESIN",
+          "policeNo":"B1234FD",
+          "brand":"HONDA",
+          "model":"ASTREA C100",
+          "category": "SEPEDA MOTOR",
+          "type": "NC12A1CF AT",
+          "wheels": "2",
+          "color": "SILVER",
+          "fuel": "BENSIN",
+          "manufactureDate":"2001",
+          "oldTBPKP": "15052019",
+          "newTBPKP":"15052020",
+          "principalBBN":0,
+          "principalTNKB": 100000,
+          "principalPKB":200000,
+          "principalSWD":300000,
+          "penaltyBBN":0,
+          "penaltyTNKB": 100000,
+          "penaltyPKB":0,
+          "penaltySWD":0,
+          "adminSTNK":0,
+          "NTB":"189083",
+          "billQty":1
+        },
+        "detailBill":[]
+      }
+    }
+
+    ```
+
+    ### E-Samsat (Failed)
+
+    ```
+
+    {  
+      "orderId":192,
+      "destinationNo":"96561234",
+      "productCode":"ESAMSAT_JAWA_BARAT",
+      "price":503000,
+      "balance" : 2110299,
+      "refId":"ORDER-19",
+      "status":"failed",
+      "code":"TransactionFailed",
+      "message":"Transaction is failed, please try again in a few minutes."
+    }
+
+    ```
+
+    ### Samolnas (Success) *(under development)*
+
+    <blockquote>
+      "NTB" will appear after payment success.
+    </blockquote>
+
+
+    ```
+
+    {  
+      "orderId":201,
+      "destinationNo":"11111234",
+      "productCode":"SAMOLNAS",
+      "price":632000,
+      "balance" : 2110299,
+      "refId":"ORDER-20",
+      "status":"success",
+      "reference":{  
+        "referenceNo":"578183179956"
+      },
+      "result":{  
+        "totalAdmin":2000,
+        "totalBill":830000,
+        "headerBill":{
+          "idNo":"9000123456789000",
+          "name":"JOHN DOE",
+          "address": "JALAN MANGGA NO 5",
+          "belongingNo":"001",
+          "vehicleIdNo":"1234560000-NO-RANGKA",
+          "machineNo":"1234560000-NO-MESIN",
+          "policeNo":"B1234FD",
+          "brand":"HONDA",
+          "model":"ASTREA C100",
+          "category": "SEPEDA MOTOR",
+          "type": "NC12A1CF AT",
+          "wheels": "2",
+          "color": "SILVER",
+          "fuel": "BENSIN",
+          "manufactureDate":"2001",
+          "oldTBPKP":"15052019",
+          "newTBPKP":"15052020",
+          "principalBBN":100000,
+          "principalTNKB": 100000,
+          "principalPKB":200000,
+          "principalSWD":300000,
+          "penaltyBBN":5000,
+          "penaltyTNKB": 100000,
+          "penaltyPKB":3000,
+          "penaltySWD":2000,
+          "adminSTNK":10000,
+          "NTB":"189085",
+          "billQty":1
+        },
+        "detailBill":[]
+      }
+    }
+
+    ```
+
+    ### Samolnas (Failed)
+
+    ```
+
+    {  
+      "orderId":202,
+      "destinationNo":"44441234",
+      "productCode":"SAMOLNAS",
+      "price":632000,
+      "balance" : 2110299,
+      "refId":"ORDER-21",
+      "status":"failed",
+      "code":"TransactionFailed",
+      "message":"Transaction is failed, please try again in a few minutes."
+    }
+
+    ```
+
+    ### PBB (Success) *(under development)*
+
+    <blockquote>
+      "ntb" and "ntpd" will appear after payment success.
+    </blockquote>
+    <blockquote>
+      This list of data: "ntb", "ntpd", "city", "province", "buildingArea", "surfaceArea", "dueDate", "debtYear", "discount" could be '-' or 0 depend of type of the data in some Pbb products 
+    </blockquote>
+
+
+    ```
+
+    {
+      "orderId": 101,
+      "destinationNo": "147114000300500100",
+      "productCode": "PBBKOTA_MEDAN",
+      "year": "2020",
+      "price": 98150,
+      "refId": "ORDER-30",
+      "status": "success",
+      "balance": 8000000,
+      "reference": {
+          "referenceNo": "1591603798294"
+      },
+      "result": {
+          "totalAdmin": 900,
+          "totalBill": 97250,
+          "headerBill": {
+            "name": "INDIKA",
+            "address": "JL.BUDI KEMULIAAN RT RW 001",
+            "district": "KEL BABAKAN 40",
+            "amount": 65250,
+            "penalty": 32000,
+            "period": "2020",
+            "city": "MEDAN",
+            "province": "SUMATRA UTARA",
+            "buildingArea": "24250",
+            "surfaceArea": "0",
+            "dueDate": "30092020",
+            "discount": 0,
+            "debtYear": "2020",
+            "ntb": "123456789",
+            "ntpd": "12345678901011",
+            "billQty": 1
+          },
+          "detailBill": []
+      },
+    }
+
+    ```
+
+    ### PBB (Failed) *(under development)*
+
+    ```
+
+    {  
+      "orderId":102,
+      "destinationNo":"147232780200100001",
+      "productCode":"PBBKOTA_MEDAN",
+      "price":680250,
+      "refId":"ORDER-30",
+      "status":"failed",
+      "code":"TransactionFailed",
+      "message":"Transaction is failed, please try again in a few minutes.",
+      "year": 2020
+    }
+
+    ```
+
+    ### Insurance (Success)
+
+    ```
+
+    {  
+      "orderId":71,
+      "destinationNo":"2377711000395827",
+      "productCode":"INSRNC_CAR",
+      "price":350100,
+      "balance" : 2110299,
+      "refId":"ORDER-42",
+      "status":"success",
+      "reference":{  
+        "referenceNo":"8913890743421"
+      },
+      "result":{  
+        "totalAdmin":100,
+        "totalBill":350000,
+        "headerBill":{  
+          "name":"JOHN DOE",
+          "billQty":1
+        },
+        "detailBill":[]
+      }
+    }
+
+    ```
+
+    ### Insurance (Failed)
+
+    ```
+
+    {  
+      "orderId":72,
+      "destinationNo":"2372325400375609",
+      "productCode":"INSRNC_CAR",
+      "price":350100,
+      "balance" : 2110299,
+      "refId":"ORDER-43",
+      "status":"failed",
+      "code":"TransactionFailed",
+      "message":"Transaction is failed, please try again in a few minutes."
+    }
+
+    ```
+
+    ### Vehicle Tax (Success)
+
+    ```
+
+    {
+      "orderId": 80,
+      "destinationNo": "31123456789000000",
+      "productCode": "SIGNAL",
+      "price": 133000,
+      "refId": "d64faf17-7649-4549-97e3-7128e757c357",
+      "status": "success",
+      "balance": 9989549581,
+      "reference": {
+          "referenceNo": "1658816949404"
+      },
+      "result": {
+          "totalAdmin": 0,
+          "totalBill": 133000,
+          "headerBill": {
+              "idNo": "1234567890123456",
+              "name": "I PUTU MEGA SUMANTARA",
+              "type": "MP",
+              "brand": "HONDA",
+              "color": "MERAH",
+              "model": "SEDAN",
+              "wheels": "4",
+              "billQty": 1,
+              "category": "MBL.SEDAN/SEJENISNYA",
+              "newTBPKP": "30072018",
+              "oldTBPKP": "30072015",
+              "policeNo": "DK279FF",
+              "adminSTNK": "10000",
+              "billAmount": "115500",
+              "penaltyPKB": "60200",
+              "penaltySWD": "10000",
+              "belongingNo": "01",
+              "penaltyPNBP": "1000",
+              "vehicleIdNo": "987654321",
+              "principalPKB": "30300",
+              "principalSWD": "12000",
+              "principalPNBP": "2000",
+              "shippingAmount": "7500",
+              "informationText": "BUKTI E-PENGESAHAN STNK DAPAT DILIHAT PADA APLIKASI SAMSAT DIGITAL NASIONAL/EMAIL STRUK INI BISA DITUKARKAN DGN TBPKP FISIK DI SAMSAT ATAU CUKUP DILIHAT VERSI DIGITAL PADA APLIKASI/EMAIL CUSTOMER CARE:(Info@samsatdigital.id) ",
+              "manufactureDate": "1992"
+          },
+          "detailBill": []
+      }
+    }
+
+    ```
+
+    ### Vehicle Tax (Failed)
+
+    ```
+
+    {
+      "orderId": 82,
+      "destinationNo": "1013456789000000",
+      "productCode": "SIGNAL",
+      "price": 133000,
+      "refId": "11f94662-975a-486e-9af8-cde5542d645a",
+      "status": "failed",
+      "balance": 9989549581,
+      "code": "BillingAlreadyPaid",
+      "message": "Billing is already paid."
+    }
+
+    ```
+    
+    ### BPJSTK BPU (Success)
+    
+    ```
+    
+    {
+      "price": 84000,
+      "refId": "1750043271425",
+      "result": {
+        "totalBill": 84000,
+        "detailBill": [],
+        "headerBill": {
+          "jht": 0,
+          "jkk": 50000,
+          "jkm": 34000,
+          "name": "PESERTA O2SN SMAN 1 LBJ",
+          "period": "1",
+          "billQty": 1,
+          "endDate": "23-05-2024 00:00:00",
+          "program": "JKK,JKM",
+          "billCode": "2818612101",
+          "branchAddress": "RENGAT",
+          "effectiveDate": "24-04-2024 10:35:48"
+        },
+        "totalAdmin": 0
+      },
+      "status": "success",
+      "balance": 732275091,
+      "orderId": 2505,
+      "reference": {
+        "referenceNo": "2818612102"
+      },
+      "productCode": "BPJS_BPU",
+      "destinationNo": "0626240400227191"
+    }
+    
+    ```
+    
+    ### BPJSTK BPU (Failed)
+
+    ```
+
+    {
+      "orderId": 2506,
+      "destinationNo": "0626240400227192",
+      "productCode": "BPJS_BPU",
+      "price": 84000,
+      "refId": "1750043271425",
+      "status": "failed",
+      "balance": 732275091,
+      "code": "TransactionFailed",
+      "message": "Transaction is failed, please try again in a few minutes."
+    }
+
+    ```
+    
+    ### BPJSTK PU (success)
+    
+    ```
+    
+    {
+      "price": 46654,
+      "refId": "1750044165429",
+      "result": {
+        "totalBill": 46654,
+        "detailBill": [],
+        "headerBill": {
+          "jht": 0,
+          "jkk": 20735,
+          "jkm": 25919,
+          "jpk": 0,
+          "jpn": 0,
+          "npp": "21021041",    
+          "name": "TK PG COLOMADU - NON ASN",
+          "period": "04/2024",
+          "billQty": 1,
+          "contributionCode": "421114996000 / 421114996000"
+        },
+        "totalAdmin": 0
+      },
+      "status": "success",
+      "balance": 730878429,
+      "orderId": 2508,
+      "reference": {
+        "referenceNo": "2818612132"
+      },
+      "productCode": "BPJS_PU",
+      "destinationNo": "421114996000"
+    }
+    
+    ```
+    
+    ### BPJSTK PU (Failed)
+
+    ```
+
+    {
+     "orderId": 2508,
+     "destinationNo": "0626240400227192",
+     "productCode": "BPJS_PU",
+     "price": 46654,
+     "refId": "1750044165429",
+     "status": "failed",
+     "balance": 421021041001,
+     "code": "TransactionFailed",
+     "message": "Transaction is failed, please try again in a few minutes."             
+    }        
+
+    ```    
+
+    # Response Code List
+
+    ----
+
+    In these table Response Code (RC) will return 200 HTTP Status code, which
+    means 
+
+    Billfazz accept your request and successful process to our Provider. 
+
+    But, in some case we can't process some action e.g Number Destination is
+    Blocked by Provider.
+
+    These RC's will show if a status transaction is “Failed”. 
+
+
+    <table style="width:100%">
+      <tr>
+        <th>Response Code</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td>TransactionFailed</td>
+        <td>Transaction is failed, please try again in a few minutes.</td>
+      </tr>
+      <tr>
+        <td>TransactionCancelled</td>
+        <td>Transaction was cancelled by Provider. Please contact to the customer service.</td>
+      </tr>
+      <tr>
+        <td>InquiryFailed</td>
+        <td>Inquiry is failed, please try again in a few minutes.</td>
+      </tr>
+      <tr>
+        <td>ConnectionTimeout </td>
+        <td>Connection is timeout, please try again in a few minutes.</td>
+      </tr>
+      <tr>
+        <td>BillingAlreadyPaid </td>
+        <td>Billing is already paid.</td>
+      </tr>
+      <tr>
+        <td>DestinationNoIsBlocked</td>
+        <td>The destination number is being blocked.</td>
+      </tr>
+      <tr>
+        <td>NoBillingYet</td>
+        <td>No billing is available.</td>
+      </tr>
+      <tr>
+        <td>DestinationNoIsNotFound</td>
+        <td>The destination number is not found.</td>
+      </tr>
+      <tr>
+        <td>CodeExpired</td>
+        <td>Your code has expired.</td>
+      </tr>
+      <tr>
+        <td>BillingNoIsInProblem</td>
+        <td>Transaction can not be processed, please pay in the locket.</td>
+      </tr>
+      <tr>
+        <td>ExceededBillingAmount</td>
+        <td>The transaction is declined due to exceeding billing maximum limit.</td>
+      </tr>
+      <tr>
+        <td>ExceededOutstandingAmount</td>
+        <td>Transaction is failed. Please pay the remaining outstanding amount.</td>
+      </tr>
+      <tr>
+        <td>ExceededDueDate</td>
+        <td>The transaction is declined due to exceeding due date.</td>
+      </tr>
+      <tr>
+        <td>KWHOverLimit</td>
+        <td>The transaction is declined due to exceeding KWH maximum limit.</td>
+      </tr>
+      <tr>
+        <td>PowerNotValid</td>
+        <td>The transaction is declined due to invalid power value.</td>
+      </tr>
+      <tr>
+        <td>ProductIsProblem</td>
+        <td>Product is in problem.</td>
+      </tr>
+      <tr>
+        <td>ProductCutOff</td>
+        <td>CutOff is scheduled.</td>
+      </tr>
+      <tr>
+        <td>DestinationNoTooLong</td>
+        <td>The destination number is too long.</td>
+      </tr>
+      <tr>
+        <td>ExceededDenom</td>
+        <td>One denomination per single number a day.</td>
+      </tr>
+      <tr>
+        <td>ExceededQuota</td>
+        <td>The transaction is declined due to exceeding quota.</td>
+      </tr>
+      <tr>
+        <td>ProductIsInvalid</td>
+        <td>The destination number doesn't match the product.</td>
+      </tr>
+      <tr>
+        <td>InquiryExpiredError</td>
+        <td>Inquiry is expired, please try again with new inquiry.</td>
+      </tr>
+      <tr>
+        <td>InquiryPaidError</td>
+        <td>Inquiry is paid, please try again with unpaid inquiry.</td>
+      </tr>
+      <tr>
+        <td>AboveMaxAmount</td>
+        <td>Transaction amount above system allowed maximum limit.</td>
+      </tr>
+      <tr>
+        <td>PreviousBillingIsUnpaid</td>
+        <td>Previous billing is unpaid, please pay previous billing on [DD-MM|MM|YYYY|MM-YYYY|DD-MM-YYYY]</td>
+      </tr>
+      <tr>
+        <td>BillerError</td>
+        <td>Biller system is error , please try again in a few minutes.</td>
+      </tr>
+      <tr>
+        <td>BellowMinAmount</td>
+        <td>Transaction amount is below from allowed minimum limit, minimum amount: Rp X.XXX, amount: Rp X.XXX</td>
+      </tr>
+      <tr>
+        <td>ExceedAccountLimit</td>
+        <td>Transaction amount exceed account limit.</td>
+      </tr>
+      <tr>
+        <td>InvalidFeeAmount*</td>
+        <td>Invalid fee amount.</td>
+      </tr>
+      <tr>
+        <td>ExceedMonthlyLimit</td>
+        <td>Exceed monthly topup limit.</td>
+      </tr>
+    </table>
+
+
+    \* RC InvalidFeeAmount occur when there is miss configuration from billfazz to biller.
+
+
+    > ⚠️ **Due to PLN regulation, we added some RC that should be implemented in your application. 
+    Please pass through the "message" into your application screen. 
+    Check our new script test in PLN Postpaid section** 
+
+
+
+    <table>
+    <th>Response Code</th>
+    <th>Description</th>
+      <tr>
+        <td>PLNDestinationNoIsBlocked</td>
+        <td>KONSUMEN IDPEL [destinationNo] DIBLOKIR HUBUNGI PLN</td>
+      </tr>
+      <tr>
+        <td>PLNNoBillingYet</td>
+        <td>TAGIHAN BULAN [MMMM] BELUM TERSEDIA</td>
+      </tr>
+    </table>
+
+
+    # HTTP Status Code
+
+    ----
+
+    <table style="width:100%">
+      <tr>
+        <th>HTTP Status Code</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td>200</td>
+        <td>Operation has been retrieved</td>
+      </tr>
+      <tr>
+        <td>400 </td>
+        <td>Bad Request</td>
+      </tr>
+      <tr>
+        <td>401</td>
+        <td>Invalid Authorization or IP Not Whitelisted. When IP is not on the whitelist, response body contains code "ClientUnauthorizedError" and message "Invalid IP".</td>
+      </tr>
+      <tr>
+        <td>403</td>
+        <td>Forbidden Access</td>
+      </tr>
+      <tr>
+        <td>404</td>
+        <td>Resource not found</td>
+      </tr>
+      <tr>
+        <td>500</td>
+        <td>Server error</td>
+      </tr>
+      <tr>
+        <td>503</td>
+        <td>Product in problem / closed</td>
+      </tr>
+      <tr>
+        <td>429</td>
+        <td>Too many request</td>
+      </tr>
+    </table>
+
+     > ⚠️ **If you got an error 500 or some network issue 
+     we suggest you to mapping it to pending and please hit our "check status" end point 
+     and/or follow up with our operation team for this matter. **
+
+
+      # Event Broadcast
+
+      ----
+
+      Billfazz will inform related with status product via webhook URL or telegram for every product changes include:
+      - Flag problem updated
+      - Flag active updated
+      - Price changes
+
+
+      You can inform your webhook URL or your telegram ID to us.
+
+      ## Webhook
+
+      Billfazz will send HTTP POST request to client webhook URL
+
+      Sample webhook request:
+      - Flag problem updated
+      
+      ```
+      {
+          "eventName": "productStatus",
+          "productCode": "AXIS10",
+          "data": {
+            "problem": false
+          }
+      }
+      ```
+      
+      - Flag active updated
+      ```
+      {
+          "eventName": "clientProductStatusActive",
+          "productCode": "AXIS10",
+          "data": {
+            "problem": false
+          }
+        }
+      ```
+
+      - Price changes
+      ```
+      {
+          "eventName": "clientProductPriceMargin",
+          "productCode": "AXIS10",
+          "data": {
+            "oldPrice": 10560,
+            "intPrice": 10810,
+            "problem": false
+          }
+      }
+      ```
+
+
+
+      > `productCode` could change based on the event and problem could be `true` or `false`. <br/>
+      > `oldPrice` is the previous price and `intPrice` is the new price.
+
+
+      ## Telegram
+
+      Sample message from bot:
+      - Flag problem updated
+      ```
+      Axis 10.000 [AXIS10] - CLOSE ❌
+      Axis 50.000 [AXIS50] - OPEN ✅
+      ```
+      - Flag active updated
+      ```
+      Axis 10.000 [AXIS10] - CLOSE ❌
+      Axis 50.000 [AXIS50] - OPEN ✅
+      ```
+      - Price changes
+      ```
+      Axis 10.000 [AXIS10] = Rp.9.100 -> Rp.9.210 
+
+      Mohon dikondisikan 🙏🏻
+      ```
+
+      ```
+      Axis 50.000 [AXIS50] = Rp.49.320 -> Rp.49.080 
+
+      Silahkan ditransaksikan 👍🏻
+      ```
+
+tags:
+  - name: Prepaid
+  - name: Postpaid
+  - name: Advice
+  - name: Issue E-Wallet Open Amount and Game
+  - name: Inquiry E-Wallet Open Amount and Game
+  - name: Product
+  - name: Test
+  - name: Fazz Connect
+    description: |
+      When the API client has no payment methods configured, the checkout flow redirects the end-user to a **Fazz Connect URL** to complete payment. The base URL is configured by the client (examples in this doc use `https://fazz.id/` as a placeholder). Billfazz appends transaction parameters to the query string so that the Fazz Connect page lands on the correct product and destination.
+
+      ## Redirect URL Format
+
+      ```
+      {fazzConnectBaseUrl}?destinationNo={destinationNo}&productCode={productCode}&{field1}={value1}&{field2}={value2}
+      ```
+
+      - `{fazzConnectBaseUrl}` is set by the client (e.g. `https://fazz.id/`, `https://checkout.example.com/`, etc.).
+      - `destinationNo` is URL-encoded. Commas inside a multi-field destination are encoded as `%2C`.
+
+      ## Query Parameters
+
+      <table width="100%">
+        <tr>
+          <th>Parameter</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+        <tr>
+          <td>destinationNo</td>
+          <td>Yes</td>
+          <td>Destination identifier. For multi-field products it is a comma-joined string, in the same format as destinationNo in the Prepaid Game request body.</td>
+        </tr>
+        <tr>
+          <td>productCode</td>
+          <td>Yes</td>
+          <td>Billfazz product code (e.g. MOBILE_LEGEND28).</td>
+        </tr>
+        <tr>
+          <td>Per-field params</td>
+          <td>Yes</td>
+          <td>One query parameter per destination field (e.g. user_id, zone_id, server_id, server_list). Each value must match the corresponding component of destinationNo.</td>
+        </tr>
+      </table>
+
+      ## Example (mobile_legend)
+
+      Assuming the client has configured `https://fazz.id/` as its Fazz Connect base URL:
+
+      ```
+      https://fazz.id/?destinationNo=12345678%2C1234&productCode=MOBILE_LEGEND28&user_id=12345678&zone_id=1234
+      ```
+
+      - `destinationNo` = `12345678,1234` (URL-encoded as `12345678%2C1234`)
+      - `productCode` = `MOBILE_LEGEND28`
+      - `user_id` = `12345678`
+      - `zone_id` = `1234`
+
+      ## Destination Field Mapping per Game
+
+      ### Single-field (`user_id` only)
+
+      For these game codes, `destinationNo` equals `user_id`, and the only extra query parameter is `user_id`:
+
+      `codm`, `coc`, `hago`, `draconia_saga`, `ea_sports`, `8ball_pool`, `free_fire`, `hok`, `werewolf`, `point_blank`, `pubg`, `clash_royale`, `aov`, `league_of_legends`, `lords_mobile`
+
+      Example:
+
+      ```
+      https://fazz.id/?destinationNo=123456789&productCode=FREE_FIRE10&user_id=123456789
+      ```
+
+      ### Multi-field (comma-separated)
+
+      <table width="100%">
+        <tr>
+          <th>Game code</th>
+          <th>destinationNo format</th>
+          <th>Query parameters</th>
+        </tr>
+        <tr>
+          <td>ragnarok</td>
+          <td>user_id,server_id</td>
+          <td>user_id, server_id</td>
+        </tr>
+        <tr>
+          <td>genshin_impact</td>
+          <td>user_id,server_list</td>
+          <td>user_id, server_list (Asia / America / Europe / Tw_hk_mo)</td>
+        </tr>
+        <tr>
+          <td>mobile_legend</td>
+          <td>user_id,zone_id</td>
+          <td>user_id, zone_id</td>
+        </tr>
+      </table>
+
+      ## Product List with Fazz Connect
+
+      When the Fazz Connect feature is enabled for the client, each product in the `GET /products/client` response includes an extra `webappPrice` field — the price (in Rupiah) that will be charged to the end user on the Fazz Connect checkout page (equivalent to `committedSellPrice`). See the [Get List of Products](#operation/get-products-client) operation below for the full parameter list, response schema, and sample request/response.
+
+
+x-tagGroups:
+  - name: General API Calls
+    tags:
+      - Prepaid
+      - Inquiry
+      - Postpaid
+
+  - name: Order Check
+    tags:
+      - Advice
+
+  - name: Deposit Check
+    tags:
+      - Deposit
+
+  - name: Product List
+    tags:
+      - Product
+
+  - name: Order Transaction E-Wallet and Game
+    tags:
+      - Inquiry E-Wallet Open Amount and Game
+      - Issue E-Wallet Open Amount and Game
+
+  - name: Fazz Connect
+    tags:
+      - Fazz Connect
+
+paths:
+  /prepaid/payment:
+    $ref: "apiModel/prepaid/payment.yaml"
+
+  /postpaid/inquiry:
+    $ref: "apiModel/postpaid/inquiry.yaml"
+
+  /prepaid/info:
+    $ref: "apiModel/prepaid/info.yaml"
+
+  /postpaid/payment:
+    $ref: "apiModel/postpaid/payment.yaml"
+
+  /orders/products/{productCode}/issue:
+    $ref: "apiModel/order/issue.yaml#/refId"
+
+  /orders/products/{productCode}/inquiry:
+    $ref: "apiModel/order/inquiry.yaml#/refId"
+
+  /orders:
+    $ref: "apiModel/order/orders.yaml#/refId"
+
+  /orders/{orderId}:
+    $ref: "apiModel/order/orders.yaml#/orderId"
+
+  /products/client:
+    $ref: "apiModel/product/product.yaml"
+
+  /products/cvm:
+    $ref: "apiModel/product/cvm.yaml"
+
+  /app/deposits/balance:
+    $ref: "apiModel/deposit/deposit.yaml"
+
+  # /testdiscriminator:
+  #   get:
+  #     tags:
+  #       - Test
+  #     summary: Say Hello world
+  #     description: |
+  #       -
+  #     responses:
+  #       '200':
+  #         description: |
+  #           Test only
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/HelloWorld'
+
+servers:
+  - url: "https://secure.billfazz.com/sandbox/api/v1/"
+components:
+  securitySchemes:
+    BasicAuth:
+      description: >
+        Basic authentication is a simple authentication scheme built into the HTTP protocol. 
+        The client sends HTTP requests with the Authorization header that contains the word Basic word followed by a space and 
+        a base64-encoded string ```username:apiKey```.
+
+      type: http
+      flows:
+        "username": null
+        "password": "API Key"
+      scheme: basic
+
+  schemas:
+    ## GENERAL
+    InquiryRequestGeneral:
+      $ref: "schemas/InquiryProductSchema/General/Request.yaml"
+
+    InquiryResponse:
+      $ref: "schemas/InquiryProductSchema/General/Response.yaml"
+
+    ## BPJS
+    InquiryRequestBPJS:
+      $ref: "schemas/InquiryProductSchema/BPJS/Request.yaml"
+
+    InquiryResponseBPJS:
+      $ref: "schemas/InquiryProductSchema/BPJS/Response.yaml#/Success"
+
+    InquiryResponseBPJSFailed:
+      $ref: "schemas/InquiryProductSchema/BPJS/Response.yaml#/Failed"
+
+    ## PDAM
+    InquiryResponsePDAM:
+      $ref: "schemas/InquiryProductSchema/PDAM/Response.yaml#/Success"
+
+    InquiryResponsePDAMFailed:
+      $ref: "schemas/InquiryProductSchema/PDAM/Response.yaml#/Failed"
+
+    ## ELECTRICITY INQUIRY
+    InquiryResponseElectricity:
+      $ref: "schemas/InquiryProductSchema/Electricity/Response.yaml#/Success"
+
+    InquiryResponseElectricityFailed:
+      $ref: "schemas/InquiryProductSchema/Electricity/Response.yaml#/Failed"
+
+    ## MOBILE POSTPAID
+    InquiryResponseMobile:
+      $ref: "schemas/InquiryProductSchema/Mobile/Response.yaml#/Success"
+
+    InquiryResponseMobileFailed:
+      $ref: "schemas/InquiryProductSchema/Mobile/Response.yaml#/Failed"
+
+    ## TELEPHONE INQUIRY
+    InquiryResponseTelephone:
+      $ref: "schemas/InquiryProductSchema/Telephone/Response.yaml#/Success"
+
+    InquiryResponseTelephoneFailed:
+      $ref: "schemas/InquiryProductSchema/Telephone/Response.yaml#/Failed"
+
+    ## TV POSTPAID
+    InquiryResponseTV:
+      $ref: "schemas/InquiryProductSchema/TV/Response.yaml#/Success"
+
+    InquiryResponseTVFailed:
+      $ref: "schemas/InquiryProductSchema/TV/Response.yaml#/Failed"
+
+    ## Multifinance
+    InquiryResponseMultifinance:
+      $ref: "schemas/InquiryProductSchema/Multifinance/FIFResponse.yaml#/Success"
+
+    InquiryResponseMultifinanceFailed:
+      $ref: "schemas/InquiryProductSchema/Multifinance/FIFResponse.yaml#/Failed"
+
+    ## GAS
+    InquiryResponseGAS:
+      $ref: "schemas/InquiryProductSchema/GAS/Response.yaml#/Success"
+
+    InquiryResponseGASFailed:
+      $ref: "schemas/InquiryProductSchema/GAS/Response.yaml#/Failed"
+
+    ## SPP
+    InquiryResponseSPP:
+      $ref: "schemas/InquiryProductSchema/SPP/Response.yaml#/Success"
+
+    InquiryResponseSPPFailed:
+      $ref: "schemas/InquiryProductSchema/SPP/Response.yaml#/Failed"
+
+    ## E-Samsat
+    InquiryResponseESamsat:
+      $ref: "schemas/InquiryProductSchema/ESamsat/Response.yaml#/Success"
+
+    InquiryResponseESamsatFailed:
+      $ref: "schemas/InquiryProductSchema/ESamsat/Response.yaml#/Failed"
+
+    ## Samolnas
+    InquiryResponseSamolnas:
+      $ref: "schemas/InquiryProductSchema/Samolnas/Response.yaml#/Success"
+
+    InquiryResponseSamolnasFailed:
+      $ref: "schemas/InquiryProductSchema/Samolnas/Response.yaml#/Failed"
+
+    ## PBB
+    InquiryResponsePBB:
+      $ref: "schemas/InquiryProductSchema/PBB/Response.yaml#/Success"
+
+    InquiryResponsePBBFailed:
+      $ref: "schemas/InquiryProductSchema/PBB/Response.yaml#/Failed"
+
+    ## Insurance
+    InquiryResponseInsurance:
+      $ref: "schemas/InquiryProductSchema/Insurance/Response.yaml#/Success"
+
+    InquiryResponseInsuranceFailed:
+      $ref: "schemas/InquiryProductSchema/Insurance/Response.yaml#/Failed"
+
+    ## Vehicle Tax
+    InquiryResponseVehicleTax:
+      $ref: "schemas/InquiryProductSchema/VehicleTax/Response.yaml#/Success"
+
+    InquiryResponseVehicleTaxFailed:
+      $ref: "schemas/InquiryProductSchema/VehicleTax/Response.yaml#/Failed"
+
+    ## Ewallet
+    InquiryResponseEwallet:
+      $ref: "schemas/InquiryProductSchema/Ewallet/Response.yaml#/Success"
+
+    InquiryResponseEwalletFailed:
+      $ref: "schemas/InquiryProductSchema/Ewallet/Response.yaml#/Failed"
+
+    ## PREPAID
+    PrepaidRequest:
+      $ref: "schemas/PrepaidProductSchema/Request.yaml"
+
+    PrepaidResponse:
+      $ref: "schemas/PrepaidProductSchema/Response.yaml"
+
+    ## PREPAID INFO
+    PrepaidInfoRequest:
+      $ref: "schemas/PrepaidInfoSchema/Electricity/Request.yaml"
+
+    PrepaidInfoResponse:
+      $ref: "schemas/PrepaidInfoSchema/Response.yaml"
+
+    PrepaidInfoResponseElectricity:
+      $ref: "schemas/PrepaidInfoSchema/Electricity/Response.yaml#/Success"
+
+    PrepaidInfoResponseElectricityFailed:
+      $ref: "schemas/PrepaidInfoSchema/Electricity/Response.yaml#/Failed"
+
+    PrepaidInfoResponseEwallet:
+      $ref: "schemas/PrepaidInfoSchema/Ewallet/Response.yaml#/Success"
+
+    PrepaidInfoResponseEwalletFailed:
+      $ref: "schemas/PrepaidInfoSchema/Ewallet/Response.yaml#/Failed"
+
+#    PrepaidInfoResponseGame:
+#      $ref: "schemas/PrepaidInfoSchema/Game/Response.yaml#/Success"
+#
+#    PrepaidInfoResponseGameFailed:
+#      $ref: "schemas/PrepaidInfoSchema/Game/Response.yaml#/Failed"
+
+    ## POSTPAID
+    PostpaidPaymentRequest:
+      $ref: "schemas/PostpaidSchema/Request.yaml"
+
+    PostpaidPaymentResponse:
+      $ref: "schemas/PostpaidSchema/Response.yaml"
+
+    ProductListResponse:
+      $ref: "schemas/ProductListSchema/Response.yaml"
+    # ResultMobilePostpaidDiscriminator:
+    #   allOf:
+    #    - $ref: '#/components/schemas/InquiryResponseMobile'
+    #    - type: object
+    InquiryNotFound:
+      $ref: "schemas/ErrorSchema/Error404.yaml#/InquiryNotFound"
+
+    ProductIsNotFound:
+      $ref: "schemas/ErrorSchema/Error404.yaml#/ProductIsNotFound"
+
+    ValidationError:
+      $ref: "schemas/ErrorSchema/Error422.yaml#/ValidationError"
+
+    ValidationPrepaidError:
+      $ref: "schemas/ErrorSchema/Error422.yaml#/ValidationPrepaidError"
+
+    ValidationPostpaidError:
+      $ref: "schemas/ErrorSchema/Error422.yaml#/ValidationPostpaidError"
+
+    ValidationErrorRequiredInquiry:
+      $ref: "schemas/ErrorSchema/Error422.yaml#/ValidationErrorRequiredInquiry"
+
+    ValidationErrorRequiredPrepaid:
+      $ref: "schemas/ErrorSchema/Error422.yaml#/ValidationErrorRequiredPrepaid"
+
+    ValidationErrorProductCutOff:
+      $ref: "schemas/ErrorSchema/Error422.yaml#/ValidationErrorProductCutOff"
+
+    ValidationErrorRequiredPostpaid:
+      $ref: "schemas/ErrorSchema/Error422.yaml#/ValidationErrorRequiredPostpaid"
+
+    ValidationErrorRechargePrepaid:
+      $ref: "schemas/ErrorSchema/Error422.yaml#/ValidationErrorRechargePrepaid"
+
+    OrderIsNotFound:
+      $ref: "schemas/ErrorSchema/Error404.yaml#/OrderIsNotFound"
+
+    OrderAlreadyPaidError:
+      $ref: "schemas/ErrorSchema/Error422.yaml#/OrderAlreadyPaidError"
+
+    callbackFormatPLN:
+      type: object
+      required:
+        - orderId
+        - destinationNo
+        - productCode
+        - price
+        - refId
+        - status
+        - reference
+        - result
+      properties:
+        orderId:
+          type: integer
+          example: 129
+        destinatioNo:
+          type: string
+          example: 530000000001
+        productCode:
+          type: string
+          example: PP_PLN
+        price:
+          type: integer
+          example: 302500
+        refId:
+          type: string
+          example: 1468
+        status:
+          type: string
+          example: success
+        reference:
+          type: object
+          properties:
+            referenceNo:
+              type: string
+              example: 004212C9245F1BA43A77CEBD5CD5DA39
+        result:
+          type: object
+          properties:
+            totalAdmin:
+              type: number
+              example: 2500
+            totalBill:
+              type: number
+              example: 300000
+            # headerBill:
+            #   type: object
+            #   allOf:
+            #     - $ref: '#/components/schemas/headerBillElectricity'
+            #     - properties:
+            #         remainingBillQty:
+            #           type: integer
+            #           example: 0
+            # detailBill:
+            #   type: object
+            #   $ref: '#/components/schemas/detailBIllElectricity'
+
+security:
+  - BasicAuth: [ ]

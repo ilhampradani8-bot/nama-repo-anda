@@ -1,0 +1,57 @@
+---
+// ResellerStatsGrid.astro
+---
+<div class="stats-grid">
+    <div class="stat-card">
+        <span class="label">Total Omset Penjualan</span>
+        <span class="value" id="stat-sales">-</span>
+        <span class="subtext">Akumulasi bruto</span>
+    </div>
+    <div class="stat-card">
+        <span class="label">Keuntungan Bersih Reseller</span>
+        <span class="value" id="stat-profit" style="color: #28a745;">-</span>
+        <span class="subtext">Dividen profit instan</span>
+    </div>
+    <div class="stat-card">
+        <span class="label">Total Pembelian</span>
+        <span class="value" id="stat-orders">-</span>
+        <span class="subtext">Transaksi terproses</span>
+    </div>
+</div>
+
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.25rem;
+    }
+
+    .stat-card {
+        background: #ffffff;
+        border: 2px solid #dee2e6;
+        border-radius: 4px;
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .stat-card .label {
+        font-size: 0.75rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+    }
+
+    .stat-card .value {
+        font-size: 1.6rem;
+        font-weight: bold;
+        color: #212529;
+    }
+
+    .stat-card .subtext {
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
+</style>

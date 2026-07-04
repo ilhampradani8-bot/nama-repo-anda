@@ -1,0 +1,61 @@
+---
+// ResellerProfileCard.astro
+---
+<div class="profile-card">
+    <div class="profile-avatar" id="avatar-initial">-</div>
+    <h3 class="profile-name" id="reseller-name">Memuat...</h3>
+    <p class="profile-email" id="reseller-email">...</p>
+    <span class="badge-role">Reseller Partner</span>
+</div>
+
+<style>
+    .profile-card {
+        background: #ffffff;
+        border: 2px solid #dee2e6;
+        border-radius: 4px;
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .profile-avatar {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: #e2f0d9;
+        margin: 0 auto 1rem auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #385723;
+        border: 2px solid #a9d18e;
+    }
+
+    .profile-name {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 0.25rem;
+    }
+
+    .profile-email {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-bottom: 1rem;
+        word-break: break-all;
+    }
+
+    .badge-role {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        background: #d1e7dd;
+        color: #0f5132;
+        border: 1px solid #badbcc;
+    }
+</style>

@@ -1,0 +1,58 @@
+---
+// TransactionTable.astro
+---
+<div class="card">
+    <div class="card-header">Riwayat Transaksi Terbaru</div>
+    <div class="table-responsive" id="table-container">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            Memuat data transaksi...
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        background: #ffffff;
+        border: 2px solid #dee2e6;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: #f8f9fa;
+        padding: 0.75rem 1.25rem;
+        border-bottom: 2px solid #dee2e6;
+        font-weight: 700;
+        font-size: 1rem;
+        color: #212529;
+    }
+
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .loading-spinner {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 3rem 1rem;
+        color: #007bff;
+        gap: 10px;
+        font-size: 0.9rem;
+    }
+
+    .spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(0, 123, 255, 0.1);
+        border-top-color: #007bff;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
