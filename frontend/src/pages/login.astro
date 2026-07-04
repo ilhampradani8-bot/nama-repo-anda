@@ -449,14 +449,26 @@ import PenggabungUtama from '../layouts/PenggabungUtama.astro';
             loginForm.action = LOGIN_API_URL + '/login';
         }
 
-        window.onload = function() {
-            if (typeof google !== 'undefined') {
+        // Use onGoogleLibraryLoad callback — guaranteed to fire after GSI fully loads
+        // (more reliable than window.onload with async/defer scripts)
+        window.onGoogleLibraryLoad = function() {
+            google.accounts.id.initialize({
+                client_id: "812430784237-70vet0sepo0f0eti0cs62nnjd4s89ia8.apps.googleusercontent.com",
+                callback: handleCredentialResponse,
+                use_fedcm_for_prompt: false  // Disable FedCM — avoids .well-known/web-identity requirement
+            });
+        };
+
+        // Fallback: also initialize on window.onload in case onGoogleLibraryLoad doesn't fire
+        window.addEventListener('load', function() {
+            if (typeof google !== 'undefined' && google.accounts) {
                 google.accounts.id.initialize({
                     client_id: "812430784237-70vet0sepo0f0eti0cs62nnjd4s89ia8.apps.googleusercontent.com",
-                    callback: handleCredentialResponse
+                    callback: handleCredentialResponse,
+                    use_fedcm_for_prompt: false
                 });
             }
-        };
+        });
 
         function handleCredentialResponse(response) {
             const form = document.createElement('form');
@@ -474,11 +486,31 @@ import PenggabungUtama from '../layouts/PenggabungUtama.astro';
         }
 
         function loginWithGoogle() {
-            if (typeof google !== 'undefined') {
-                google.accounts.id.prompt();
-            } else {
-                alert("Gagal memuat pustaka Google Sign-In. Silakan muat ulang halaman.");
+            if (typeof google === 'undefined' || !google.accounts) {
+                alert("Pustaka Google Sign-In belum dimuat. Silakan tunggu sebentar dan coba lagi.");
+                return;
             }
+            // Use popup flow (more reliable, no FedCM dependency)
+            const client = google.accounts.oauth2.initTokenClient({
+                client_id: "812430784237-70vet0sepo0f0eti0cs62nnjd4s89ia8.apps.googleusercontent.com",
+                scope: 'openid email profile',
+                callback: '',
+            });
+            // Fall back to One Tap prompt (non-FedCM)
+            google.accounts.id.prompt(function(notification) {
+                if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                    // One Tap blocked — open Google accounts in new tab as last resort
+                    window.open(
+                        'https://accounts.google.com/o/oauth2/v2/auth' +
+                        '?client_id=812430784237-70vet0sepo0f0eti0cs62nnjd4s89ia8.apps.googleusercontent.com' +
+                        '&redirect_uri=' + encodeURIComponent(LOGIN_API_URL + '/login/google') +
+                        '&response_type=code' +
+                        '&scope=openid%20email%20profile' +
+                        '&access_type=offline',
+                        '_self'
+                    );
+                }
+            });
         }
 
         function loginAsDemo() {
