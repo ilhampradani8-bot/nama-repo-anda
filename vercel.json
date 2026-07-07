@@ -3,9 +3,5 @@
   "rewrites": [
     { "source": "/api/(.*)", "destination": "https://api.ilhampradani.me/api/$1" },
     { "source": "/product/:code", "destination": "/product" }
-  ],
-  "routes": [
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/404.html", "status": 404 }
   ]
 }
