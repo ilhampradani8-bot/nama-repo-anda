@@ -17,6 +17,25 @@ import UserProfileCard from './UserProfileCard.astro';
                 <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
             </svg>
         </a>
+        <a href="/mymall" class="btn-mymall" title="Kunjungi My Mall Anda">
+            <svg class="castle-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 19V8H18V5H15V8H9V5H6V8H3V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19Z"></path>
+                <path d="M12 21V16H10V21"></path>
+                <path d="M12 12V8"></path>
+                <path d="M14 10H10"></path>
+            </svg>
+            <span class="mymall-prefix">My</span>
+            <span class="mymall-scroller">
+                <span class="mymall-words">
+                    <span>Mall</span>
+                    <span>Stand</span>
+                    <span>Store</span>
+                    <span>Product</span>
+                    <span>Prestise</span>
+                    <span>Museum</span>
+                </span>
+            </span>
+        </a>
         <div class="profile-dropdown-container">
             <button class="btn-profile-toggle" id="btnProfileToggle" aria-label="Toggle Menu Profil">
                 <img src="/grabill54-hello-2488_512.gif" alt="Profile Avatar" class="profile-gif-avatar">
@@ -102,6 +121,89 @@ import UserProfileCard from './UserProfileCard.astro';
         color: #0d6efd;
         text-decoration: none;
         transform: scale(1.1);
+    }
+
+    /* My Mall Button & Scroller styling */
+    .btn-mymall {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: linear-gradient(135deg, #6610f2 0%, #0d6efd 100%);
+        color: #ffffff !important;
+        text-decoration: none !important;
+        font-weight: 600;
+        font-size: 0.85rem;
+        padding: 6px 12px;
+        border-radius: 50px;
+        box-shadow: 0 4px 10px rgba(13, 110, 253, 0.2);
+        transition: all 0.2s ease;
+        height: 38px;
+        overflow: hidden;
+    }
+
+    .btn-mymall:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(13, 110, 253, 0.3);
+    }
+
+    .btn-mymall .castle-icon {
+        color: #fff;
+    }
+
+    .mymall-prefix {
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .mymall-scroller {
+        height: 20px;
+        overflow: hidden;
+        position: relative;
+        display: inline-block;
+        width: 60px; /* ensure enough width for the longest word */
+    }
+
+    .mymall-words {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 0;
+        left: 0;
+        animation: scrollWords 12s infinite cubic-bezier(0.645, 0.045, 0.355, 1);
+    }
+
+    .mymall-words span {
+        display: block;
+        height: 20px;
+        line-height: 20px;
+        color: #ffffff;
+        font-weight: 700;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        text-align: left;
+    }
+
+    @keyframes scrollWords {
+        0%, 12% {
+            transform: translateY(0);
+        }
+        16.6%, 28.6% {
+            transform: translateY(-20px);
+        }
+        33.3%, 45.3% {
+            transform: translateY(-40px);
+        }
+        50%, 62% {
+            transform: translateY(-60px);
+        }
+        66.6%, 78.6% {
+            transform: translateY(-80px);
+        }
+        83.3%, 95% {
+            transform: translateY(-100px);
+        }
+        100% {
+            transform: translateY(0);
+        }
     }
 
     .profile-dropdown-container {

@@ -1,0 +1,608 @@
+---
+// mymall.astro
+import UserNavbar from '../components/dashboard/UserNavbar.astro';
+import BottomNav from '../components/BottomNav.astro';
+---
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Mall | EasyMall</title>
+    
+    <!-- Favicon & App Icons -->
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --border-color: #dee2e6;
+            --primary-gradient: linear-gradient(135deg, #6610f2 0%, #0d6efd 100%);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 60px; /* For BottomNav */
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 15px;
+            width: 100%;
+        }
+
+        /* Profile Storefront Header Card */
+        .store-header-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .store-header-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: var(--primary-gradient);
+        }
+
+        .store-profile-row {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .store-avatar-wrapper {
+            position: relative;
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            padding: 4px;
+            background: var(--primary-gradient);
+            box-shadow: 0 6px 15px rgba(102, 16, 242, 0.15);
+        }
+
+        .store-avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #ffffff;
+            background: #f8f9fa;
+        }
+
+        .store-info {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .store-name {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #212529;
+            margin-bottom: 4px;
+            letter-spacing: -0.5px;
+        }
+
+        .store-tagline {
+            font-size: 1rem;
+            color: #6c757d;
+            margin-bottom: 12px;
+        }
+
+        .store-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .store-badge {
+            background: #f1f3f5;
+            border: 1px solid #dee2e6;
+            color: #495057;
+            padding: 4px 10px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .store-badge.verified {
+            background: #e8f5e9;
+            border-color: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        /* Store Stats Grid */
+        .store-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            border-top: 1px solid #e9ecef;
+            padding-top: 1.5rem;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: #ced4da;
+        }
+
+        .stat-val {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #0d6efd;
+            margin-bottom: 2px;
+        }
+
+        .stat-lbl {
+            font-size: 0.8rem;
+            color: #6c757d;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Products Listing Section */
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #212529;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Products Grid */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .product-item {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            transition: all 0.25s ease;
+            position: relative;
+        }
+
+        .product-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+            border-color: #bfa6ff;
+        }
+
+        .product-item-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .product-item-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #212529;
+            margin-top: 4px;
+            line-height: 1.3;
+        }
+
+        .product-item-price {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #198754;
+        }
+
+        .product-item-meta {
+            font-size: 0.88rem;
+            color: #6c757d;
+            line-height: 1.4;
+        }
+
+        .card-gallery {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            margin-top: 5px;
+        }
+
+        .card-gallery img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            transition: border-color 0.15s;
+            flex-shrink: 0;
+        }
+
+        .card-gallery img:hover {
+            border-color: #0d6efd;
+        }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: #ffffff;
+            border-left: 4px solid #0d6efd;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            padding: 12px 20px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            min-width: 250px;
+            animation: slideIn 0.3s ease-out;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .toast.toast-danger {
+            border-left-color: #dc3545;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Lightbox modal */
+        .lightbox-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1050;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        .lightbox-modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .lightbox-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox-content img {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: #ffffff;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.15s;
+        }
+
+        .lightbox-close:hover {
+            color: #bbb;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+            background: #ffffff;
+            border: 1px dashed var(--border-color);
+            border-radius: 12px;
+            grid-column: 1/-1;
+        }
+    </style>
+</head>
+<body>
+    <UserNavbar />
+
+    <div class="container">
+        <!-- Store Header -->
+        <div class="store-header-card">
+            <div class="store-profile-row">
+                <div class="store-avatar-wrapper">
+                    <img id="store-avatar-img" src="/grabill54-hello-2488_512.gif" alt="Avatar Mall" class="store-avatar">
+                </div>
+                <div class="store-info">
+                    <h1 class="store-name" id="store-title-name">My Mall</h1>
+                    <div class="store-tagline">Selamat datang di lapak digital premium saya. Temukan layanan terbaik di sini!</div>
+                    <div class="store-badges">
+                        <span class="store-badge verified">
+                            🛡️ Merchant Terverifikasi
+                        </span>
+                        <span class="store-badge" id="member-since-badge">
+                            📅 Bergabung: ...
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="store-stats-grid">
+                <div class="stat-card">
+                    <div class="stat-val" id="stat-total-products">0</div>
+                    <div class="stat-lbl">Total Produk</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val" id="stat-active-variants">0</div>
+                    <div class="stat-lbl">Varian Aktif</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val" style="color: #6610f2;" id="stat-categories-count">0</div>
+                    <div class="stat-lbl">Kategori Terisi</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Products -->
+        <div class="section-title">
+            <span>Daftar Produk yang Saya Share</span>
+        </div>
+
+        <div id="mall-products-container" class="product-grid">
+            <div style="text-align: center; padding: 2rem; grid-column: 1/-1;">
+                Memuat produk dari mall...
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox Modal -->
+    <div id="lightbox-modal" class="lightbox-modal" onclick="closeLightbox()">
+        <div class="lightbox-content" onclick="event.stopPropagation()">
+            <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+            <img id="lightbox-img" src="" alt="Perbesar Gambar">
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script is:inline>
+        const API_BASE_URL = 'http://localhost:5002'; // Fallback to local dev API
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type === 'danger' ? 'toast-danger' : ''}`;
+            toast.innerHTML = `
+                <span>${message}</span>
+                <button onclick="this.parentElement.remove()" style="margin-left: 15px; background:none; border:none; cursor:pointer; font-weight:bold; color:inherit;">&times;</button>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        async function fetchStorefrontData() {
+            try {
+                // 1. Fetch authentication status to get user details
+                const authRes = await fetch(`${API_BASE_URL}/api/auth/status`, { credentials: 'include' });
+                if (!authRes.ok) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+                const authData = await authRes.json();
+                if (!authData.logged_in) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                // Update Profile name
+                const nickname = authData.user ? (authData.user.username || 'Merchant') : 'Merchant';
+                document.getElementById('store-title-name').textContent = `Mall milik ${nickname}`;
+                
+                // Formulate Join Date
+                const createdAt = authData.user ? authData.user.created_at : '';
+                if (createdAt) {
+                    const formattedDate = new Date(createdAt).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+                    document.getElementById('member-since-badge').innerHTML = `📅 Bergabung: ${formattedDate}`;
+                } else {
+                    document.getElementById('member-since-badge').innerHTML = `📅 Bergabung: Baru-baru ini`;
+                }
+
+                // 2. Fetch shared products of the user
+                const res = await fetch(`${API_BASE_URL}/api/user/products`, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success) {
+                        renderMallProducts(data.products || []);
+                    } else {
+                        document.getElementById('mall-products-container').innerHTML = `<div class="no-data">Gagal memuat produk: ${data.error || ''}</div>`;
+                    }
+                } else {
+                    document.getElementById('mall-products-container').innerHTML = '<div class="no-data">Gagal memuat produk mall Anda.</div>';
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('mall-products-container').innerHTML = '<div class="no-data">Terjadi kesalahan saat memuat mall.</div>';
+            }
+        }
+
+        const categoryMap = {
+            'digital': '🚀 Produk Digital & Lisensi',
+            'jasa': '🛠️ Jasa & Freelancing',
+            'layanan': '☁️ Layanan Online / VPS',
+            'voucher': '🎮 Voucher Game & Top Up',
+            'ebook': '📚 E-Book & Kursus',
+            'lainnya': '📦 Lainnya'
+        };
+
+        function renderMallProducts(products) {
+            const container = document.getElementById('mall-products-container');
+            if (products.length === 0) {
+                container.innerHTML = '<div class="no-data">Belum ada produk di mall Anda. Silakan tambahkan produk baru lewat dashboard!</div>';
+                
+                // Update stats
+                document.getElementById('stat-total-products').textContent = '0';
+                document.getElementById('stat-active-variants').textContent = '0';
+                document.getElementById('stat-categories-count').textContent = '0';
+                return;
+            }
+
+            // Stats calculation
+            let totalVariants = 0;
+            const uniqueCategories = new Set();
+            
+            container.innerHTML = products.map(p => {
+                const formattedPrice = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(p.price);
+                const categoryText = categoryMap[p.category] || categoryMap['lainnya'];
+                
+                uniqueCategories.add(p.category);
+
+                // Status Badge
+                let statusBadge = '';
+                if (p.status === 'draft') {
+                    statusBadge = `<span class="product-item-badge" style="background:#fff3cd; color:#664d03; border: 1px solid #ffe69c;">Draft</span>`;
+                } else if (p.status === 'review') {
+                    statusBadge = `<span class="product-item-badge" style="background:#cfe2ff; color:#084298; border: 1px solid #b6d4fe;">Review</span>`;
+                } else if (p.status === 'blokir') {
+                    statusBadge = `<span class="product-item-badge" style="background:#f8d7da; color:#842029; border: 1px solid #f5c2c7;">Blokir</span>`;
+                } else if (p.status === 'dihapus') {
+                    statusBadge = `<span class="product-item-badge" style="background:#e2e3e5; color:#41464b; border: 1px solid #d3d6d8;">Dihapus</span>`;
+                } else {
+                    statusBadge = `<span class="product-item-badge" style="background:#d1e7dd; color:#0f5132; border: 1px solid #badbcc;">Publish</span>`;
+                }
+
+                // Images gallery list
+                let galleryHtml = '';
+                if (p.images && p.images.length > 0) {
+                    galleryHtml = `
+                        <div class="card-gallery">
+                            ${p.images.map(url => `<img src="${url}" onclick="openLightbox('${url}')" style="cursor: zoom-in;" onerror="this.src='https://placehold.co/100x100?text=Foto'">`).join('')}
+                        </div>
+                    `;
+                }
+
+                // Variants list
+                let variantsHtml = '';
+                if (p.variants && p.variants.length > 0) {
+                    totalVariants += p.variants.length;
+                    variantsHtml = `
+                        <div style="margin-top: 5px; font-size: 0.85rem; background: #f8f9fa; border-radius: 6px; padding: 8px; border: 1px solid #e9ecef;">
+                            <strong style="display:block; margin-bottom: 4px; font-size:0.8rem; color:#495057;">Variasi Harga:</strong>
+                            <ul style="list-style: none; padding-left: 0; display:flex; flex-direction:column; gap:4px;">
+                                ${p.variants.map(v => {
+                                    const vPrice = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v.price);
+                                    return `<li style="display:flex; justify-content:space-between; color:#495057;"><span>• ${v.name}</span><span style="font-weight:600; color:#198754;">${vPrice}</span></li>`;
+                                }).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="product-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span class="product-item-badge" style="background:#f1f3f5; color:#495057; border: 1px solid #dee2e6;">${categoryText}</span>
+                            ${statusBadge}
+                        </div>
+                        <div class="product-item-title">${p.product_name}</div>
+                        <div class="product-item-price">Mulai ${formattedPrice}</div>
+                        
+                        ${galleryHtml}
+                        
+                        <div class="product-item-meta" style="flex-grow:1; margin-top: 5px; min-height: 40px;">${p.description || 'Tidak ada deskripsi.'}</div>
+                        
+                        ${variantsHtml}
+                    </div>
+                `;
+            }).join('');
+
+            // Set statistics
+            document.getElementById('stat-total-products').textContent = products.length;
+            document.getElementById('stat-active-variants').textContent = totalVariants;
+            document.getElementById('stat-categories-count').textContent = uniqueCategories.size;
+        }
+
+        function openLightbox(url) {
+            const lightbox = document.getElementById('lightbox-modal');
+            const img = document.getElementById('lightbox-img');
+            img.src = url;
+            lightbox.classList.add('active');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox-modal').classList.remove('active');
+        }
+
+        // Initialize Storefront
+        fetchStorefrontData();
+    </script>
+    <BottomNav />
+</body>
+</html>
