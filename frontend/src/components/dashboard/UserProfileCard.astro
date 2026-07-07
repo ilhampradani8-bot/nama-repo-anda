@@ -3,10 +3,47 @@
 ---
 <div class="profile-card">
     <div class="profile-avatar" id="avatar-initial">-</div>
-    <h3 class="profile-name" id="user-name">Memuat...</h3>
+    <h3 class="profile-name">
+        <span id="user-name">Memuat...</span>
+        <span id="verified-badge" class="verified-badge" style="display: none;" title="Akun Terverifikasi">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#0d6efd" viewBox="0 0 16 16" style="display: inline-block; vertical-align: middle; margin-left: 4px;">
+                <path d="M10.067.87a2.89 2.89 0 0 0-4.134 0l-.622.638-.89-.011a2.89 2.89 0 0 0-2.924 2.924l.01.89-.636.622a2.89 2.89 0 0 0 0 4.134l.637.622-.011.89a2.89 2.89 0 0 0 2.924 2.924l.89-.01.622.636a2.89 2.89 0 0 0 4.134 0l.622-.637.89.011a2.89 2.89 0 0 0 2.924-2.924l-.01-.89.636-.622a2.89 2.89 0 0 0 0-4.134l-.637-.622.011-.89a2.89 2.89 0 0 0-2.924-2.924l-.89.01zm.287 5.984-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7 8.793l2.646-2.647a.5.5 0 0 1 .708.708z"/>
+            </svg>
+        </span>
+    </h3>
     <p class="profile-email" id="user-email">...</p>
     <span class="badge-role">Pelanggan</span>
 </div>
+
+<script is:inline>
+    (async function() {
+        try {
+            let API_BASE_URL = '';
+            if (window.location.port !== '5002' && window.location.protocol !== 'file:') {
+                API_BASE_URL = 'https://api.ilhampradani.me';
+            }
+            const authRes = await fetch(`${API_BASE_URL}/api/auth/status`, { credentials: 'include' });
+            if (authRes.ok) {
+                const authData = await authRes.json();
+                if (authData.logged_in) {
+                    const nameEl = document.getElementById('user-name');
+                    const emailEl = document.getElementById('user-email');
+                    const avatarEl = document.getElementById('avatar-initial');
+                    const verifiedEl = document.getElementById('verified-badge');
+                    
+                    if (nameEl) nameEl.textContent = authData.name;
+                    if (emailEl) emailEl.textContent = authData.email;
+                    if (avatarEl) avatarEl.textContent = authData.name.charAt(0).toUpperCase();
+                    if (verifiedEl && authData.verified === 1) {
+                        verifiedEl.style.display = 'inline-block';
+                    }
+                }
+            }
+        } catch(e) {
+            console.error("Error auto-populating UserProfileCard:", e);
+        }
+    })();
+</script>
 
 <style>
     .profile-card {

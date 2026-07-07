@@ -1,7 +1,6 @@
 ---
 // dashboard_produk.astro
 import UserNavbar from '../components/dashboard/UserNavbar.astro';
-import UserProfileCard from '../components/dashboard/UserProfileCard.astro';
 import UserSidebar from '../components/dashboard/UserSidebar.astro';
 import BottomNav from '../components/BottomNav.astro';
 ---
@@ -63,8 +62,9 @@ import BottomNav from '../components/BottomNav.astro';
         .card {
             background: #ffffff;
             border: 2px solid #dee2e6;
-            border-radius: 4px;
+            border-radius: 8px;
             overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
 
         .card-header {
@@ -80,26 +80,153 @@ import BottomNav from '../components/BottomNav.astro';
             padding: 1.25rem;
         }
 
+        /* Tabs System */
+        .tabs-header {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 2px solid #dee2e6;
+            margin-bottom: 1.5rem;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 0.75rem 1.25rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #6c757d;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            color: #0d6efd;
+            background: rgba(13, 110, 253, 0.05);
+        }
+
+        .tab-btn.active {
+            color: #0d6efd;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background-color: #0d6efd;
+            border-radius: 3px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Buttons & Actions */
+        .btn-primary {
+            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+            color: #fff;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 6px rgba(13, 110, 253, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(13, 110, 253, 0.25);
+            background: linear-gradient(135deg, #0b5ed7, #0a58ca);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: #fff;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-danger:hover {
+            background: #bb2d3b;
+        }
+
+        .shared-header-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px dashed #dee2e6;
+            padding-bottom: 1rem;
+        }
+
+        .shared-title {
+            font-size: 1.15rem;
+            font-weight: bold;
+            color: #343a40;
+        }
+
+        /* Product Grid */
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+            gap: 1.25rem;
         }
 
         .product-item {
             border: 1px solid var(--border-color);
-            border-radius: 4px;
-            padding: 1rem;
+            border-radius: 8px;
+            padding: 1.25rem;
             background: #ffffff;
             display: flex;
             flex-direction: column;
             gap: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .product-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+            border-color: #ced4da;
         }
 
         .product-item-title {
             font-weight: bold;
-            font-size: 1rem;
+            font-size: 1.05rem;
             color: #212529;
+            margin-top: 5px;
         }
 
         .product-item-meta {
@@ -107,14 +234,26 @@ import BottomNav from '../components/BottomNav.astro';
             color: #6c757d;
         }
 
+        .product-item-price {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #198754;
+            margin: 3px 0;
+        }
+
         .product-item-badge {
             align-self: flex-start;
             padding: 2px 8px;
             border-radius: 4px;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: bold;
             background: #d1e7dd;
             color: #0f5132;
+        }
+
+        .product-item-badge.shared {
+            background: #cfe2ff;
+            color: #084298;
         }
 
         .key-box {
@@ -127,6 +266,24 @@ import BottomNav from '../components/BottomNav.astro';
             color: #495057;
             word-break: break-all;
             margin-top: 5px;
+        }
+
+        /* Photo Gallery list inside product card */
+        .card-gallery {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            margin-top: 5px;
+            padding-bottom: 4px;
+        }
+
+        .card-gallery img {
+            width: 50px;
+            height: 50px;
+            border-radius: 4px;
+            object-fit: cover;
+            border: 1px solid #dee2e6;
+            flex-shrink: 0;
         }
 
         .no-data {
@@ -159,6 +316,33 @@ import BottomNav from '../components/BottomNav.astro';
             to { transform: rotate(360deg); }
         }
 
+        /* Toast Notification */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1100;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast-msg {
+            background: #212529;
+            color: #fff;
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 0.9rem;
+            font-weight: 500;
+            animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
         @media (max-width: 768px) {
             body {
                 padding-bottom: 74px !important;
@@ -177,18 +361,45 @@ import BottomNav from '../components/BottomNav.astro';
 
     <div class="container">
         <div class="sidebar-col">
-            <UserProfileCard />
             <UserSidebar activeTab="produk" />
         </div>
 
         <div class="content-area">
             <div class="card">
-                <div class="card-header">🔑 Lisensi & Produk Aktif Saya</div>
                 <div class="card-body">
-                    <div id="product-container" class="product-grid">
-                        <div class="loading-spinner" style="grid-column: 1/-1;">
-                            <div class="spinner"></div>
-                            Memuat produk aktif...
+                    <!-- Tabs System Header -->
+                    <div class="tabs-header">
+                        <button class="tab-btn active" onclick="switchTab('lisensi-tab', this)">
+                            🔑 Lisensi & Produk Aktif
+                        </button>
+                        <button class="tab-btn" onclick="switchTab('shared-tab', this)">
+                            📤 Produk yang Saya Share
+                        </button>
+                    </div>
+
+                    <!-- Tab 1 Content: Active licenses -->
+                    <div id="lisensi-tab" class="tab-content active">
+                        <div id="product-container" class="product-grid">
+                            <div class="loading-spinner" style="grid-column: 1/-1;">
+                                <div class="spinner"></div>
+                                Memuat produk aktif...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 2 Content: Shared products -->
+                    <div id="shared-tab" class="tab-content">
+                        <div class="shared-header-box">
+                            <div class="shared-title">Daftar Produk Saya Yang Dishare</div>
+                            <a href="/dashboard_tambah_produk.html" class="btn-primary">
+                                ➕ Tambah Produk
+                            </a>
+                        </div>
+                        <div id="shared-container" class="product-grid">
+                            <div class="loading-spinner" style="grid-column: 1/-1;">
+                                <div class="spinner"></div>
+                                Memuat produk shared...
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -196,10 +407,48 @@ import BottomNav from '../components/BottomNav.astro';
         </div>
     </div>
 
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="toast-container"></div>
+
     <script is:inline>
         let API_BASE_URL = '';
         if (window.location.port !== '5002' && window.location.protocol !== 'file:') {
             API_BASE_URL = 'https://api.ilhampradani.me';
+        }
+
+        // Tab Switching Logic
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(button => {
+                button.classList.remove('active');
+            });
+
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+
+            if (tabId === 'shared-tab') {
+                fetchSharedProducts();
+            } else {
+                fetchUserData();
+            }
+        }
+
+        // Show Toast Notifications
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast-msg';
+            toast.style.borderLeft = type === 'danger' ? '4px solid #dc3545' : '4px solid #198754';
+            toast.innerHTML = `<span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
 
         async function fetchUserData() {
@@ -214,10 +463,6 @@ import BottomNav from '../components/BottomNav.astro';
                     window.location.href = '/login.html';
                     return;
                 }
-
-                document.getElementById('user-name').textContent = authData.name;
-                document.getElementById('user-email').textContent = authData.email;
-                document.getElementById('avatar-initial').textContent = authData.name.charAt(0).toUpperCase();
 
                 const dataRes = await fetch(`${API_BASE_URL}/api/dashboard/data`, { credentials: 'include' });
                 if (dataRes.ok) {
@@ -238,8 +483,6 @@ import BottomNav from '../components/BottomNav.astro';
 
         function renderActiveProducts(transactions) {
             const container = document.getElementById('product-container');
-            // Filter to show transactions as simulated digital license items
-            // e.g. game vouchers, SSL, token, script licenses
             const activeItems = transactions.filter(t => 
                 t.product_name && (
                     t.product_name.toLowerCase().includes('ssl') || 
@@ -256,7 +499,6 @@ import BottomNav from '../components/BottomNav.astro';
             }
 
             container.innerHTML = activeItems.map(item => {
-                // Generate a dummy code key for classic UI visualization
                 let dummyKey = 'KEY-' + item.transaction_id.substring(4, 12).toUpperCase() + '-ACTIVE';
                 if (item.product_name.toLowerCase().includes('ssl')) {
                     dummyKey = 'SSL-CERT-' + item.transaction_id.substring(4, 10).toUpperCase() + '-LIC';
@@ -279,11 +521,133 @@ import BottomNav from '../components/BottomNav.astro';
             document.getElementById('product-container').innerHTML = '<div class="no-data">Gagal memuat produk aktif.</div>';
         }
 
-        async function performLogout() {
+        // Shared Products API Interaction
+        async function fetchSharedProducts() {
+            const container = document.getElementById('shared-container');
+            container.innerHTML = `
+                <div class="loading-spinner" style="grid-column: 1/-1;">
+                    <div class="spinner"></div>
+                    Memuat produk shared...
+                </div>
+            `;
             try {
-                await fetch(`${API_BASE_URL}/logout`, { credentials: 'include' });
-            } catch(e){}
-            window.location.href = '/login.html';
+                const res = await fetch(`${API_BASE_URL}/api/user/products`, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success) {
+                        renderSharedProducts(data.products || []);
+                    } else {
+                        container.innerHTML = `<div class="no-data">Gagal memuat produk shared: ${data.error || ''}</div>`;
+                    }
+                } else {
+                    container.innerHTML = '<div class="no-data">Gagal memuat produk shared.</div>';
+                }
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = '<div class="no-data">Gagal memuat produk shared.</div>';
+            }
+        }
+
+        const categoryMap = {
+            'digital': '🚀 Produk Digital & Lisensi',
+            'jasa': '🛠️ Jasa & Freelancing',
+            'layanan': '☁️ Layanan Online / VPS',
+            'voucher': '🎮 Voucher Game & Top Up',
+            'ebook': '📚 E-Book & Kursus',
+            'lainnya': '📦 Lainnya'
+        };
+
+        function renderSharedProducts(products) {
+            const container = document.getElementById('shared-container');
+            if (products.length === 0) {
+                container.innerHTML = '<div class="no-data">Belum ada produk yang Anda share. Silakan tambahkan produk baru!</div>';
+                return;
+            }
+
+            container.innerHTML = products.map(p => {
+                const formattedPrice = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(p.price);
+                const categoryText = categoryMap[p.category] || categoryMap['lainnya'];
+                
+                // Status Badge
+                const statusBadge = p.status === 'draft' 
+                    ? `<span class="product-item-badge" style="background:#fff3cd; color:#664d03; border: 1px solid #ffe69c;">Draft</span>`
+                    : `<span class="product-item-badge shared">Published</span>`;
+
+                // Images gallery list
+                let galleryHtml = '';
+                if (p.images && p.images.length > 0) {
+                    galleryHtml = `
+                        <div class="card-gallery">
+                            ${p.images.map(url => `<img src="${url}" onerror="this.src='https://placehold.co/100x100?text=Foto'">`).join('')}
+                        </div>
+                    `;
+                }
+
+                // Variants list
+                let variantsHtml = '';
+                if (p.variants && p.variants.length > 0) {
+                    variantsHtml = `
+                        <div style="margin-top: 5px; font-size: 0.85rem; background: #f8f9fa; border-radius: 6px; padding: 8px; border: 1px solid #e9ecef;">
+                            <strong style="display:block; margin-bottom: 4px; font-size:0.8rem; color:#495057;">Variasi Harga:</strong>
+                            <ul style="list-style: none; padding-left: 0; display:flex; flex-direction:column; gap:4px;">
+                                ${p.variants.map(v => {
+                                    const vPrice = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v.price);
+                                    return `<li style="display:flex; justify-content:space-between; color:#495057;"><span>• ${v.name}</span><span style="font-weight:600; color:#198754;">${vPrice}</span></li>`;
+                                }).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="product-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span class="product-item-badge" style="background:#f1f3f5; color:#495057; border: 1px solid #dee2e6;">${categoryText}</span>
+                            ${statusBadge}
+                        </div>
+                        <div class="product-item-title">${p.product_name}</div>
+                        <div class="product-item-price">Mulai ${formattedPrice}</div>
+                        
+                        ${galleryHtml}
+                        
+                        <div class="product-item-meta" style="flex-grow:1; margin-top: 5px;">${p.description || 'Tidak ada deskripsi.'}</div>
+                        
+                        ${variantsHtml}
+
+                        <div style="margin-top: 10px; display: flex; justify-content: flex-end;">
+                            <button class="btn-danger" onclick="deleteProduct(${p.id})">
+                                🗑️ Hapus
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm('Apakah Anda yakin ingin menghapus produk ini?')) return;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/user/products/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success) {
+                        showToast('Produk berhasil dihapus!');
+                        fetchSharedProducts();
+                    } else {
+                        showToast('Gagal menghapus: ' + (data.error || ''), 'danger');
+                    }
+                } else {
+                    showToast('Gagal menghapus produk.', 'danger');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Terjadi kesalahan sistem.', 'danger');
+            }
         }
 
         fetchUserData();

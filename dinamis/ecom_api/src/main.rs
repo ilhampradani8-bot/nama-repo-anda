@@ -44,6 +44,18 @@ struct AuthStatus {
     logged_in: bool,
     email: String,
     name: String,
+    verified: i32,
+}
+
+#[derive(Deserialize)]
+struct SaveSettingsPayload {
+    name: String,
+    phone: Option<String>,
+    recovery_email_1: Option<String>,
+    recovery_email_2: Option<String>,
+    bank_name: Option<String>,
+    bank_account_number: Option<String>,
+    bank_account_holder: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -192,11 +204,23 @@ fn init_db(db_path: &str) {
             provider TEXT,
             provider_id TEXT,
             role TEXT DEFAULT 'user',
+            phone TEXT,
+            verified INTEGER DEFAULT 0,
+            recovery_email_1 TEXT,
+            recovery_email_2 TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )",
         [],
     )
     .expect("Failed to create users table");
+
+    let _ = conn.execute("ALTER TABLE users ADD COLUMN phone TEXT", []);
+    let _ = conn.execute("ALTER TABLE users ADD COLUMN verified INTEGER DEFAULT 0", []);
+    let _ = conn.execute("ALTER TABLE users ADD COLUMN recovery_email_1 TEXT", []);
+    let _ = conn.execute("ALTER TABLE users ADD COLUMN recovery_email_2 TEXT", []);
+    let _ = conn.execute("ALTER TABLE users ADD COLUMN bank_name TEXT", []);
+    let _ = conn.execute("ALTER TABLE users ADD COLUMN bank_account_number TEXT", []);
+    let _ = conn.execute("ALTER TABLE users ADD COLUMN bank_account_holder TEXT", []);
 
     conn.execute(
         "CREATE TABLE IF NOT EXISTS resellers (
@@ -270,6 +294,79 @@ fn init_db(db_path: &str) {
         [],
     )
     .expect("Failed to create keranjang table");
+
+    // Migration: Add email and provider columns to transactions table if they do not exist
+    let _ = conn.execute("ALTER TABLE transactions ADD COLUMN email TEXT", []);
+    let _ = conn.execute("ALTER TABLE transactions ADD COLUMN provider TEXT", []);
+
+    // Create shared_products table if it does not exist
+    let _ = conn.execute(
+        "CREATE TABLE IF NOT EXISTS shared_products (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT NOT NULL,
+            product_name TEXT NOT NULL,
+            variant_name TEXT,
+            price INTEGER NOT NULL,
+            description TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    );
+
+    // Wallet / Saldo system tables
+    let _ = conn.execute(
+        "CREATE TABLE IF NOT EXISTS user_wallet (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT UNIQUE NOT NULL,
+            balance INTEGER NOT NULL DEFAULT 0,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    );
+
+    let _ = conn.execute(
+        "CREATE TABLE IF NOT EXISTS topup_requests (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT NOT NULL,
+            trx_id TEXT UNIQUE NOT NULL,
+            amount INTEGER NOT NULL,
+            total_amount INTEGER NOT NULL,
+            qr_url TEXT,
+            payment_url TEXT,
+            status TEXT NOT NULL DEFAULT 'pending',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    );
+
+    let _ = conn.execute(
+        "CREATE TABLE IF NOT EXISTS withdrawal_requests (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT NOT NULL,
+            amount INTEGER NOT NULL,
+            bank_name TEXT NOT NULL,
+            bank_account TEXT NOT NULL,
+            bank_holder TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'pending',
+            admin_note TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    );
+
+    let _ = conn.execute(
+        "CREATE TABLE IF NOT EXISTS wallet_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT NOT NULL,
+            type TEXT NOT NULL,
+            amount INTEGER NOT NULL,
+            description TEXT,
+            ref_id TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    );
 }
 
 fn get_redirect_target(headers: &HeaderMap, _default_url: &str) -> String {
@@ -371,10 +468,28 @@ async fn auth_status(
     let session_id = jar.get("session_id").map(|c| c.value().to_string());
     if let Some(sid) = session_id {
         if let Some(sess) = verify_session(&state, &sid) {
+            let mut verified = 0;
+            let mut name = sess.name.clone();
+            if let Ok(conn) = Connection::open(&state.transactions_db_path) {
+                let user_info = conn.query_row(
+                    "SELECT name, verified FROM users WHERE email = ?",
+                    params![sess.email],
+                    |row| Ok((row.get::<_, Option<String>>(0)?, row.get::<_, i32>(1)?))
+                );
+                if let Ok((db_name, db_verified)) = user_info {
+                    if let Some(n) = db_name {
+                        if !n.is_empty() {
+                            name = n;
+                        }
+                    }
+                    verified = db_verified;
+                }
+            }
             return Json(AuthStatus {
                 logged_in: true,
                 email: sess.email,
-                name: sess.name,
+                name,
+                verified,
             });
         }
     }
@@ -382,7 +497,626 @@ async fn auth_status(
         logged_in: false,
         email: "".to_string(),
         name: "".to_string(),
+        verified: 0,
     })
+}
+
+// Handler: Get user settings
+async fn get_user_settings(
+    jar: CookieJar,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    if let Some(sid) = session_id {
+        if let Some(sess) = verify_session(&state, &sid) {
+            if let Ok(conn) = Connection::open(&state.transactions_db_path) {
+                let user_query = conn.query_row(
+                    "SELECT email, name, phone, verified, recovery_email_1, recovery_email_2, bank_name, bank_account_number, bank_account_holder FROM users WHERE email = ?",
+                    params![sess.email],
+                    |row| Ok(serde_json::json!({
+                        "success": true,
+                        "email": row.get::<_, String>(0)?,
+                        "name": row.get::<_, Option<String>>(1)?.unwrap_or_default(),
+                        "phone": row.get::<_, Option<String>>(2)?.unwrap_or_default(),
+                        "verified": row.get::<_, i32>(3)?,
+                        "recovery_email_1": row.get::<_, Option<String>>(4)?.unwrap_or_default(),
+                        "recovery_email_2": row.get::<_, Option<String>>(5)?.unwrap_or_default(),
+                        "bank_name": row.get::<_, Option<String>>(6)?.unwrap_or_default(),
+                        "bank_account_number": row.get::<_, Option<String>>(7)?.unwrap_or_default(),
+                        "bank_account_holder": row.get::<_, Option<String>>(8)?.unwrap_or_default(),
+                    }))
+                );
+                if let Ok(user_data) = user_query {
+                    return (StatusCode::OK, Json(user_data)).into_response();
+                }
+            }
+        }
+    }
+    (StatusCode::UNAUTHORIZED, Json(serde_json::json!({"success": false, "error": "Unauthorized"}))).into_response()
+}
+
+// Handler: Save user settings
+async fn save_user_settings(
+    jar: CookieJar,
+    State(state): State<AppState>,
+    Json(payload): Json<SaveSettingsPayload>,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    if let Some(sid) = session_id {
+        if let Some(sess) = verify_session(&state, &sid) {
+            if let Ok(conn) = Connection::open(&state.transactions_db_path) {
+                let update_res = conn.execute(
+                    "UPDATE users SET name = ?, phone = ?, recovery_email_1 = ?, recovery_email_2 = ?, bank_name = ?, bank_account_number = ?, bank_account_holder = ? WHERE email = ?",
+                    params![
+                        payload.name,
+                        payload.phone.unwrap_or_default(),
+                        payload.recovery_email_1.unwrap_or_default(),
+                        payload.recovery_email_2.unwrap_or_default(),
+                        payload.bank_name.unwrap_or_default(),
+                        payload.bank_account_number.unwrap_or_default(),
+                        payload.bank_account_holder.unwrap_or_default(),
+                        sess.email
+                    ],
+                );
+                if update_res.is_ok() {
+                    // Update in-memory session name if it was updated
+                    {
+                        let mut sessions = state.sessions.lock().unwrap();
+                        if let Some(s) = sessions.get_mut(&sid) {
+                            s.name = payload.name.clone();
+                        }
+                    }
+                    // Also update sessions table in SQLite
+                    let _ = conn.execute(
+                        "UPDATE sessions SET name = ? WHERE session_id = ?",
+                        params![payload.name, sid],
+                    );
+                    return (StatusCode::OK, Json(serde_json::json!({"success": true, "message": "Settings updated successfully"}))).into_response();
+                }
+            }
+        }
+    }
+    (StatusCode::UNAUTHORIZED, Json(serde_json::json!({"success": false, "error": "Unauthorized"}))).into_response()
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+struct ProductVariant {
+    name: String,
+    price: i64,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+struct SharedProduct {
+    id: Option<i64>,
+    email: Option<String>,
+    product_name: String,
+    variant_name: Option<String>,
+    price: i64,
+    description: Option<String>,
+    category: Option<String>,
+    images: Option<Vec<String>>,
+    variants: Option<Vec<ProductVariant>>,
+    status: Option<String>,
+    created_at: Option<String>,
+}
+
+// Handler: Get user's shared products
+async fn get_shared_products(
+    jar: CookieJar,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    if let Some(sid) = session_id {
+        if let Some(sess) = verify_session(&state, &sid) {
+            if let Ok(conn) = Connection::open(&state.transactions_db_path) {
+                let mut products = vec![];
+                if let Ok(mut stmt) = conn.prepare(
+                    "SELECT id, email, product_name, variant_name, price, description, category, images, variants, status, created_at \
+                     FROM shared_products \
+                     WHERE email = ? \
+                     ORDER BY created_at DESC"
+                ) {
+                    if let Ok(rows) = stmt.query_map(params![sess.email], |row| {
+                        let images_str: Option<String> = row.get(7)?;
+                        let variants_str: Option<String> = row.get(8)?;
+                        
+                        let images: Vec<String> = images_str
+                            .and_then(|s| serde_json::from_str(&s).ok())
+                            .unwrap_or_default();
+                            
+                        let variants: Vec<ProductVariant> = variants_str
+                            .and_then(|s| serde_json::from_str(&s).ok())
+                            .unwrap_or_default();
+
+                        Ok(SharedProduct {
+                            id: Some(row.get(0)?),
+                            email: Some(row.get(1)?),
+                            product_name: row.get(2)?,
+                            variant_name: row.get(3)?,
+                            price: row.get(4)?,
+                            description: row.get(5)?,
+                            category: row.get(6)?,
+                            images: Some(images),
+                            variants: Some(variants),
+                            status: row.get(9)?,
+                            created_at: Some(row.get(10)?),
+                        })
+                    }) {
+                        for r in rows.flatten() {
+                            products.push(r);
+                        }
+                    }
+                }
+                return (StatusCode::OK, Json(serde_json::json!({"success": true, "products": products}))).into_response();
+            }
+        }
+    }
+    (StatusCode::UNAUTHORIZED, Json(serde_json::json!({"success": false, "error": "Unauthorized"}))).into_response()
+}
+
+// Handler: Add shared product
+async fn add_shared_product(
+    jar: CookieJar,
+    State(state): State<AppState>,
+    Json(payload): Json<SharedProduct>,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    if let Some(sid) = session_id {
+        if let Some(sess) = verify_session(&state, &sid) {
+            if payload.product_name.trim().is_empty() || payload.price <= 0 {
+                return (StatusCode::BAD_REQUEST, Json(serde_json::json!({"success": false, "error": "Product name and price must be valid"}))).into_response();
+            }
+            let images_json = serde_json::to_string(&payload.images.unwrap_or_default()).unwrap_or_else(|_| "[]".to_string());
+            let variants_json = serde_json::to_string(&payload.variants.unwrap_or_default()).unwrap_or_else(|_| "[]".to_string());
+            let category_val = payload.category.unwrap_or_else(|| "digital".to_string());
+            let status_val = payload.status.unwrap_or_else(|| "published".to_string());
+
+            if let Ok(conn) = Connection::open(&state.transactions_db_path) {
+                let insert_res = conn.execute(
+                    "INSERT INTO shared_products (email, product_name, variant_name, price, description, category, images, variants, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    params![
+                        sess.email,
+                        payload.product_name,
+                        payload.variant_name,
+                        payload.price,
+                        payload.description,
+                        category_val,
+                        images_json,
+                        variants_json,
+                        status_val
+                    ],
+                );
+                if insert_res.is_ok() {
+                    return (StatusCode::OK, Json(serde_json::json!({"success": true, "message": "Product added successfully"}))).into_response();
+                } else {
+                    return (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"success": false, "error": "Failed to save product to database"}))).into_response();
+                }
+            }
+        }
+    }
+    (StatusCode::UNAUTHORIZED, Json(serde_json::json!({"success": false, "error": "Unauthorized"}))).into_response()
+}
+
+// Handler: Delete shared product
+async fn delete_shared_product(
+    jar: CookieJar,
+    State(state): State<AppState>,
+    Path(id): Path<i64>,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    if let Some(sid) = session_id {
+        if let Some(sess) = verify_session(&state, &sid) {
+            if let Ok(conn) = Connection::open(&state.transactions_db_path) {
+                let delete_res = conn.execute(
+                    "DELETE FROM shared_products WHERE id = ? AND email = ?",
+                    params![id, sess.email],
+                );
+                if delete_res.is_ok() {
+                    return (StatusCode::OK, Json(serde_json::json!({"success": true, "message": "Product deleted successfully"}))).into_response();
+                } else {
+                    return (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"success": false, "error": "Failed to delete product"}))).into_response();
+                }
+            }
+        }
+    }
+    (StatusCode::UNAUTHORIZED, Json(serde_json::json!({"success": false, "error": "Unauthorized"}))).into_response()
+}
+
+// ─── WALLET / SALDO HANDLERS ────────────────────────────────────────────────
+
+async fn get_wallet(
+    jar: CookieJar,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    if let Some(sid) = session_id {
+        if let Some(sess) = verify_session(&state, &sid) {
+            if let Ok(conn) = Connection::open(&state.transactions_db_path) {
+                // Ensure wallet row exists
+                let _ = conn.execute(
+                    "INSERT OR IGNORE INTO user_wallet (email, balance) VALUES (?, 0)",
+                    params![sess.email],
+                );
+                let balance: i64 = conn.query_row(
+                    "SELECT balance FROM user_wallet WHERE email = ?",
+                    params![sess.email],
+                    |row| row.get(0),
+                ).unwrap_or(0);
+
+                // Recent history
+                let mut stmt = conn.prepare(
+                    "SELECT type, amount, description, ref_id, created_at FROM wallet_history WHERE email = ? ORDER BY created_at DESC LIMIT 20"
+                ).unwrap();
+                let history: Vec<serde_json::Value> = stmt.query_map(params![sess.email], |row| {
+                    Ok(serde_json::json!({
+                        "type": row.get::<_, String>(0)?,
+                        "amount": row.get::<_, i64>(1)?,
+                        "description": row.get::<_, Option<String>>(2)?.unwrap_or_default(),
+                        "ref_id": row.get::<_, Option<String>>(3)?.unwrap_or_default(),
+                        "created_at": row.get::<_, String>(4)?,
+                    }))
+                }).map(|rows| rows.flatten().collect()).unwrap_or_default();
+
+                // Pending topups
+                let mut tstmt = conn.prepare(
+                    "SELECT trx_id, amount, total_amount, status, created_at FROM topup_requests WHERE email = ? ORDER BY created_at DESC LIMIT 10"
+                ).unwrap();
+                let topups: Vec<serde_json::Value> = tstmt.query_map(params![sess.email], |row| {
+                    Ok(serde_json::json!({
+                        "trx_id": row.get::<_, String>(0)?,
+                        "amount": row.get::<_, i64>(1)?,
+                        "total_amount": row.get::<_, i64>(2)?,
+                        "status": row.get::<_, String>(3)?,
+                        "created_at": row.get::<_, String>(4)?,
+                    }))
+                }).map(|rows| rows.flatten().collect()).unwrap_or_default();
+
+                // Withdrawals
+                let mut wstmt = conn.prepare(
+                    "SELECT amount, bank_name, bank_account, bank_holder, status, created_at FROM withdrawal_requests WHERE email = ? ORDER BY created_at DESC LIMIT 10"
+                ).unwrap();
+                let withdrawals: Vec<serde_json::Value> = wstmt.query_map(params![sess.email], |row| {
+                    Ok(serde_json::json!({
+                        "amount": row.get::<_, i64>(0)?,
+                        "bank_name": row.get::<_, String>(1)?,
+                        "bank_account": row.get::<_, String>(2)?,
+                        "bank_holder": row.get::<_, String>(3)?,
+                        "status": row.get::<_, String>(4)?,
+                        "created_at": row.get::<_, String>(5)?,
+                    }))
+                }).map(|rows| rows.flatten().collect()).unwrap_or_default();
+
+                return (StatusCode::OK, Json(serde_json::json!({
+                    "success": true,
+                    "balance": balance,
+                    "history": history,
+                    "topups": topups,
+                    "withdrawals": withdrawals,
+                }))).into_response();
+            }
+        }
+    }
+    (StatusCode::UNAUTHORIZED, Json(serde_json::json!({"success": false, "error": "Unauthorized"}))).into_response()
+}
+
+#[derive(Deserialize)]
+struct CreateTopupPayload {
+    amount: i64,
+}
+
+async fn create_topup_qris(
+    jar: CookieJar,
+    State(state): State<AppState>,
+    Json(payload): Json<CreateTopupPayload>,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    if let Some(sid) = session_id {
+        if let Some(sess) = verify_session(&state, &sid) {
+            if payload.amount < 10000 {
+                return (StatusCode::BAD_REQUEST, Json(serde_json::json!({"success": false, "error": "Jumlah top-up minimal Rp 10.000"}))).into_response();
+            }
+
+            let dotenv_path = "/root/ecommerce/.env";
+            let _ = dotenvy::from_path(dotenv_path);
+            let account_id = std::env::var("BUATQRIS_ACCOUNT_ID").unwrap_or_default();
+            let secret_token = std::env::var("BUATQRIS_SECRET_TOKEN").unwrap_or_default();
+            let base_url = std::env::var("BUATQRIS_BASE_URL").unwrap_or_else(|_| "https://app.buatqris.site/api.php".to_string());
+
+            let mut form_data = HashMap::new();
+            let amount_str = payload.amount.to_string();
+            form_data.insert("action", "api_create_qris");
+            form_data.insert("account_id", &account_id);
+            form_data.insert("secret_token", &secret_token);
+            form_data.insert("amount", &amount_str);
+            form_data.insert("description", "Topup Saldo EasyMall");
+            form_data.insert("qris_method", "qris_two");
+
+            let client = &state.http_client;
+            match client.post(&base_url)
+                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                .form(&form_data)
+                .send()
+                .await
+            {
+                Ok(resp) => {
+                    if let Ok(json) = resp.json::<serde_json::Value>().await {
+                        if json["success"].as_bool().unwrap_or(false) {
+                            let trx_id = json["data"]["transaction_id"].as_str().unwrap_or("").to_string();
+                            let qr_url = json["data"]["qr_url"].as_str().unwrap_or("").to_string();
+                            let payment_url = json["data"]["payment_url"].as_str().unwrap_or("").to_string();
+                            let total_amount = json["data"]["total_amount"].as_i64().unwrap_or(payload.amount);
+
+                            if let Ok(conn) = Connection::open(&state.transactions_db_path) {
+                                let _ = conn.execute(
+                                    "INSERT INTO topup_requests (email, trx_id, amount, total_amount, qr_url, payment_url, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')",
+                                    params![sess.email, trx_id, payload.amount, total_amount, qr_url, payment_url],
+                                );
+                            }
+
+                            return (StatusCode::OK, Json(serde_json::json!({
+                                "success": true,
+                                "trx_id": trx_id,
+                                "qr_url": json["data"]["qr_url"],
+                                "qris_image": json["data"]["qris_image"],
+                                "payment_url": json["data"]["payment_url"],
+                                "amount": payload.amount,
+                                "total_amount": total_amount,
+                                "status": "pending"
+                            }))).into_response();
+                        } else {
+                            let err = json["message"].as_str().unwrap_or("Gagal membuat QRIS");
+                            return (StatusCode::BAD_GATEWAY, Json(serde_json::json!({"success": false, "error": err}))).into_response();
+                        }
+                    }
+                    (StatusCode::BAD_GATEWAY, Json(serde_json::json!({"success": false, "error": "Respon tidak valid dari BuatQris (Cloudflare 520 / JS Challenge)"}))).into_response()
+                }
+                Err(e) => (StatusCode::BAD_GATEWAY, Json(serde_json::json!({"success": false, "error": format!("Koneksi ke BuatQris gagal: {}", e)}))).into_response()
+            }
+        } else {
+            (StatusCode::UNAUTHORIZED, Json(serde_json::json!({"success": false, "error": "Unauthorized"}))).into_response()
+        }
+    } else {
+        (StatusCode::UNAUTHORIZED, Json(serde_json::json!({"success": false, "error": "Unauthorized"}))).into_response()
+    }
+}
+
+#[derive(Deserialize)]
+struct CheckTopupQuery {
+    trx_id: String,
+}
+
+async fn check_topup_status(
+    jar: CookieJar,
+    State(state): State<AppState>,
+    Query(q): Query<CheckTopupQuery>,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    if let Some(sid) = session_id {
+        if let Some(sess) = verify_session(&state, &sid) {
+            // Check local DB first
+            if let Ok(conn) = Connection::open(&state.transactions_db_path) {
+                let local: Option<(i64, i64, String)> = conn.query_row(
+                    "SELECT amount, total_amount, status FROM topup_requests WHERE trx_id = ? AND email = ?",
+                    params![q.trx_id, sess.email],
+                    |row| Ok((row.get(0)?, row.get(1)?, row.get::<_, String>(2)?))
+                ).ok();
+
+                if let Some((amount, _total, ref status)) = local {
+                    if status == "success" {
+                        return (StatusCode::OK, Json(serde_json::json!({
+                            "success": true,
+                            "status": "success",
+                            "message": "Pembayaran telah terkonfirmasi",
+                            "amount": amount
+                        }))).into_response();
+                    }
+                    if status == "expired" || status == "failed" {
+                        return (StatusCode::OK, Json(serde_json::json!({
+                            "success": true,
+                            "status": status,
+                            "message": "Transaksi kadaluarsa / gagal",
+                            "amount": amount
+                        }))).into_response();
+                    }
+                }
+
+                // Poll BuatQris
+                let dotenv_path = "/root/ecommerce/.env";
+                let _ = dotenvy::from_path(dotenv_path);
+                let account_id = std::env::var("BUATQRIS_ACCOUNT_ID").unwrap_or_default();
+                let secret_token = std::env::var("BUATQRIS_SECRET_TOKEN").unwrap_or_default();
+                let base_url = std::env::var("BUATQRIS_BASE_URL").unwrap_or_else(|_| "https://app.buatqris.site/api.php".to_string());
+
+                let mut form_data = HashMap::new();
+                form_data.insert("action", "api_check_status");
+                form_data.insert("account_id", &account_id);
+                form_data.insert("secret_token", &secret_token);
+                form_data.insert("transaction_id", &q.trx_id);
+
+                let client = &state.http_client;
+                if let Ok(resp) = client.post(&base_url)
+                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                    .form(&form_data)
+                    .send()
+                    .await
+                {
+                    if let Ok(json) = resp.json::<serde_json::Value>().await {
+                        let api_status = json["data"]["status"].as_str()
+                            .or_else(|| json["status"].as_str())
+                            .unwrap_or("pending");
+
+                        // If confirmed paid → credit balance
+                        if api_status == "success" {
+                            if let Some((amount, _, ref cur_status)) = local {
+                                if cur_status != "success" {
+                                    let _ = conn.execute(
+                                        "UPDATE topup_requests SET status = 'success', updated_at = CURRENT_TIMESTAMP WHERE trx_id = ?",
+                                        params![q.trx_id],
+                                    );
+                                    let _ = conn.execute(
+                                        "INSERT OR IGNORE INTO user_wallet (email, balance) VALUES (?, 0)",
+                                        params![sess.email],
+                                    );
+                                    let _ = conn.execute(
+                                        "UPDATE user_wallet SET balance = balance + ?, updated_at = CURRENT_TIMESTAMP WHERE email = ?",
+                                        params![amount, sess.email],
+                                    );
+                                    let desc = format!("Top-up via QRIS #{}", q.trx_id);
+                                    let _ = conn.execute(
+                                        "INSERT INTO wallet_history (email, type, amount, description, ref_id) VALUES (?, 'topup', ?, ?, ?)",
+                                        params![sess.email, amount, desc, q.trx_id],
+                                    );
+                                }
+                            }
+                            return (StatusCode::OK, Json(serde_json::json!({
+                                "success": true,
+                                "status": "success",
+                                "message": "Pembayaran berhasil! Saldo telah dikreditkan."
+                            }))).into_response();
+                        } else if api_status == "expired" || api_status == "failed" {
+                            let _ = conn.execute(
+                                "UPDATE topup_requests SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE trx_id = ?",
+                                params![api_status, q.trx_id],
+                            );
+                        }
+
+                        return (StatusCode::OK, Json(serde_json::json!({
+                            "success": true,
+                            "status": api_status,
+                            "message": match api_status {
+                                "pending" => "Menunggu pembayaran",
+                                "expired" => "QR Code kadaluarsa",
+                                "failed" => "Pembayaran gagal",
+                                _ => "Status tidak diketahui"
+                            }
+                        }))).into_response();
+                    }
+                }
+            }
+        }
+    }
+    (StatusCode::UNAUTHORIZED, Json(serde_json::json!({"success": false, "error": "Unauthorized"}))).into_response()
+}
+
+#[derive(Deserialize)]
+struct CreateWithdrawalPayload {
+    amount: i64,
+    bank_name: String,
+    bank_account: String,
+    bank_holder: String,
+}
+
+async fn create_withdrawal(
+    jar: CookieJar,
+    State(state): State<AppState>,
+    Json(payload): Json<CreateWithdrawalPayload>,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    if let Some(sid) = session_id {
+        if let Some(sess) = verify_session(&state, &sid) {
+            if payload.amount < 10000 {
+                return (StatusCode::BAD_REQUEST, Json(serde_json::json!({"success": false, "error": "Jumlah penarikan minimal Rp 10.000"}))).into_response();
+            }
+            if payload.bank_name.is_empty() || payload.bank_account.is_empty() || payload.bank_holder.is_empty() {
+                return (StatusCode::BAD_REQUEST, Json(serde_json::json!({"success": false, "error": "Data rekening bank tidak lengkap"}))).into_response();
+            }
+            if let Ok(conn) = Connection::open(&state.transactions_db_path) {
+                let _ = conn.execute(
+                    "INSERT OR IGNORE INTO user_wallet (email, balance) VALUES (?, 0)",
+                    params![sess.email],
+                );
+                let balance: i64 = conn.query_row(
+                    "SELECT balance FROM user_wallet WHERE email = ?",
+                    params![sess.email],
+                    |row| row.get(0),
+                ).unwrap_or(0);
+
+                if balance < payload.amount {
+                    return (StatusCode::BAD_REQUEST, Json(serde_json::json!({"success": false, "error": format!("Saldo tidak mencukupi. Saldo Anda: Rp {}", balance)}))).into_response();
+                }
+
+                // Deduct balance immediately and record as pending withdrawal
+                let _ = conn.execute(
+                    "UPDATE user_wallet SET balance = balance - ?, updated_at = CURRENT_TIMESTAMP WHERE email = ?",
+                    params![payload.amount, sess.email],
+                );
+                let _ = conn.execute(
+                    "INSERT INTO withdrawal_requests (email, amount, bank_name, bank_account, bank_holder, status) VALUES (?, ?, ?, ?, ?, 'pending')",
+                    params![sess.email, payload.amount, payload.bank_name, payload.bank_account, payload.bank_holder],
+                );
+                let desc = format!("Penarikan ke {} - {}", payload.bank_name, payload.bank_account);
+                let _ = conn.execute(
+                    "INSERT INTO wallet_history (email, type, amount, description) VALUES (?, 'withdrawal', ?, ?)",
+                    params![sess.email, -payload.amount, desc],
+                );
+
+                let new_balance: i64 = conn.query_row(
+                    "SELECT balance FROM user_wallet WHERE email = ?",
+                    params![sess.email],
+                    |row| row.get(0),
+                ).unwrap_or(0);
+
+                return (StatusCode::OK, Json(serde_json::json!({
+                    "success": true,
+                    "message": "Permintaan penarikan berhasil diajukan. Akan diproses dalam 1x24 jam kerja.",
+                    "new_balance": new_balance
+                }))).into_response();
+            }
+        }
+    }
+    (StatusCode::UNAUTHORIZED, Json(serde_json::json!({"success": false, "error": "Unauthorized"}))).into_response()
+}
+
+// ─── END WALLET HANDLERS ─────────────────────────────────────────────────────
+
+// Handler: Upload product image
+async fn upload_image_route(
+    jar: CookieJar,
+    State(state): State<AppState>,
+    mut multipart: axum::extract::Multipart,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    if let Some(sid) = session_id {
+        if verify_session(&state, &sid).is_some() {
+            let upload_dir = "/root/ecommerce/dinamis/ecom_api/uploads";
+            if let Err(e) = std::fs::create_dir_all(upload_dir) {
+                return (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"success": false, "error": format!("Failed to create uploads directory: {}", e)}))).into_response();
+            }
+
+            while let Ok(Some(field)) = multipart.next_field().await {
+                let name = field.name().unwrap_or_default().to_string();
+                let file_name = field.file_name().unwrap_or_default().to_string();
+                
+                if name == "image" || name == "file" {
+                    let ext = file_name.split('.').last().unwrap_or("jpg").to_string();
+                    let allowed_extensions = vec!["jpg", "jpeg", "png", "webp", "gif"];
+                    if !allowed_extensions.contains(&ext.to_lowercase().as_str()) {
+                        return (StatusCode::BAD_REQUEST, Json(serde_json::json!({"success": false, "error": "Invalid file type. Only images are allowed."}))).into_response();
+                    }
+
+                    if let Ok(data) = field.bytes().await {
+                        if data.len() > 5 * 1024 * 1024 {
+                            return (StatusCode::BAD_REQUEST, Json(serde_json::json!({"success": false, "error": "File size exceeds 5MB limit"}))).into_response();
+                        }
+
+                        let random_id = rand::random::<u32>();
+                        let timestamp = time::OffsetDateTime::now_utc().unix_timestamp();
+                        let safe_filename = format!("img_{}_{}.{}", timestamp, random_id, ext);
+                        let file_path = format!("{}/{}", upload_dir, safe_filename);
+
+                        if let Err(e) = std::fs::write(&file_path, &data) {
+                            return (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"success": false, "error": format!("Failed to write file: {}", e)}))).into_response();
+                        }
+
+                        let file_url = format!("/uploads/{}", safe_filename);
+                        return (StatusCode::OK, Json(serde_json::json!({"success": true, "url": file_url}))).into_response();
+                    }
+                }
+            }
+            return (StatusCode::BAD_REQUEST, Json(serde_json::json!({"success": false, "error": "No file uploaded"}))).into_response();
+        }
+    }
+    (StatusCode::UNAUTHORIZED, Json(serde_json::json!({"success": false, "error": "Unauthorized"}))).into_response()
 }
 
 // Handler: Classic Login (Form & JSON support)
@@ -755,100 +1489,204 @@ async fn dashboard_data_route(
     State(state): State<AppState>,
 ) -> impl IntoResponse {
     let session_id = jar.get("session_id").map(|c| c.value().to_string());
-    let authorized = if let Some(sid) = session_id {
-        verify_session(&state, &sid).is_some()
+    let user_info = if let Some(sid) = session_id {
+        verify_session(&state, &sid)
     } else {
-        false
+        None
     };
 
-    if !authorized {
-        return (
-            StatusCode::UNAUTHORIZED,
-            Json(DashboardData {
-                success: false,
-                total_orders: 0,
-                total_sales: 0,
-                total_profit: 0,
-                transactions: vec![],
-                profits: vec![],
-                resellers: vec![],
-            }),
-        )
-            .into_response();
-    }
+    let user = match user_info {
+        Some(u) => u,
+        None => {
+            return (
+                StatusCode::UNAUTHORIZED,
+                Json(DashboardData {
+                    success: false,
+                    total_orders: 0,
+                    total_sales: 0,
+                    total_profit: 0,
+                    transactions: vec![],
+                    profits: vec![],
+                    resellers: vec![],
+                }),
+            )
+                .into_response();
+        }
+    };
 
     let conn_tx = match Connection::open(&state.transactions_db_path) {
         Ok(c) => c,
         Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, "Database Connection Error").into_response(),
     };
 
+    // 1. Check if user is Admin
+    let mut is_admin = false;
+    if let Ok(count) = conn_tx.query_row(
+        "SELECT COUNT(*) FROM admins WHERE email = ?",
+        params![user.email],
+        |row| row.get::<_, i64>(0),
+    ) {
+        if count > 0 {
+            is_admin = true;
+        }
+    }
+    if !is_admin {
+        if let Ok(role) = conn_tx.query_row(
+            "SELECT role FROM users WHERE email = ?",
+            params![user.email],
+            |row| row.get::<_, String>(0),
+        ) {
+            if role == "admin" {
+                is_admin = true;
+            }
+        }
+    }
+
     let mut transactions = vec![];
     let mut profits = vec![];
+    let mut resellers = vec![];
 
-    if let Ok(mut stmt) = conn_tx.prepare("SELECT transaction_id, whatsapp_id, product_name, variant_name, amount, created_at FROM transactions ORDER BY created_at DESC") {
-        if let Ok(rows) = stmt.query_map([], |row| {
-            Ok(Transaction {
-                transaction_id: row.get(0)?,
-                whatsapp_id: row.get(1)?,
-                product_name: row.get(2)?,
-                variant_name: row.get(3)?,
-                amount: row.get(4)?,
-                created_at: row.get(5)?,
-            })
-        }) {
-            for r in rows.flatten() {
-                transactions.push(r);
+    if is_admin {
+        // Admins can see all records
+        if let Ok(mut stmt) = conn_tx.prepare("SELECT transaction_id, whatsapp_id, product_name, variant_name, amount, created_at FROM transactions ORDER BY created_at DESC") {
+            if let Ok(rows) = stmt.query_map([], |row| {
+                Ok(Transaction {
+                    transaction_id: row.get(0)?,
+                    whatsapp_id: row.get(1)?,
+                    product_name: row.get(2)?,
+                    variant_name: row.get(3)?,
+                    amount: row.get(4)?,
+                    created_at: row.get(5)?,
+                })
+            }) {
+                for r in rows.flatten() {
+                    transactions.push(r);
+                }
+            }
+        }
+
+        if let Ok(mut stmt) = conn_tx.prepare("SELECT transaction_id, reseller_wa, profit_amount, created_at FROM reseller_profits ORDER BY created_at DESC") {
+            if let Ok(rows) = stmt.query_map([], |row| {
+                Ok(Profit {
+                    transaction_id: row.get(0)?,
+                    reseller_wa: row.get(1)?,
+                    profit_amount: row.get(2)?,
+                    created_at: row.get(3)?,
+                })
+            }) {
+                for r in rows.flatten() {
+                    profits.push(r);
+                }
+            }
+        }
+
+        if let Ok(mut stmt) = conn_tx.prepare("SELECT activation_code, whatsapp_id, store_name, markup, is_active, created_at FROM resellers ORDER BY created_at DESC") {
+            if let Ok(rows) = stmt.query_map([], |row| {
+                Ok(Reseller {
+                    activation_code: row.get(0)?,
+                    whatsapp_id: row.get(1)?,
+                    store_name: row.get(2)?,
+                    markup: row.get(3)?,
+                    is_active: row.get(4)?,
+                    created_at: row.get(5)?,
+                })
+            }) {
+                for r in rows.flatten() {
+                    resellers.push(r);
+                }
+            }
+        }
+    } else {
+        // Regular users can only see their own records based on their email
+        if let Ok(mut stmt) = conn_tx.prepare(
+            "SELECT transaction_id, whatsapp_id, product_name, variant_name, amount, created_at \
+             FROM transactions \
+             WHERE email = ? \
+             ORDER BY created_at DESC"
+        ) {
+            if let Ok(rows) = stmt.query_map(params![user.email], |row| {
+                Ok(Transaction {
+                    transaction_id: row.get(0)?,
+                    whatsapp_id: row.get(1)?,
+                    product_name: row.get(2)?,
+                    variant_name: row.get(3)?,
+                    amount: row.get(4)?,
+                    created_at: row.get(5)?,
+                })
+            }) {
+                for r in rows.flatten() {
+                    transactions.push(r);
+                }
+            }
+        }
+
+        // Regular users can only see their own profits and reseller records based on their phone number
+        let mut user_phone: Option<String> = None;
+        if let Ok(phone) = conn_tx.query_row(
+            "SELECT phone FROM users WHERE email = ?",
+            params![user.email],
+            |row| row.get::<_, Option<String>>(0),
+        ) {
+            user_phone = phone;
+        }
+
+        if let Some(ref phone) = user_phone {
+            let clean_phone: String = phone.chars().filter(|c| c.is_ascii_digit()).collect();
+            if !clean_phone.is_empty() {
+                let suffix = if clean_phone.len() > 9 {
+                    format!("%{}", &clean_phone[clean_phone.len() - 9..])
+                } else {
+                    format!("%{}", clean_phone)
+                };
+
+                if let Ok(mut stmt) = conn_tx.prepare(
+                    "SELECT transaction_id, reseller_wa, profit_amount, created_at \
+                     FROM reseller_profits \
+                     WHERE reseller_wa = ? OR reseller_wa = ? OR reseller_wa LIKE ? \
+                     ORDER BY created_at DESC"
+                ) {
+                    if let Ok(rows) = stmt.query_map(params![phone, clean_phone, suffix], |row| {
+                        Ok(Profit {
+                            transaction_id: row.get(0)?,
+                            reseller_wa: row.get(1)?,
+                            profit_amount: row.get(2)?,
+                            created_at: row.get(3)?,
+                        })
+                    }) {
+                        for r in rows.flatten() {
+                            profits.push(r);
+                        }
+                    }
+                }
+
+                if let Ok(mut stmt) = conn_tx.prepare(
+                    "SELECT activation_code, whatsapp_id, store_name, markup, is_active, created_at \
+                     FROM resellers \
+                     WHERE whatsapp_id = ? OR whatsapp_id = ? OR whatsapp_id LIKE ? \
+                     ORDER BY created_at DESC"
+                ) {
+                    if let Ok(rows) = stmt.query_map(params![phone, clean_phone, suffix], |row| {
+                        Ok(Reseller {
+                            activation_code: row.get(0)?,
+                            whatsapp_id: row.get(1)?,
+                            store_name: row.get(2)?,
+                            markup: row.get(3)?,
+                            is_active: row.get(4)?,
+                            created_at: row.get(5)?,
+                        })
+                    }) {
+                        for r in rows.flatten() {
+                            resellers.push(r);
+                        }
+                    }
+                }
             }
         }
     }
 
     let total_orders = transactions.len() as i64;
-    let total_sales = conn_tx
-        .query_row("SELECT SUM(amount) FROM transactions", [], |row| {
-            row.get::<_, Option<i64>>(0)
-        })
-        .unwrap_or(None)
-        .unwrap_or(0);
-
-    let total_profit = conn_tx
-        .query_row("SELECT SUM(profit_amount) FROM reseller_profits", [], |row| {
-            row.get::<_, Option<i64>>(0)
-        })
-        .unwrap_or(None)
-        .unwrap_or(0);
-
-    if let Ok(mut stmt) = conn_tx.prepare("SELECT transaction_id, reseller_wa, profit_amount, created_at FROM reseller_profits ORDER BY created_at DESC") {
-        if let Ok(rows) = stmt.query_map([], |row| {
-            Ok(Profit {
-                transaction_id: row.get(0)?,
-                reseller_wa: row.get(1)?,
-                profit_amount: row.get(2)?,
-                created_at: row.get(3)?,
-            })
-        }) {
-            for r in rows.flatten() {
-                profits.push(r);
-            }
-        }
-    }
-
-    let mut resellers = vec![];
-    if let Ok(mut stmt) = conn_tx.prepare("SELECT activation_code, whatsapp_id, store_name, markup, is_active, created_at FROM resellers ORDER BY created_at DESC") {
-        if let Ok(rows) = stmt.query_map([], |row| {
-            Ok(Reseller {
-                activation_code: row.get(0)?,
-                whatsapp_id: row.get(1)?,
-                store_name: row.get(2)?,
-                markup: row.get(3)?,
-                is_active: row.get(4)?,
-                created_at: row.get(5)?,
-            })
-        }) {
-            for r in rows.flatten() {
-                resellers.push(r);
-            }
-        }
-    }
+    let total_sales: i64 = transactions.iter().map(|t| t.amount).sum();
+    let total_profit: i64 = profits.iter().map(|p| p.profit_amount).sum();
 
     Json(DashboardData {
         success: true,
@@ -1273,9 +2111,18 @@ struct BuatQrisData {
 }
 
 async fn checkout_route(
+    jar: CookieJar,
     State(state): State<AppState>,
     Json(payload): Json<CheckoutPayload>,
 ) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    let user_info = if let Some(sid) = session_id {
+        verify_session(&state, &sid)
+    } else {
+        None
+    };
+    let user_email = user_info.map(|u| u.email);
+
     let provider = payload.provider.clone();
     let product_code = payload.product_code.unwrap_or_default();
     let variant_code = payload.variant_code;
@@ -1350,8 +2197,8 @@ async fn checkout_route(
             // Log transaction to transactions.db
             if let Ok(conn) = Connection::open(&state.transactions_db_path) {
                 let _ = conn.execute(
-                    "INSERT INTO transactions (transaction_id, whatsapp_id, product_name, variant_name, amount) VALUES (?, ?, ?, ?, ?)",
-                    params![transaction_id, whatsapp_id, product_name, variant_name, total_amount],
+                    "INSERT INTO transactions (transaction_id, whatsapp_id, product_name, variant_name, amount, email, provider) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    params![transaction_id, whatsapp_id, product_name, variant_name, total_amount, user_email, "koalastore"],
                 );
             }
 
@@ -1455,8 +2302,8 @@ async fn checkout_route(
             // 1. Log transaction to transactions.db
             if let Ok(conn) = Connection::open(&state.transactions_db_path) {
                 let _ = conn.execute(
-                    "INSERT INTO transactions (transaction_id, whatsapp_id, product_name, variant_name, amount) VALUES (?, ?, ?, ?, ?)",
-                    params![transaction_id, whatsapp_id, product_name, variant_name, total_amount],
+                    "INSERT INTO transactions (transaction_id, whatsapp_id, product_name, variant_name, amount, email, provider) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    params![transaction_id, whatsapp_id, product_name, variant_name, total_amount, user_email, provider],
                 );
             }
 
@@ -2074,12 +2921,20 @@ async fn main() {
                 || s.contains("ilhampradani.me")
         }))
         .allow_headers(vec![header::CONTENT_TYPE, header::AUTHORIZATION])
-        .allow_methods(vec![Method::GET, Method::POST, Method::OPTIONS])
+        .allow_methods(vec![Method::GET, Method::POST, Method::DELETE, Method::OPTIONS])
         .allow_credentials(true);
 
     let app = Router::new()
         // API routes
         .route("/api/auth/status", get(auth_status))
+        .route("/api/user/settings", get(get_user_settings).post(save_user_settings))
+        .route("/api/user/products", get(get_shared_products).post(add_shared_product))
+        .route("/api/user/products/:id", delete(delete_shared_product))
+        .route("/api/upload", post(upload_image_route))
+        .route("/api/wallet", get(get_wallet))
+        .route("/api/wallet/topup", post(create_topup_qris))
+        .route("/api/wallet/topup/status", get(check_topup_status))
+        .route("/api/wallet/withdraw", post(create_withdrawal))
         .route("/api/products", get(get_products_route))
         .route("/login", post(login_admin).get(login_page))
         .route("/login/google", post(login_google_route))
@@ -2115,6 +2970,7 @@ async fn main() {
         .route("/paykonfirmasi", get(product_view_route))
         .route("/productview", get(product_view_route))
         
+        .nest_service("/uploads", ServeDir::new("/root/ecommerce/dinamis/ecom_api/uploads"))
         .fallback_service(ServeDir::new("/root/ecommerce/frontend/dist"))
         .layer(cors)
         .with_state(state);

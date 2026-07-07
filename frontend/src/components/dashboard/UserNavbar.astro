@@ -1,5 +1,6 @@
 ---
 // UserNavbar.astro
+import UserProfileCard from './UserProfileCard.astro';
 ---
 <div id="top-loading-bar" class="loading-bar"></div>
 
@@ -10,7 +11,17 @@
     </a>
     <div class="nav-actions">
         <a href="/" class="btn-link">Belanja</a>
-        <button class="btn-logout" onclick="performLogout()">🚪 Keluar</button>
+        <div class="profile-dropdown-container">
+            <button class="btn-profile-toggle" id="btnProfileToggle" aria-label="Toggle Menu Profil">
+                <img src="/grabill54-hello-2488_512.gif" alt="Profile Avatar" class="profile-gif-avatar">
+            </button>
+            <div class="profile-dropdown-menu" id="profileDropdownMenu">
+                <UserProfileCard />
+                <div class="dropdown-footer">
+                    <button class="btn-dropdown-logout" onclick="performLogout()">🚪 Keluar</button>
+                </div>
+            </div>
+        </div>
     </div>
 </nav>
 
@@ -38,9 +49,10 @@
     }
 
     .navbar {
-        background: #ffffff;
+        background: #e2ffff;
         border-bottom: 2px solid #dee2e6;
-        padding: 1rem 1.5rem;
+        padding: 0 1.5rem;
+        height: 70px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -67,6 +79,7 @@
         display: flex;
         align-items: center;
         gap: 1.5rem;
+        height: 100%;
     }
 
     .btn-link {
@@ -81,8 +94,85 @@
         text-decoration: underline;
     }
 
-    .btn-logout {
-        padding: 6px 12px;
+    .profile-dropdown-container {
+        position: relative;
+        display: inline-block;
+        height: 100%;
+    }
+    
+    .btn-profile-toggle {
+        background: transparent;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        outline: none;
+        width: 70px;
+        height: 100%;
+        transition: transform 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .btn-profile-toggle:hover {
+        transform: scale(1.05);
+    }
+    
+    .profile-gif-avatar {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .profile-dropdown-menu {
+        position: absolute;
+        top: calc(100% + 10px);
+        right: 0;
+        width: 260px;
+        background: #ffffff;
+        border: 2px solid #dee2e6;
+        border-radius: 6px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        display: none;
+        flex-direction: column;
+        z-index: 1000;
+        overflow: hidden;
+        animation: dropdown-fade-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    .profile-dropdown-menu.active {
+        display: flex;
+    }
+    
+    @keyframes dropdown-fade-in {
+        from {
+            opacity: 0;
+            transform: translateY(8px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+    
+    .profile-dropdown-menu :global(.profile-card) {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 1.25rem !important;
+        background: #ffffff !important;
+    }
+    
+    .dropdown-footer {
+        padding: 0.75rem 1rem;
+        background: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+        display: flex;
+        justify-content: center;
+    }
+    
+    .btn-dropdown-logout {
+        width: 100%;
+        padding: 8px 12px;
         background: #dc3545;
         color: #ffffff;
         border: 1px solid #dc3545;
@@ -90,9 +180,11 @@
         font-weight: 600;
         font-size: 0.85rem;
         cursor: pointer;
+        text-align: center;
+        transition: background 0.2s;
     }
-
-    .btn-logout:hover {
+    
+    .btn-dropdown-logout:hover {
         background: #bb2d3b;
         border-color: #b02a37;
     }
@@ -100,46 +192,77 @@
 
 <script is:inline>
     (function() {
+        // 1. Loading Bar logic
         const bar = document.getElementById('top-loading-bar');
-        if (!bar) return;
-
-        let activeRequests = 0;
-
-        function startLoading() {
-            activeRequests++;
-            if (activeRequests === 1) {
-                bar.classList.remove('finish');
-                bar.classList.add('active');
+        if (bar) {
+            let activeRequests = 0;
+            function startLoading() {
+                activeRequests++;
+                if (activeRequests === 1) {
+                    bar.classList.remove('finish');
+                    bar.classList.add('active');
+                }
             }
+            function stopLoading() {
+                activeRequests = Math.max(0, activeRequests - 1);
+                if (activeRequests === 0) {
+                    bar.classList.remove('active');
+                    bar.classList.add('finish');
+                    setTimeout(() => {
+                        if (activeRequests === 0) {
+                            bar.classList.remove('finish');
+                        }
+                    }, 300);
+                }
+            }
+            window.startLoadingBar = startLoading;
+            window.stopLoadingBar = stopLoading;
+            const originalFetch = window.fetch;
+            window.fetch = async function(...args) {
+                startLoading();
+                try {
+                    return await originalFetch(...args);
+                } finally {
+                    stopLoading();
+                }
+            };
         }
 
-        function stopLoading() {
-            activeRequests = Math.max(0, activeRequests - 1);
-            if (activeRequests === 0) {
-                bar.classList.remove('active');
-                bar.classList.add('finish');
-                setTimeout(() => {
-                    if (activeRequests === 0) {
-                        bar.classList.remove('finish');
-                    }
-                }, 300);
-            }
-        }
-
-        // Expose globally
-        window.startLoadingBar = startLoading;
-        window.stopLoadingBar = stopLoading;
-
-        // Proxy fetch
-        const originalFetch = window.fetch;
-        window.fetch = async function(...args) {
-            startLoading();
+        // 2. Global Perform Logout function
+        window.performLogout = async function() {
             try {
-                const response = await originalFetch(...args);
-                return response;
-            } finally {
-                stopLoading();
-            }
+                let API_BASE_URL = '';
+                if (window.location.port !== '5002' && window.location.protocol !== 'file:') {
+                    API_BASE_URL = 'https://api.ilhampradani.me';
+                }
+                await fetch(`${API_BASE_URL}/logout`, { credentials: 'include' });
+            } catch(e){}
+            window.location.href = '/login.html';
         };
+
+        // 3. Dropdown Menu Toggle logic
+        function initProfileDropdown() {
+            const toggle = document.getElementById('btnProfileToggle');
+            const menu = document.getElementById('profileDropdownMenu');
+            if (!toggle || !menu) return;
+            
+            toggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                menu.classList.toggle('active');
+            });
+            
+            document.addEventListener('click', (e) => {
+                if (!menu.contains(e.target) && e.target !== toggle) {
+                    menu.classList.remove('active');
+                }
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initProfileDropdown);
+        } else {
+            initProfileDropdown();
+        }
+        document.addEventListener('astro:page-load', initProfileDropdown);
     })();
 </script>

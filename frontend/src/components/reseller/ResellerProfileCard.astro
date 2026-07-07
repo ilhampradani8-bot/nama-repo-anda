@@ -2,11 +2,37 @@
 // ResellerProfileCard.astro
 ---
 <div class="profile-card">
-    <div class="profile-avatar" id="avatar-initial">-</div>
+    <div class="profile-avatar" id="reseller-avatar-initial">-</div>
     <h3 class="profile-name" id="reseller-name">Memuat...</h3>
     <p class="profile-email" id="reseller-email">...</p>
     <span class="badge-role">Reseller Partner</span>
 </div>
+
+<script is:inline>
+    (async function() {
+        try {
+            let API_BASE_URL = '';
+            if (window.location.port !== '5002' && window.location.protocol !== 'file:') {
+                API_BASE_URL = 'https://api.ilhampradani.me';
+            }
+            const authRes = await fetch(`${API_BASE_URL}/api/auth/status`, { credentials: 'include' });
+            if (authRes.ok) {
+                const authData = await authRes.json();
+                if (authData.logged_in) {
+                    const nameEl = document.getElementById('reseller-name');
+                    const emailEl = document.getElementById('reseller-email');
+                    const avatarEl = document.getElementById('reseller-avatar-initial') || document.getElementById('avatar-initial');
+                    
+                    if (nameEl) nameEl.textContent = authData.name;
+                    if (emailEl) emailEl.textContent = authData.email;
+                    if (avatarEl) avatarEl.textContent = authData.name.charAt(0).toUpperCase();
+                }
+            }
+        } catch(e) {
+            console.error("Error auto-populating ResellerProfileCard:", e);
+        }
+    })();
+</script>
 
 <style>
     .profile-card {

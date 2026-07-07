@@ -1,7 +1,6 @@
 ---
 // dashboard_keranjang.astro
 import UserNavbar from '../components/dashboard/UserNavbar.astro';
-import UserProfileCard from '../components/dashboard/UserProfileCard.astro';
 import UserSidebar from '../components/dashboard/UserSidebar.astro';
 import BottomNav from '../components/BottomNav.astro';
 ---
@@ -201,7 +200,6 @@ import BottomNav from '../components/BottomNav.astro';
 
     <div class="container">
         <div class="sidebar-col">
-            <UserProfileCard />
             <UserSidebar activeTab="keranjang" />
         </div>
 
@@ -249,9 +247,12 @@ import BottomNav from '../components/BottomNav.astro';
                     return;
                 }
 
-                document.getElementById('user-name').textContent = authData.name;
-                document.getElementById('user-email').textContent = authData.email;
-                document.getElementById('avatar-initial').textContent = authData.name.charAt(0).toUpperCase();
+                const nameEl = document.getElementById('user-name');
+                const emailEl = document.getElementById('user-email');
+                const avatarEl = document.getElementById('avatar-initial');
+                if (nameEl) nameEl.textContent = authData.name;
+                if (emailEl) emailEl.textContent = authData.email;
+                if (avatarEl) avatarEl.textContent = authData.name.charAt(0).toUpperCase();
 
                 await fetchCartItems();
             } catch (err) {

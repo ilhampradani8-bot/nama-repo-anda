@@ -1,0 +1,607 @@
+---
+import UserNavbar from '../components/dashboard/UserNavbar.astro';
+import UserSidebar from '../components/dashboard/UserSidebar.astro';
+import BottomNav from '../components/BottomNav.astro';
+---
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saldo & Wallet | EasyMall</title>
+  <link rel="icon" href="/favicon.ico">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#f0f4f8;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-height:100vh;display:flex;flex-direction:column;line-height:1.5}
+    .container{max-width:1140px;width:100%;margin:1.5rem auto;padding:0 1rem;flex-grow:1;display:grid;grid-template-columns:280px 1fr;gap:1.5rem}
+    .sidebar-col{display:flex;flex-direction:column;gap:1rem}
+    .content-area{display:flex;flex-direction:column;gap:1.5rem}
+
+    /* Saldo Card */
+    .saldo-card{background:linear-gradient(135deg,#1a73e8,#0d47a1);border-radius:16px;padding:2rem;color:#fff;position:relative;overflow:hidden}
+    .saldo-card::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.08);pointer-events:none;z-index:1}
+    .saldo-card::after{content:'';position:absolute;bottom:-30px;left:60px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.05);pointer-events:none;z-index:1}
+    .saldo-label{font-size:.85rem;opacity:.8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem}
+    .saldo-amount{font-size:2.4rem;font-weight:800;margin-bottom:1.5rem;letter-spacing:-1px}
+    .saldo-actions{display:flex;gap:12px;flex-wrap:wrap;position:relative;z-index:2}
+    .btn-saldo{padding:.7rem 1.5rem;border-radius:6px;font-weight:bold;font-size:.9rem;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px;position:relative;z-index:3}
+    .btn-topup{background:#ffffff;color:#1a73e8}
+    .btn-topup:hover{background:#f1f3f5}
+    .btn-wd{background:#e8f0fe;color:#0d47a1}
+    .btn-wd:hover{background:#d2e3fc}
+
+    /* Section cards */
+    .card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+    .card-header{padding:.9rem 1.25rem;border-bottom:1px solid #e8ecef;font-weight:700;font-size:.95rem;color:#212529;display:flex;align-items:center;gap:8px}
+    .card-body{padding:1.25rem}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px 12px;text-align:left;font-size:.875rem;border-bottom:1px solid #f0f4f8}
+    th{color:#6c757d;font-weight:600}
+    .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.75rem;font-weight:600}
+    .badge-pending{background:#fff3cd;color:#856404}
+    .badge-success{background:#d1e7dd;color:#0f5132}
+    .badge-expired,.badge-failed{background:#f8d7da;color:#842029}
+    .empty-state{text-align:center;padding:2.5rem;color:#adb5bd;font-size:.9rem}
+    .type-topup{color:#198754;font-weight:600}
+    .type-withdrawal{color:#dc3545;font-weight:600}
+
+    /* Modal Overlay */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;align-items:center;justify-content:center;padding:1rem}
+    .modal-overlay.active{display:flex}
+    .modal{background:#fff;border-radius:16px;width:100%;max-width:440px;overflow:hidden;animation:slideUp .3s ease}
+    @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .modal-header{padding:1.1rem 1.5rem;border-bottom:1px solid #e8ecef;display:flex;align-items:center;justify-content:space-between}
+    .modal-header h3{font-size:1.1rem;font-weight:700}
+    .modal-close{background:none;border:none;font-size:1.4rem;cursor:pointer;color:#6c757d;line-height:1}
+    .modal-body{padding:1.5rem}
+    .step{display:none}
+    .step.active{display:block}
+    .form-group{margin-bottom:1rem}
+    .form-group label{display:block;font-size:.875rem;font-weight:600;color:#495057;margin-bottom:.4rem}
+    .form-control{width:100%;padding:.6rem .85rem;border:1.5px solid #ced4da;border-radius:8px;font-size:.9rem;outline:none;transition:border .2s}
+    .form-control:focus{border-color:#1a73e8}
+    .btn-primary{width:100%;padding:.7rem;background:#1a73e8;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:.95rem;cursor:pointer;transition:background .2s}
+    .btn-primary:hover{background:#1557b0}
+    .btn-primary:disabled{background:#adb5bd;cursor:not-allowed}
+    .qris-wrap{text-align:center}
+    .qris-wrap img{width:220px;height:220px;border:2px solid #e8ecef;border-radius:12px;object-fit:contain}
+    .qris-info{background:#f0f4f8;border-radius:8px;padding:1rem;margin:1rem 0;font-size:.85rem}
+    .qris-info strong{font-size:1.2rem;color:#1a73e8}
+    .polling-status{text-align:center;margin-top:1rem;font-size:.875rem}
+    .spinner{width:18px;height:18px;border:2px solid #e8ecef;border-top-color:#1a73e8;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .status-success-box{background:#d1e7dd;color:#0f5132;padding:1rem;border-radius:8px;text-align:center;font-weight:700;font-size:1rem}
+    .status-failed-box{background:#f8d7da;color:#842029;padding:1rem;border-radius:8px;text-align:center;font-weight:700}
+    .amount-shortcuts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1rem}
+    .shortcut-btn{padding:.4rem .9rem;border:1.5px solid #1a73e8;border-radius:20px;color:#1a73e8;font-size:.8rem;font-weight:600;cursor:pointer;background:#fff;transition:all .15s}
+    .shortcut-btn:hover{background:#1a73e8;color:#fff}
+
+    @media(max-width:768px){
+      body{padding-bottom:74px!important}
+      .container{grid-template-columns:1fr}
+      .sidebar-col{display:none!important}
+      .saldo-amount{font-size:1.8rem}
+    }
+  </style>
+</head>
+<body>
+  <UserNavbar />
+  <div class="container">
+    <div class="sidebar-col"><UserSidebar activeTab="saldo" /></div>
+    <div class="content-area">
+
+      <!-- Saldo Card -->
+      <div class="saldo-card">
+        <div class="saldo-label">💰 Saldo EasyMall Wallet</div>
+        <div class="saldo-amount" id="balance-display">Rp 0</div>
+        <div class="saldo-actions">
+          <button class="btn-saldo btn-topup" id="btn-open-topup">⬆️ Top Up</button>
+          <button class="btn-saldo btn-wd" id="btn-open-withdraw">⬇️ Tarik Saldo</button>
+        </div>
+      </div>
+
+      <!-- Riwayat Transaksi -->
+      <div class="card">
+        <div class="card-header">📋 Riwayat Transaksi Wallet</div>
+        <div class="card-body" style="padding:0">
+          <div id="history-container"><div class="empty-state">Memuat riwayat...</div></div>
+        </div>
+      </div>
+
+      <!-- Topup & Penarikan -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem" id="two-col">
+        <div class="card">
+          <div class="card-header">📥 Riwayat Top Up</div>
+          <div class="card-body" style="padding:0"><div id="topup-container"><div class="empty-state">Kosong</div></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">📤 Riwayat Penarikan</div>
+          <div class="card-body" style="padding:0"><div id="wd-container"><div class="empty-state">Kosong</div></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TOPUP MODAL -->
+  <div class="modal-overlay" id="topup-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="topup-modal-title">⬆️ Top Up Saldo</h3>
+        <button class="modal-close" id="btn-close-topup">×</button>
+      </div>
+      <div class="modal-body">
+        <!-- Step 1: Input Jumlah -->
+        <div class="step active" id="step-amount">
+          <p style="font-size:.875rem;color:#6c757d;margin-bottom:1rem">Pilih atau masukkan jumlah top up. Minimal <strong>Rp 10.000</strong>.</p>
+          <div class="amount-shortcuts">
+            <button class="shortcut-btn" data-amount="10000">Rp 10rb</button>
+            <button class="shortcut-btn" data-amount="25000">Rp 25rb</button>
+            <button class="shortcut-btn" data-amount="50000">Rp 50rb</button>
+            <button class="shortcut-btn" data-amount="100000">Rp 100rb</button>
+            <button class="shortcut-btn" data-amount="250000">Rp 250rb</button>
+            <button class="shortcut-btn" data-amount="500000">Rp 500rb</button>
+          </div>
+          <div class="form-group">
+            <label for="topup-amount">Jumlah (Rp)</label>
+            <input type="number" id="topup-amount" class="form-control" placeholder="Contoh: 50000" min="10000">
+          </div>
+          <button class="btn-primary" id="btn-generate-qris">Buat QRIS Pembayaran →</button>
+        </div>
+
+        <!-- Step 2: Tampilkan QRIS -->
+        <div class="step" id="step-qris">
+          <div class="qris-wrap">
+            <p style="font-size:.8rem;color:#6c757d;margin-bottom:.75rem">Scan QR Code di bawah menggunakan aplikasi m-banking or e-wallet Anda</p>
+            <img id="qris-img" src="" alt="QRIS Code">
+            <div class="qris-info">
+              <div style="font-size:.8rem;color:#6c757d">Total Bayar</div>
+              <strong id="qris-total">Rp 0</strong>
+              <div style="font-size:.75rem;color:#adb5bd;margin-top:.3rem">*Termasuk biaya admin jika ada</div>
+            </div>
+            <div id="qris-actions" style="display:flex;gap:8px;justify-content:center;margin-bottom:.75rem">
+              <a id="qris-payment-link" href="#" target="_blank" style="font-size:.8rem;color:#1a73e8;text-decoration:none">🔗 Buka halaman pembayaran</a>
+            </div>
+            <div class="polling-status" id="polling-status">
+              <span class="spinner"></span> Menunggu konfirmasi pembayaran...
+            </div>
+            <div id="payment-result"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WITHDRAW MODAL -->
+  <div class="modal-overlay" id="wd-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>⬇️ Tarik Saldo</h3>
+        <button class="modal-close" id="btn-close-withdraw">×</button>
+      </div>
+      <div class="modal-body">
+        <div style="background:#fff3cd;border-radius:8px;padding:.75rem 1rem;font-size:.8rem;color:#856404;margin-bottom:1rem">
+          ⚠️ Penarikan diproses manual dalam <strong>1×24 jam kerja</strong>. Saldo akan langsung terpotong saat pengajuan.
+        </div>
+        <div class="form-group">
+          <label>Jumlah Penarikan (Rp)</label>
+          <input type="number" id="wd-amount" class="form-control" placeholder="Min. Rp 10.000" min="10000">
+          <div style="font-size:.75rem;color:#6c757d;margin-top:.3rem">Saldo tersedia: <strong id="wd-balance-hint">Rp 0</strong></div>
+        </div>
+        <div class="form-group">
+          <label>Nama Bank / E-Wallet</label>
+          <input type="text" id="wd-bank-name" class="form-control" placeholder="BCA, Mandiri, DANA, GoPay...">
+        </div>
+        <div class="form-group">
+          <label>Nomor Rekening / No. HP E-Wallet</label>
+          <input type="text" id="wd-bank-account" class="form-control" placeholder="081234567890">
+        </div>
+        <div class="form-group">
+          <label>Nama Pemilik Rekening</label>
+          <input type="text" id="wd-bank-holder" class="form-control" placeholder="Nama sesuai rekening">
+        </div>
+        <button class="btn-primary" id="btn-submit-withdraw">Ajukan Penarikan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CUSTOM CONFIRMATION MODAL -->
+  <div class="modal-overlay" id="confirm-modal">
+    <div class="modal" style="max-width:380px">
+      <div class="modal-header">
+        <h3 style="display:flex;align-items:center;gap:6px">❓ Konfirmasi Penarikan</h3>
+        <button class="modal-close" id="btn-close-confirm">×</button>
+      </div>
+      <div class="modal-body" style="text-align:center">
+        <p id="confirm-message" style="font-size:.9rem;color:#495057;margin-bottom:1.5rem;line-height:1.6"></p>
+        <div style="display:flex;gap:10px">
+          <button class="btn-primary" style="background:#6c757d" id="btn-confirm-no">Batal</button>
+          <button class="btn-primary" id="btn-confirm-yes">Ya, Lanjutkan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Toast Notification Container -->
+  <div id="toast-container" style="position:fixed;top:20px;right:20px;z-index:999999;display:flex;flex-direction:column;gap:10px;pointer-events:none"></div>
+
+  <BottomNav />
+
+  <script is:inline>
+    let API_BASE_URL = '';
+    if (window.location.port !== '5002' && window.location.protocol !== 'file:') {
+      API_BASE_URL = 'https://api.ilhampradani.me';
+    }
+
+    let currentBalance = 0;
+    let currentTrxId = null;
+    let pollingInterval = null;
+    let confirmResolver = null;
+
+    function formatRp(n) {
+      return 'Rp ' + parseInt(n || 0).toLocaleString('id-ID');
+    }
+
+    // ─── Custom Notification & Confirmation ─────────────────────────────────
+    function showNotification(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: #fff;
+        font-weight: 600;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        pointer-events: auto;
+        min-width: 250px;
+        transform: translateY(-20px);
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      `;
+      
+      if (type === 'success') {
+        toast.style.background = '#2e7d32'; // Green
+        toast.innerHTML = `🟢 ${message}`;
+      } else if (type === 'error') {
+        toast.style.background = '#c62828'; // Red
+        toast.innerHTML = `🔴 ${message}`;
+      } else {
+        toast.style.background = '#1565c0'; // Blue
+        toast.innerHTML = `🔵 ${message}`;
+      }
+      
+      container.appendChild(toast);
+      
+      // Trigger animation
+      setTimeout(() => {
+        toast.style.transform = 'translateY(0)';
+        toast.style.opacity = '1';
+      }, 10);
+      
+      // Remove toast
+      setTimeout(() => {
+        toast.style.transform = 'translateY(-20px)';
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function customConfirm(message) {
+      document.getElementById('confirm-message').textContent = message;
+      document.getElementById('confirm-modal').classList.add('active');
+      return new Promise((resolve) => {
+        confirmResolver = resolve;
+      });
+    }
+
+    function closeConfirmModal(result) {
+      document.getElementById('confirm-modal').classList.remove('active');
+      if (confirmResolver) {
+        confirmResolver(result);
+        confirmResolver = null;
+      }
+    }
+
+    // ─── Load wallet data ─────────────────────────────────────────────────────
+    async function loadWallet() {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/wallet`, { credentials: 'include' });
+        if (!res.ok) { window.location.href = '/login.html'; return; }
+        const data = await res.json();
+        if (!data.success) { window.location.href = '/login.html'; return; }
+
+        currentBalance = data.balance;
+        const balDisp = document.getElementById('balance-display');
+        const balHint = document.getElementById('wd-balance-hint');
+        if (balDisp) balDisp.textContent = formatRp(data.balance);
+        if (balHint) balHint.textContent = formatRp(data.balance);
+
+        renderHistory(data.history || []);
+        renderTopups(data.topups || []);
+        renderWithdrawals(data.withdrawals || []);
+      } catch(e) { console.error(e); }
+    }
+
+    function renderHistory(list) {
+      const c = document.getElementById('history-container');
+      if (!c) return;
+      if (!list.length) { c.innerHTML = '<div class="empty-state">Belum ada riwayat transaksi.</div>'; return; }
+      c.innerHTML = `<table><thead><tr><th>Tipe</th><th>Jumlah</th><th>Keterangan</th><th>Waktu</th></tr></thead><tbody>
+        ${list.map(h => `<tr>
+          <td class="${h.type==='topup'?'type-topup':'type-withdrawal'}">${h.type==='topup'?'⬆️ Top Up':'⬇️ Penarikan'}</td>
+          <td>${h.type==='topup'?'+':'-'}${formatRp(Math.abs(h.amount))}</td>
+          <td style="font-size:.8rem;color:#6c757d">${h.description||'-'}</td>
+          <td style="font-size:.8rem;color:#adb5bd">${h.created_at}</td>
+        </tr>`).join('')}
+      </tbody></table>`;
+    }
+
+    function renderTopups(list) {
+      const c = document.getElementById('topup-container');
+      if (!c) return;
+      if (!list.length) { c.innerHTML = '<div class="empty-state">Belum ada top up.</div>'; return; }
+      c.innerHTML = `<table><thead><tr><th>ID</th><th>Nominal</th><th>Status</th></tr></thead><tbody>
+        ${list.map(t => `<tr>
+          <td style="font-size:.75rem;color:#6c757d">${t.trx_id}</td>
+          <td>${formatRp(t.amount)}</td>
+          <td><span class="badge badge-${t.status}">${t.status}</span></td>
+        </tr>`).join('')}
+      </tbody></table>`;
+    }
+
+    function renderWithdrawals(list) {
+      const c = document.getElementById('wd-container');
+      if (!c) return;
+      if (!list.length) { c.innerHTML = '<div class="empty-state">Belum ada penarikan.</div>'; return; }
+      c.innerHTML = `<table><thead><tr><th>Bank</th><th>Nominal</th><th>Status</th></tr></thead><tbody>
+        ${list.map(w => `<tr>
+          <td style="font-size:.8rem">${w.bank_name}<br><span style="color:#adb5bd;font-size:.75rem">${w.bank_account}</span></td>
+          <td>${formatRp(w.amount)}</td>
+          <td><span class="badge badge-${w.status}">${w.status}</span></td>
+        </tr>`).join('')}
+      </tbody></table>`;
+    }
+
+    // ─── Topup Modal functions ────────────────────────────────────────────────
+    function closeTopupModal() {
+      stopPolling();
+      const modal = document.getElementById('topup-modal');
+      if (modal) modal.classList.remove('active');
+      const amtInput = document.getElementById('topup-amount');
+      if (amtInput) amtInput.value = '';
+      showStep('step-amount');
+    }
+
+    function showStep(id) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      const el = document.getElementById(id);
+      if (el) el.classList.add('active');
+    }
+
+    async function generateQRIS() {
+      const amount = parseInt(document.getElementById('topup-amount').value);
+      if (!amount || amount < 10000) { showNotification('Minimal top up Rp 10.000', 'error'); return; }
+      const btn = document.getElementById('btn-generate-qris');
+      btn.disabled = true; btn.textContent = 'Membuat QRIS...';
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/wallet/topup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount }),
+          credentials: 'include'
+        });
+        const data = await res.json();
+        if (data.success) {
+          currentTrxId = data.trx_id;
+          const img = document.getElementById('qris-img');
+          img.src = data.qris_image || data.qr_url;
+          img.onerror = () => { img.src = data.qr_url; };
+          document.getElementById('qris-total').textContent = formatRp(data.total_amount);
+          document.getElementById('qris-payment-link').href = data.payment_url || '#';
+          document.getElementById('payment-result').innerHTML = '';
+          document.getElementById('polling-status').innerHTML = '<span class="spinner"></span> Menunggu konfirmasi pembayaran...';
+          showStep('step-qris');
+          document.getElementById('topup-modal-title').textContent = '📲 Scan QRIS';
+          startPolling();
+        } else {
+          showNotification('Gagal: ' + (data.error || 'Terjadi kesalahan'), 'error');
+        }
+      } catch(e) { showNotification('Koneksi gagal. Coba lagi.', 'error'); }
+      btn.disabled = false; btn.textContent = 'Buat QRIS Pembayaran →';
+    }
+
+    function startPolling() {
+      stopPolling();
+      let attempts = 0;
+      pollingInterval = setInterval(async () => {
+        attempts++;
+        if (attempts > 36) { // 3 menit
+          stopPolling();
+          document.getElementById('polling-status').innerHTML = '';
+          document.getElementById('payment-result').innerHTML = '<div class="status-failed-box">⏱️ QR Code kadaluarsa. Silakan buat ulang.</div>';
+          return;
+        }
+        try {
+          const res = await fetch(`${API_BASE_URL}/api/wallet/topup/status?trx_id=${currentTrxId}`, { credentials: 'include' });
+          const data = await res.json();
+          if (data.status === 'success') {
+            stopPolling();
+            document.getElementById('polling-status').innerHTML = '';
+            document.getElementById('payment-result').innerHTML = '<div class="status-success-box">✅ Pembayaran Berhasil!<br>Saldo Anda telah dikreditkan.</div>';
+            setTimeout(() => { closeTopupModal(); loadWallet(); }, 2500);
+          } else if (data.status === 'expired' || data.status === 'failed') {
+            stopPolling();
+            document.getElementById('polling-status').innerHTML = '';
+            document.getElementById('payment-result').innerHTML = '<div class="status-failed-box">❌ ' + data.message + '</div>';
+          }
+        } catch(e) {}
+      }, 5000);
+    }
+
+    function stopPolling() {
+      if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; }
+    }
+
+    // ─── Withdrawal Modal functions ──────────────────────────────────────────
+    async function openWithdrawModal() {
+      const nameInp = document.getElementById('wd-bank-name');
+      const accInp = document.getElementById('wd-bank-account');
+      const holdInp = document.getElementById('wd-bank-holder');
+      
+      if (nameInp) nameInp.placeholder = 'Memuat data rekening...';
+      if (accInp) accInp.placeholder = 'Memuat nomor rekening...';
+      if (holdInp) holdInp.placeholder = 'Memuat pemilik rekening...';
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/user/settings`, { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          if (nameInp) nameInp.value = data.bank_name || '';
+          if (accInp) accInp.value = data.bank_account_number || '';
+          if (holdInp) holdInp.value = data.bank_account_holder || '';
+        }
+      } catch (e) {
+        console.error("Gagal memuat rekening:", e);
+      } finally {
+        if (nameInp) nameInp.placeholder = 'BCA, Mandiri, DANA, GoPay...';
+        if (accInp) accInp.placeholder = '081234567890';
+        if (holdInp) holdInp.placeholder = 'Nama sesuai rekening';
+      }
+
+      const modal = document.getElementById('wd-modal');
+      if (modal) modal.classList.add('active');
+    }
+
+    async function submitWithdrawal() {
+      const amount = parseInt(document.getElementById('wd-amount').value);
+      const bank_name = document.getElementById('wd-bank-name').value.trim();
+      const bank_account = document.getElementById('wd-bank-account').value.trim();
+      const bank_holder = document.getElementById('wd-bank-holder').value.trim();
+
+      if (!amount || amount < 10000) { showNotification('Minimal penarikan Rp 10.000', 'error'); return; }
+      if (amount > currentBalance) { showNotification('Saldo tidak mencukupi!', 'error'); return; }
+      if (!bank_name || !bank_account || !bank_holder) { showNotification('Lengkapi data rekening bank!', 'error'); return; }
+
+      const confirmed = await customConfirm(`Konfirmasi penarikan ${formatRp(amount)} ke ${bank_name} - ${bank_account}?`);
+      if (!confirmed) return;
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/wallet/withdraw`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount, bank_name, bank_account, bank_holder }),
+          credentials: 'include'
+        });
+        const data = await res.json();
+        if (data.success) {
+          showNotification('Penarikan berhasil diajukan!', 'success');
+          const modal = document.getElementById('wd-modal');
+          if (modal) modal.classList.remove('active');
+          loadWallet();
+        } else {
+          showNotification('Gagal: ' + (data.error || 'Terjadi kesalahan'), 'error');
+        }
+      } catch(e) { showNotification('Koneksi gagal', 'error'); }
+    }
+
+    // ─── Initialize Dashboard ────────────────────────────────────────────────
+    function initSaldoDashboard() {
+      stopPolling();
+      
+      const btnOpenTopup = document.getElementById('btn-open-topup');
+      const btnOpenWithdraw = document.getElementById('btn-open-withdraw');
+      const btnCloseTopup = document.getElementById('btn-close-topup');
+      const btnCloseWithdraw = document.getElementById('btn-close-withdraw');
+      const btnCloseConfirm = document.getElementById('btn-close-confirm');
+      const btnConfirmYes = document.getElementById('btn-confirm-yes');
+      const btnConfirmNo = document.getElementById('btn-confirm-no');
+      const btnGenerateQris = document.getElementById('btn-generate-qris');
+      const btnSubmitWithdraw = document.getElementById('btn-submit-withdraw');
+      
+      const topupModal = document.getElementById('topup-modal');
+      const wdModal = document.getElementById('wd-modal');
+      const confirmModal = document.getElementById('confirm-modal');
+      
+      if (btnOpenTopup) {
+        btnOpenTopup.addEventListener('click', () => {
+          if (btnGenerateQris) {
+            btnGenerateQris.disabled = false;
+            btnGenerateQris.textContent = 'Buat QRIS Pembayaran →';
+          }
+          if (topupModal) topupModal.classList.add('active');
+          showStep('step-amount');
+        });
+      }
+      
+      if (btnOpenWithdraw) {
+        btnOpenWithdraw.addEventListener('click', openWithdrawModal);
+      }
+      
+      if (btnCloseTopup) {
+        btnCloseTopup.addEventListener('click', closeTopupModal);
+      }
+      
+      if (btnCloseWithdraw) {
+        btnCloseWithdraw.addEventListener('click', () => {
+          if (wdModal) wdModal.classList.remove('active');
+        });
+      }
+      
+      if (btnCloseConfirm) {
+        btnCloseConfirm.addEventListener('click', () => closeConfirmModal(false));
+      }
+      if (btnConfirmNo) {
+        btnConfirmNo.addEventListener('click', () => closeConfirmModal(false));
+      }
+      if (btnConfirmYes) {
+        btnConfirmYes.addEventListener('click', () => closeConfirmModal(true));
+      }
+      
+      if (btnGenerateQris) {
+        btnGenerateQris.addEventListener('click', generateQRIS);
+      }
+      
+      if (btnSubmitWithdraw) {
+        btnSubmitWithdraw.addEventListener('click', submitWithdrawal);
+      }
+      
+      // Shortcuts
+      document.querySelectorAll('.shortcut-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const amt = e.target.getAttribute('data-amount');
+          const input = document.getElementById('topup-amount');
+          if (input) input.value = amt;
+        });
+      });
+      
+      // Overlay clicks
+      if (topupModal) {
+        topupModal.addEventListener('click', e => { if(e.target===e.currentTarget) closeTopupModal(); });
+      }
+      if (wdModal) {
+        wdModal.addEventListener('click', e => { if(e.target===e.currentTarget) wdModal.classList.remove('active'); });
+      }
+      if (confirmModal) {
+        confirmModal.addEventListener('click', e => { if(e.target===e.currentTarget) closeConfirmModal(false); });
+      }
+      
+      loadWallet();
+    }
+
+    // Execute on initial DOM load & page transition events
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initSaldoDashboard);
+    } else {
+      initSaldoDashboard();
+    }
+    document.addEventListener('astro:page-load', initSaldoDashboard);
+  </script>
+</body>
+</html>

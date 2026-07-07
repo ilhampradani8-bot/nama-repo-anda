@@ -9,6 +9,8 @@
 /reseller/
 /rest_api_examples/
 /__pycache__/
+/dinamis/ecom_api/uploads/
+
 
 # Ignored backend / system / sensitive files
 .env

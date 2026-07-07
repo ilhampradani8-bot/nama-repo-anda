@@ -1,0 +1,656 @@
+---
+// dashboard_tambah_produk.astro
+import UserNavbar from '../components/dashboard/UserNavbar.astro';
+import UserSidebar from '../components/dashboard/UserSidebar.astro';
+import BottomNav from '../components/BottomNav.astro';
+---
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambah Produk | EasyMarket</title>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --border-color: #dee2e6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1140px;
+            width: 100%;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+            flex-grow: 1;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 1.5rem;
+        }
+
+        .sidebar-col {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: #ffffff;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .card-header {
+            background: #f8f9fa;
+            padding: 1rem 1.25rem;
+            border-bottom: 2px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-header-title {
+            font-weight: bold;
+            font-size: 1.15rem;
+            color: #212529;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Form styling */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+        }
+
+        .form-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+        }
+
+        @media (max-width: 576px) {
+            .form-row-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #495057;
+        }
+
+        .form-control {
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            padding: 0.65rem 0.85rem;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+        }
+
+        /* Dynamic list builder styles */
+        .list-builder-input {
+            display: flex;
+            gap: 8px;
+        }
+
+        .list-builder-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .image-preview-card {
+            width: 60px;
+            height: 60px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+            background-color: #f8f9fa;
+        }
+
+        .image-preview-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-preview-card .remove-btn {
+            position: absolute;
+            top: 1px;
+            right: 1px;
+            background: rgba(220, 53, 69, 0.9);
+            color: white;
+            border: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .image-preview-card .remove-btn:hover {
+            background: #dc3545;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0, 123, 255, 0.1);
+            border-top-color: #007bff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .variant-tag {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 6px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .variant-tag .variant-price {
+            color: #198754;
+            font-weight: 600;
+        }
+
+        .variant-tag .remove-variant {
+            color: #dc3545;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+            background: none;
+            font-size: 1rem;
+        }
+
+        /* Buttons & Actions */
+        .btn {
+            padding: 0.65rem 1.25rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 0.95rem;
+            border: none;
+        }
+
+        .btn-outline {
+            background: #fff;
+            border: 2px solid #dee2e6;
+            color: #495057;
+        }
+
+        .btn-outline:hover {
+            background: #f8f9fa;
+            border-color: #ced4da;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+            color: #fff;
+            box-shadow: 0 4px 6px rgba(13, 110, 253, 0.15);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(13, 110, 253, 0.25);
+            background: linear-gradient(135deg, #0b5ed7, #0a58ca);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #198754, #157347);
+            color: #fff;
+            box-shadow: 0 4px 6px rgba(25, 135, 84, 0.15);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(25, 135, 84, 0.25);
+            background: linear-gradient(135deg, #157347, #13653f);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background: #5c636a;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 1.5rem;
+            border-top: 2px solid #dee2e6;
+            padding-top: 1.5rem;
+        }
+
+        /* Toast Notification */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1100;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast-msg {
+            background: #212529;
+            color: #fff;
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 0.9rem;
+            font-weight: 500;
+            animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-bottom: 74px !important;
+            }
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar-col {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <UserNavbar />
+
+    <div class="container">
+        <div class="sidebar-col">
+            <UserSidebar activeTab="produk" />
+        </div>
+
+        <div class="content-area">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-header-title">📤 Tambah Produk Baru</div>
+                    <a href="/dashboard_produk.html" class="btn btn-outline">
+                        ⬅️ Kembali ke Produk Saya
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form id="product-form" onsubmit="submitForm(event)">
+                        <div class="form-grid">
+                            <!-- Category Select -->
+                            <div class="form-group">
+                                <label for="category">Kategori Produk <span style="color:#dc3545;">*</span></label>
+                                <select id="category" class="form-control" required>
+                                    <option value="digital">Produk Digital & Lisensi (Script, Panel, API, DLL)</option>
+                                    <option value="jasa">Jasa & Freelancing (Jasa Coding, Desain, DLL)</option>
+                                    <option value="layanan">Layanan Online (Paket Akun Premium, VPS, Server)</option>
+                                    <option value="voucher">Voucher Game & Top Up</option>
+                                    <option value="ebook">E-Book & Kursus Online</option>
+                                    <option value="lainnya">Lainnya</option>
+                                </select>
+                            </div>
+
+                            <!-- Product Name -->
+                            <div class="form-group">
+                                <label for="product_name">Nama Produk <span style="color:#dc3545;">*</span></label>
+                                <input type="text" id="product_name" class="form-control" required placeholder="Contoh: Jasa Pembuatan Website E-Commerce Premium">
+                            </div>
+
+                            <!-- Description -->
+                            <div class="form-group">
+                                <label for="description">Deskripsi Lengkap</label>
+                                <textarea id="description" class="form-control" rows="5" placeholder="Deskripsikan fitur, keunggulan, jangka waktu pengerjaan, atau detail produk Anda..."></textarea>
+                            </div>
+
+                            <!-- Base Price -->
+                            <div class="form-group">
+                                <label for="price">Harga Dasar Produk (Rp) <span style="color:#dc3545;">*</span></label>
+                                <input type="number" id="price" class="form-control" required placeholder="Contoh: 250000" min="100">
+                            </div>
+
+                            <!-- Image Upload Builder -->
+                            <div class="form-group">
+                                <label>Foto Produk (Bisa unggah lebih dari 1 gambar, maks 5MB per gambar)</label>
+                                <div class="list-builder-input">
+                                    <input type="file" id="image-file-input" class="form-control" accept="image/*" multiple onchange="handleImageUpload(event)">
+                                </div>
+                                <div id="image-list" class="list-builder-items">
+                                    <!-- Dynamic previews go here -->
+                                </div>
+                            </div>
+
+                            <!-- Variants Builder -->
+                            <div class="form-group" style="background: #f8f9fa; padding: 1.25rem; border-radius: 8px; border: 1px solid #dee2e6;">
+                                <label style="margin-bottom: 8px; display: block; font-weight: bold; font-size: 0.95rem;">Tambahkan Variasi & Harga Varian (Opsional)</label>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: flex-end;">
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <label for="v-name" style="font-size: 0.8rem;">Nama Varian</label>
+                                        <input type="text" id="v-name" class="form-control" placeholder="Contoh: Paket Starter / Varian Pro">
+                                    </div>
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <label for="v-price" style="font-size: 0.8rem;">Harga Varian (Rp)</label>
+                                        <input type="number" id="v-price" class="form-control" placeholder="Contoh: 150000" min="100">
+                                    </div>
+                                    <button type="button" class="btn btn-outline" onclick="addVariant()" style="padding: 0.65rem 1rem;">➕</button>
+                                </div>
+                                <div id="variant-list" class="list-builder-items" style="margin-top: 12px;">
+                                    <!-- Dynamic variants tags go here -->
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="submitDraft()">💾 Simpan Draft</button>
+                                <button type="submit" class="btn btn-success">🚀 Publikasi Produk</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script is:inline>
+        let API_BASE_URL = '';
+        if (window.location.port !== '5002' && window.location.protocol !== 'file:') {
+            API_BASE_URL = 'https://api.ilhampradani.me';
+        }
+
+        // Global arrays
+        const imagesList = [];
+        const variantsList = [];
+
+        // Image upload logic
+        async function handleImageUpload(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            const container = document.getElementById('image-list');
+            
+            // Show a temporary uploading placeholder
+            const uploadPlaceholder = document.createElement('div');
+            uploadPlaceholder.className = 'image-preview-card';
+            uploadPlaceholder.id = 'uploading-state';
+            uploadPlaceholder.innerHTML = `
+                <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%; font-size:0.75rem; color:#6c757d; flex-direction:column; gap:4px;">
+                    <div class="spinner" style="width:16px; height:16px;"></div>
+                    <span>Uploading...</span>
+                </div>
+            `;
+            container.appendChild(uploadPlaceholder);
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                
+                // Validate size (5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast(`File ${file.name} melebihi batas 5MB!`, 'danger');
+                    continue;
+                }
+
+                const formData = new FormData();
+                formData.append('image', file);
+
+                try {
+                    const res = await fetch(`${API_BASE_URL}/api/upload`, {
+                        method: 'POST',
+                        body: formData,
+                        credentials: 'include'
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.success) {
+                            imagesList.push(data.url);
+                        } else {
+                            showToast(`Gagal mengunggah ${file.name}: ${data.error || ''}`, 'danger');
+                        }
+                    } else {
+                        showToast(`Gagal mengunggah ${file.name}.`, 'danger');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showToast(`Error koneksi saat mengunggah ${file.name}`, 'danger');
+                }
+            }
+
+            // Remove placeholder and re-render
+            const placeholderEl = document.getElementById('uploading-state');
+            if (placeholderEl) placeholderEl.remove();
+            renderImages();
+            // Reset file input
+            event.target.value = '';
+        }
+
+        function removeImage(index) {
+            imagesList.splice(index, 1);
+            renderImages();
+        }
+
+        function renderImages() {
+            const container = document.getElementById('image-list');
+            if (imagesList.length === 0) {
+                container.innerHTML = '<span style="color:#6c757d; font-size:0.85rem;">Belum ada foto diunggah.</span>';
+                return;
+            }
+
+            container.innerHTML = imagesList.map((url, index) => {
+                const fullUrl = url.startsWith('/') ? `${API_BASE_URL}${url}` : url;
+                return `
+                    <div class="image-preview-card">
+                        <img src="${fullUrl}" onerror="this.src='https://placehold.co/100x100?text=Error'">
+                        <button type="button" class="remove-btn" onclick="removeImage(${index})">&times;</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Variant list builder logic
+        function addVariant() {
+            const nameInput = document.getElementById('v-name');
+            const priceInput = document.getElementById('v-price');
+            const name = nameInput.value.trim();
+            const price = parseInt(priceInput.value);
+
+            if (!name) {
+                showToast('Nama varian harus diisi!', 'danger');
+                return;
+            }
+            if (isNaN(price) || price <= 0) {
+                showToast('Harga varian harus berupa angka positif!', 'danger');
+                return;
+            }
+
+            variantsList.push({ name, price });
+            nameInput.value = '';
+            priceInput.value = '';
+            renderVariants();
+        }
+
+        function removeVariant(index) {
+            variantsList.splice(index, 1);
+            renderVariants();
+        }
+
+        function renderVariants() {
+            const container = document.getElementById('variant-list');
+            if (variantsList.length === 0) {
+                container.innerHTML = '<span style="color:#6c757d; font-size:0.85rem;">Belum ada variasi ditambahkan.</span>';
+                return;
+            }
+
+            container.innerHTML = variantsList.map((v, index) => {
+                const formattedPrice = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v.price);
+                return `
+                    <div class="variant-tag">
+                        <span>${v.name}</span>
+                        <span class="variant-price">${formattedPrice}</span>
+                        <button type="button" class="remove-variant" onclick="removeVariant(${index})">&times;</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Show Toast Notifications
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast-msg';
+            toast.style.borderLeft = type === 'danger' ? '4px solid #dc3545' : '4px solid #198754';
+            toast.innerHTML = `<span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Form Submission logic
+        let selectedStatus = 'published';
+
+        function submitDraft() {
+            selectedStatus = 'draft';
+            document.getElementById('product-form').requestSubmit();
+        }
+
+        async function submitForm(e) {
+            e.preventDefault();
+
+            const productName = document.getElementById('product_name').value.trim();
+            const category = document.getElementById('category').value;
+            const description = document.getElementById('description').value.trim();
+            const price = parseInt(document.getElementById('price').value);
+
+            if (!productName || isNaN(price) || price <= 0) {
+                showToast('Nama produk dan harga dasar harus valid!', 'danger');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/user/products`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        product_name: productName,
+                        variant_name: null,
+                        price: price,
+                        description: description ? description : null,
+                        category: category,
+                        images: imagesList,
+                        variants: variantsList,
+                        status: selectedStatus
+                    }),
+                    credentials: 'include'
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success) {
+                        showToast(selectedStatus === 'draft' ? 'Produk disimpan sebagai draft!' : 'Produk berhasil dipublikasikan!');
+                        setTimeout(() => {
+                            window.location.href = '/dashboard_produk.html';
+                        }, 1200);
+                    } else {
+                        showToast('Gagal: ' + (data.error || 'Terjadi kesalahan'), 'danger');
+                    }
+                } else {
+                    showToast('Gagal menambahkan produk.', 'danger');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Terjadi kesalahan sistem.', 'danger');
+            }
+        }
+
+        // Initialize empty lists visualization
+        renderImages();
+        renderVariants();
+    </script>
+    <BottomNav />
+</body>
+</html>

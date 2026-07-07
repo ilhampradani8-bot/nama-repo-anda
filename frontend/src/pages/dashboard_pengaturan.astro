@@ -1,7 +1,6 @@
 ---
 // dashboard_pengaturan.astro
 import UserNavbar from '../components/dashboard/UserNavbar.astro';
-import UserProfileCard from '../components/dashboard/UserProfileCard.astro';
 import UserSidebar from '../components/dashboard/UserSidebar.astro';
 import BottomNav from '../components/BottomNav.astro';
 ---
@@ -169,7 +168,6 @@ import BottomNav from '../components/BottomNav.astro';
 
     <div class="container">
         <div class="sidebar-col">
-            <UserProfileCard />
             <UserSidebar activeTab="pengaturan" />
         </div>
 
@@ -191,6 +189,36 @@ import BottomNav from '../components/BottomNav.astro';
                         <div class="form-group">
                             <label for="phoneInput">Nomor WhatsApp Kontak</label>
                             <input type="text" id="phoneInput" class="form-control" placeholder="Contoh: 081234567890">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="recoveryEmail1Input">Email Pemulihan 1</label>
+                            <input type="email" id="recoveryEmail1Input" class="form-control" placeholder="email1@pemulihan.com">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="recoveryEmail2Input">Email Pemulihan 2</label>
+                            <input type="email" id="recoveryEmail2Input" class="form-control" placeholder="email2@pemulihan.com">
+                        </div>
+
+                        <hr style="border: 0; border-top: 1px solid #dee2e6; margin: 1.5rem 0;" />
+
+                        <!-- Withdrawal Bank Information -->
+                        <h4 style="margin-bottom: 1rem; font-weight: bold; color: #212529;">🏦 Informasi Rekening Bank (Withdraw/Penarikan)</h4>
+                        
+                        <div class="form-group">
+                            <label for="bankNameInput">Nama Bank / E-Wallet</label>
+                            <input type="text" id="bankNameInput" class="form-control" placeholder="Contoh: BCA, Mandiri, BNI, DANA, GoPay">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bankAccountNumberInput">Nomor Rekening / No. E-Wallet</label>
+                            <input type="text" id="bankAccountNumberInput" class="form-control" placeholder="Contoh: 8835123456 atau 0812XXXXXXXX">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bankAccountHolderInput">Nama Pemilik Rekening / Akun</label>
+                            <input type="text" id="bankAccountHolderInput" class="form-control" placeholder="Nama lengkap sesuai terdaftar di bank/e-wallet">
                         </div>
 
                         <hr style="border: 0; border-top: 1px solid #dee2e6; margin: 1.5rem 0;" />
@@ -224,41 +252,81 @@ import BottomNav from '../components/BottomNav.astro';
 
         async function fetchUserData() {
             try {
-                const authRes = await fetch(`${API_BASE_URL}/api/auth/status`, { credentials: 'include' });
-                if (!authRes.ok) {
+                // Fetch settings from DB
+                const settingsRes = await fetch(`${API_BASE_URL}/api/user/settings`, { credentials: 'include' });
+                if (!settingsRes.ok) {
                     window.location.href = '/login.html';
                     return;
                 }
-                const authData = await authRes.json();
-                if (!authData.logged_in) {
+                const data = await settingsRes.json();
+                if (!data.success) {
                     window.location.href = '/login.html';
                     return;
                 }
 
-                document.getElementById('user-name').textContent = authData.name;
-                document.getElementById('user-email').textContent = authData.email;
-                document.getElementById('avatar-initial').textContent = authData.name.charAt(0).toUpperCase();
+                // Populate header & card info
+                const nameEl = document.getElementById('user-name');
+                const emailEl = document.getElementById('user-email');
+                const avatarEl = document.getElementById('avatar-initial');
+                if (nameEl) nameEl.textContent = data.name;
+                if (emailEl) emailEl.textContent = data.email;
+                if (avatarEl) avatarEl.textContent = data.name.charAt(0).toUpperCase();
 
-                // Populate input fields
-                document.getElementById('usernameInput').value = authData.name;
-                document.getElementById('emailInput').value = authData.email;
-                
-                // Set default dummy phone
-                document.getElementById('phoneInput').value = '081234567890';
+                // Populate form fields
+                document.getElementById('usernameInput').value = data.name;
+                document.getElementById('emailInput').value = data.email;
+                document.getElementById('phoneInput').value = data.phone;
+                document.getElementById('recoveryEmail1Input').value = data.recovery_email_1;
+                document.getElementById('recoveryEmail2Input').value = data.recovery_email_2;
+                document.getElementById('bankNameInput').value = data.bank_name || '';
+                document.getElementById('bankAccountNumberInput').value = data.bank_account_number || '';
+                document.getElementById('bankAccountHolderInput').value = data.bank_account_holder || '';
             } catch (err) {
                 console.error(err);
             }
         }
 
-        function saveSettings(e) {
+        async function saveSettings(e) {
             e.preventDefault();
-            const newName = document.getElementById('usernameInput').value.trim();
-            if (!newName) {
+            const name = document.getElementById('usernameInput').value.trim();
+            const phone = document.getElementById('phoneInput').value.trim();
+            const recovery_email_1 = document.getElementById('recoveryEmail1Input').value.trim();
+            const recovery_email_2 = document.getElementById('recoveryEmail2Input').value.trim();
+            const bank_name = document.getElementById('bankNameInput').value.trim();
+            const bank_account_number = document.getElementById('bankAccountNumberInput').value.trim();
+            const bank_account_holder = document.getElementById('bankAccountHolderInput').value.trim();
+            
+            if (!name) {
                 alert('Nama lengkap tidak boleh kosong!');
                 return;
             }
-            alert('Sukses! Pengaturan akun Anda berhasil diperbarui secara lokal.');
-            window.location.reload();
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/user/settings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        phone,
+                        recovery_email_1,
+                        recovery_email_2,
+                        bank_name,
+                        bank_account_number,
+                        bank_account_holder
+                    }),
+                    credentials: 'include'
+                });
+
+                if (res.ok) {
+                    alert('Sukses! Pengaturan akun Anda berhasil diperbarui di database.');
+                    window.location.reload();
+                } else {
+                    alert('Gagal memperbarui pengaturan.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Terjadi kesalahan koneksi.');
+            }
         }
 
         async function performLogout() {
