@@ -621,8 +621,89 @@ import BottomNav from '../components/BottomNav.astro';
             transition: 0.3s;
         }
 
-        .lightbox-close:hover {
-            color: #bbb;
+        /* View Toggle styling */
+        .view-toggle-group {
+            display: flex;
+            background: #e9ecef;
+            padding: 4px;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+
+        .view-toggle-btn {
+            background: transparent;
+            border: none;
+            padding: 4px 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            border-radius: 4px;
+            color: #495057;
+            transition: all 0.15s ease;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .view-toggle-btn.active {
+            background: #ffffff;
+            color: #0d6efd;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .view-toggle-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.5);
+            color: #212529;
+        }
+
+        /* Product List View Layout overrides */
+        .product-grid.list-view {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .product-grid.list-view .product-item {
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 1fr;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 1.25rem 1.5rem;
+        }
+
+        .product-grid.list-view .product-item .info-col {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .product-grid.list-view .product-item .mid-col {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .product-grid.list-view .product-item .action-col {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-end;
+            justify-content: center;
+            margin-top: 0 !important;
+        }
+
+        /* Responsive List View */
+        @media (max-width: 768px) {
+            .product-grid.list-view .product-item {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+            .product-grid.list-view .product-item .action-col {
+                flex-direction: row;
+                justify-content: flex-end;
+            }
         }
     </style>
 </head>
@@ -661,9 +742,19 @@ import BottomNav from '../components/BottomNav.astro';
                     <div id="shared-tab" class="tab-content">
                         <div class="shared-header-box">
                             <div class="shared-title">Daftar Produk Saya Yang Dishare</div>
-                            <button class="btn-primary" onclick="openTambahDrawer()">
-                                ➕ Tambah Produk
-                            </button>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div class="view-toggle-group">
+                                    <button id="btn-view-grid" class="view-toggle-btn active" onclick="setProductViewMode('grid')" title="Tampilan Grid/Blok">
+                                        🎴
+                                    </button>
+                                    <button id="btn-view-list" class="view-toggle-btn" onclick="setProductViewMode('list')" title="Tampilan List/Baris">
+                                        ≡
+                                    </button>
+                                </div>
+                                <button class="btn-primary" onclick="openTambahDrawer()">
+                                    ➕ Tambah Produk
+                                </button>
+                            </div>
                         </div>
                         <div id="shared-container" class="product-grid">
                             <div class="loading-spinner" style="grid-column: 1/-1;">
@@ -1102,30 +1193,39 @@ import BottomNav from '../components/BottomNav.astro';
 
                 return `
                     <div class="product-item">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span class="product-item-badge" style="background:#f1f3f5; color:#495057; border: 1px solid #dee2e6;">${categoryText}</span>
-                            ${statusBadge}
+                        <div class="info-col">
+                            <div class="badge-row" style="display:flex; gap: 6px; align-items:center; margin-bottom: 6px;">
+                                <span class="product-item-badge" style="background:#f1f3f5; color:#495057; border: 1px solid #dee2e6; margin:0;">${categoryText}</span>
+                                ${statusBadge}
+                            </div>
+                            <div class="product-item-title">${p.product_name}</div>
+                            <div class="product-item-price">Mulai ${formattedPrice}</div>
+                            <div class="product-item-meta" style="margin-top: 6px; font-size: 0.85rem; color:#6c757d;">${p.description || 'Tidak ada deskripsi.'}</div>
                         </div>
-                        <div class="product-item-title">${p.product_name}</div>
-                        <div class="product-item-price">Mulai ${formattedPrice}</div>
                         
-                        ${galleryHtml}
+                        <div class="mid-col">
+                            ${galleryHtml}
+                            ${variantsHtml}
+                        </div>
                         
-                        <div class="product-item-meta" style="flex-grow:1; margin-top: 5px;">${p.description || 'Tidak ada deskripsi.'}</div>
-                        
-                        ${variantsHtml}
-
-                        <div style="margin-top: 10px; display: flex; justify-content: flex-end; gap: 8px;">
-                            <button class="btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="openEditModal(${p.id})">
+                        <div class="action-col" style="display: flex; gap: 8px; justify-content: flex-end; align-items: center; margin-top: 10px;">
+                            <button class="btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: fit-content;" onclick="openEditModal(${p.id})">
                                 ✏️ Edit
                             </button>
-                            <button class="btn-danger" onclick="deleteProduct(${p.id})">
+                            <button class="btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: fit-content;" onclick="deleteProduct(${p.id})">
                                 🗑️ Hapus
                             </button>
                         </div>
                     </div>
                 `;
             }).join('');
+
+            // Apply view mode class
+            if (productViewMode === 'list') {
+                container.classList.add('list-view');
+            } else {
+                container.classList.remove('list-view');
+            }
         }
 
         // Global lists for edit modal
@@ -1564,6 +1664,37 @@ import BottomNav from '../components/BottomNav.astro';
 
         function closeLightbox() {
             document.getElementById('lightbox-modal').classList.remove('active');
+        }
+
+        // View Mode State
+        let productViewMode = localStorage.getItem('product_view_mode') || 'grid';
+
+        function setProductViewMode(mode) {
+            productViewMode = mode;
+            localStorage.setItem('product_view_mode', mode);
+            
+            const container = document.getElementById('shared-container');
+            const btnGrid = document.getElementById('btn-view-grid');
+            const btnList = document.getElementById('btn-view-list');
+            
+            if (!container) return;
+            
+            if (mode === 'list') {
+                container.classList.add('list-view');
+                if (btnList) btnList.classList.add('active');
+                if (btnGrid) btnGrid.classList.remove('active');
+            } else {
+                container.classList.remove('list-view');
+                if (btnGrid) btnGrid.classList.add('active');
+                if (btnList) btnList.classList.remove('active');
+            }
+        }
+
+        // Apply saved view mode on load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => setProductViewMode(productViewMode));
+        } else {
+            setProductViewMode(productViewMode);
         }
 
         fetchUserData();
