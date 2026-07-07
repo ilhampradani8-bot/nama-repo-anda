@@ -514,6 +514,68 @@ import BottomNav from '../components/BottomNav.astro';
             line-height: 1;
             padding: 0 2px;
         }
+
+        /* Drawer Styles (Slides from Right) */
+        .drawer {
+            display: none;
+            position: fixed;
+            z-index: 1060;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px);
+            justify-content: flex-end;
+        }
+
+        .drawer.active {
+            display: flex;
+        }
+
+        .drawer-content {
+            background-color: #ffffff;
+            width: 500px;
+            max-width: 90%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -5px 0 25px rgba(0,0,0,0.15);
+            animation: drawerSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes drawerSlideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        .drawer-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 2px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.15rem;
+        }
+
+        .drawer-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .drawer-footer {
+            padding: 1.25rem 1.5rem;
+            border-top: 2px solid #dee2e6;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            background: #f8f9fa;
+        }
     </style>
 </head>
 <body>
@@ -551,9 +613,9 @@ import BottomNav from '../components/BottomNav.astro';
                     <div id="shared-tab" class="tab-content">
                         <div class="shared-header-box">
                             <div class="shared-title">Daftar Produk Saya Yang Dishare</div>
-                            <a href="/dashboard_tambah_produk.html" class="btn-primary">
+                            <button class="btn-primary" onclick="openTambahDrawer()">
                                 ➕ Tambah Produk
-                            </a>
+                            </button>
                         </div>
                         <div id="shared-container" class="product-grid">
                             <div class="loading-spinner" style="grid-column: 1/-1;">
@@ -563,6 +625,95 @@ import BottomNav from '../components/BottomNav.astro';
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tambah Product Drawer (Slides from Right) -->
+    <div id="tambah-drawer" class="drawer">
+        <div class="drawer-content">
+            <div class="drawer-header">
+                <span>➕ Tambah Produk Baru</span>
+                <button type="button" class="btn-outline" onclick="closeTambahDrawer()" style="font-size: 1.2rem; padding: 2px 8px; border:none; background:none; cursor:pointer;">&times;</button>
+            </div>
+            <div class="drawer-body">
+                <form id="tambah-product-form" onsubmit="event.preventDefault();">
+                    <!-- Category -->
+                    <div class="form-group">
+                        <label for="tambah_category">Kategori Produk <span style="color:#dc3545;">*</span></label>
+                        <select id="tambah_category" class="form-control" required>
+                            <option value="digital">Produk Digital & Lisensi (Script, Panel, API, DLL)</option>
+                            <option value="jasa">Jasa & Freelancing (Jasa Coding, Desain, DLL)</option>
+                            <option value="layanan">Layanan Online (Paket Akun Premium, VPS, Server)</option>
+                            <option value="voucher">Voucher Game & Top Up</option>
+                            <option value="ebook">E-Book & Kursus Online</option>
+                            <option value="lainnya">Lainnya</option>
+                        </select>
+                    </div>
+
+                    <!-- Product Name -->
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label for="tambah_product_name">Nama Produk <span style="color:#dc3545;">*</span></label>
+                        <input type="text" id="tambah_product_name" class="form-control" required placeholder="Contoh: Website E-Commerce Premium">
+                    </div>
+
+                    <!-- Base Price -->
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label for="tambah_price">Harga Dasar Produk (Rp) <span style="color:#dc3545;">*</span></label>
+                        <input type="number" id="tambah_price" class="form-control" required placeholder="Contoh: 250000" min="100">
+                    </div>
+
+                    <!-- Status -->
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label for="tambah_status">Status Produk <span style="color:#dc3545;">*</span></label>
+                        <select id="tambah_status" class="form-control" required>
+                            <option value="published">Publish</option>
+                            <option value="review">Review</option>
+                            <option value="blokir">Blokir</option>
+                            <option value="dihapus">Dihapus</option>
+                            <option value="draft">Draft</option>
+                        </select>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label for="tambah_description">Deskripsi Lengkap</label>
+                        <textarea id="tambah_description" class="form-control" rows="4" placeholder="Deskripsikan fitur..."></textarea>
+                    </div>
+
+                    <!-- Image Upload Builder -->
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label>Foto Produk (Maks 5MB per gambar)</label>
+                        <input type="file" id="tambah-image-file-input" class="form-control" accept="image/*" multiple onchange="handleTambahImageUpload(event)">
+                        <div id="tambah-image-list" class="list-builder-items">
+                            <!-- previews go here -->
+                        </div>
+                    </div>
+
+                    <!-- Variants Builder -->
+                    <div class="form-group" style="background: #f8f9fa; padding: 1rem; border-radius: 8px; border: 1px solid #dee2e6; margin-top: 1.25rem;">
+                        <label style="margin-bottom: 6px; display: block; font-weight: bold; font-size: 0.9rem;">Variasi & Harga Varian (Opsional)</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: flex-end;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="tambah-v-name" style="font-size: 0.75rem;">Nama Varian</label>
+                                <input type="text" id="tambah-v-name" class="form-control" placeholder="Contoh: Paket Starter">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="tambah-v-price" style="font-size: 0.75rem;">Harga Varian (Rp)</label>
+                                <input type="number" id="tambah-v-price" class="form-control" placeholder="Contoh: 150000" min="100">
+                            </div>
+                            <button type="button" class="btn-outline" onclick="addTambahVariant()" style="padding: 0.6rem 0.8rem;">➕</button>
+                        </div>
+                        <div id="tambah-variant-list" class="list-builder-items" style="margin-top: 10px;">
+                            <!-- variants tags go here -->
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="drawer-footer">
+                <button type="button" class="btn-outline" onclick="closeTambahDrawer()" style="padding: 0.6rem 1.2rem; font-size: 0.95rem;">Batal</button>
+                <button type="button" class="btn-secondary" onclick="submitTambahAsDraft()" style="padding: 0.6rem 1.2rem; font-size: 0.95rem;">💾 Simpan Draft</button>
+                <button type="button" class="btn-primary" onclick="submitTambahProduct()" style="padding: 0.6rem 1.2rem; font-size: 0.95rem;">🚀 Publikasi</button>
             </div>
         </div>
     </div>
@@ -1079,6 +1230,187 @@ import BottomNav from '../components/BottomNav.astro';
                     }
                 } else {
                     showToast('Gagal menyimpan perubahan.', 'danger');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Terjadi kesalahan sistem.', 'danger');
+            }
+        }
+
+        // Global lists for tambah drawer
+        let tambahImagesList = [];
+        let tambahVariantsList = [];
+
+        function openTambahDrawer() {
+            tambahImagesList = [];
+            tambahVariantsList = [];
+            document.getElementById('tambah-product-form').reset();
+            renderTambahImages();
+            renderTambahVariants();
+            document.getElementById('tambah-drawer').classList.add('active');
+        }
+
+        function closeTambahDrawer() {
+            document.getElementById('tambah-drawer').classList.remove('active');
+        }
+
+        async function handleTambahImageUpload(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            const container = document.getElementById('tambah-image-list');
+            
+            const uploadPlaceholder = document.createElement('div');
+            uploadPlaceholder.className = 'image-preview-card';
+            uploadPlaceholder.id = 'tambah-uploading-state';
+            uploadPlaceholder.innerHTML = `
+                <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%; font-size:0.75rem; color:#6c757d; flex-direction:column; gap:4px;">
+                    <div class="spinner" style="width:16px; height:16px;"></div>
+                    <span>Uploading...</span>
+                </div>
+            `;
+            container.appendChild(uploadPlaceholder);
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast(`File ${file.name} melebihi batas 5MB!`, 'danger');
+                    continue;
+                }
+
+                const formData = new FormData();
+                formData.append('image', file);
+
+                try {
+                    const res = await fetch(`${API_BASE_URL}/api/upload`, {
+                        method: 'POST',
+                        body: formData,
+                        credentials: 'include'
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.success) {
+                            tambahImagesList.push(data.url);
+                        } else {
+                            showToast(`Gagal mengunggah ${file.name}: ${data.error || ''}`, 'danger');
+                        }
+                    } else {
+                        showToast(`Gagal mengunggah ${file.name}.`, 'danger');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showToast(`Error koneksi saat mengunggah ${file.name}`, 'danger');
+                }
+            }
+
+            const placeholderEl = document.getElementById('tambah-uploading-state');
+            if (placeholderEl) placeholderEl.remove();
+            renderTambahImages();
+            event.target.value = '';
+        }
+
+        function renderTambahImages() {
+            const container = document.getElementById('tambah-image-list');
+            container.innerHTML = tambahImagesList.map((url, index) => `
+                <div class="image-preview-card">
+                    <img src="${url}" alt="Preview">
+                    <button type="button" class="remove-image-btn" onclick="removeTambahImage(${index})">&times;</button>
+                </div>
+            `).join('');
+        }
+
+        function removeTambahImage(index) {
+            tambahImagesList.splice(index, 1);
+            renderTambahImages();
+        }
+
+        function addTambahVariant() {
+            const nameEl = document.getElementById('tambah-v-name');
+            const priceEl = document.getElementById('tambah-v-price');
+            const name = nameEl.value.trim();
+            const price = parseInt(priceEl.value);
+
+            if (!name || isNaN(price) || price <= 0) {
+                showToast('Nama variasi dan harga harus valid!', 'danger');
+                return;
+            }
+
+            tambahVariantsList.push({ name, price });
+            nameEl.value = '';
+            priceEl.value = '';
+            renderTambahVariants();
+        }
+
+        function removeTambahVariant(index) {
+            tambahVariantsList.splice(index, 1);
+            renderTambahVariants();
+        }
+
+        function renderTambahVariants() {
+            const container = document.getElementById('tambah-variant-list');
+            if (tambahVariantsList.length === 0) {
+                container.innerHTML = '<span style="color:#6c757d; font-size:0.85rem;">Belum ada variasi ditambahkan.</span>';
+                return;
+            }
+
+            container.innerHTML = tambahVariantsList.map((v, index) => {
+                const formattedPrice = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v.price);
+                return `
+                    <div class="variant-tag">
+                        <span>${v.name}</span>
+                        <span class="variant-price">${formattedPrice}</span>
+                        <button type="button" class="remove-variant" onclick="removeTambahVariant(${index})">&times;</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function submitTambahAsDraft() {
+            document.getElementById('tambah_status').value = 'draft';
+            submitTambahProduct();
+        }
+
+        async function submitTambahProduct() {
+            const productName = document.getElementById('tambah_product_name').value.trim();
+            const category = document.getElementById('tambah_category').value;
+            const price = parseInt(document.getElementById('tambah_price').value);
+            const status = document.getElementById('tambah_status').value;
+            const description = document.getElementById('tambah_description').value.trim();
+
+            if (!productName || isNaN(price) || price <= 0) {
+                showToast('Nama produk dan harga dasar harus valid!', 'danger');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/user/products`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        product_name: productName,
+                        variant_name: null,
+                        price: price,
+                        description: description ? description : null,
+                        category: category,
+                        images: tambahImagesList,
+                        variants: tambahVariantsList,
+                        status: status
+                    }),
+                    credentials: 'include'
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success) {
+                        showToast(status === 'draft' ? 'Produk disimpan sebagai draft!' : 'Produk berhasil dipublikasikan!');
+                        closeTambahDrawer();
+                        fetchSharedProducts();
+                    } else {
+                        showToast('Gagal menambahkan: ' + (data.error || ''), 'danger');
+                    }
+                } else {
+                    showToast('Gagal menyimpan produk.', 'danger');
                 }
             } catch (err) {
                 console.error(err);
