@@ -241,6 +241,31 @@ import BottomNav from '../components/BottomNav.astro';
                     </form>
                 </div>
             </div>
+
+            <!-- Store / Mall Settings Card -->
+            <div class="card">
+                <div class="card-header">🏰 Pengaturan Mall / Toko</div>
+                <div class="card-body">
+                    <form onsubmit="saveStoreSettings(event)">
+                        <div class="form-group">
+                            <label for="storeCategoryInput">Kategori Toko</label>
+                            <input type="text" id="storeCategoryInput" class="form-control" placeholder="Contoh: Digital Store, Voucher Game, Jasa IT">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="storeDescriptionInput">Deskripsi Toko</label>
+                            <textarea id="storeDescriptionInput" class="form-control" rows="3" placeholder="Jelaskan deskripsi atau tagline toko digital Anda..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="storeInterestsInput">Minat / Fokus Penjualan</label>
+                            <input type="text" id="storeInterestsInput" class="form-control" placeholder="Contoh: Scripting, Web Dev, Mobile Legends, Cloud Hosting">
+                        </div>
+
+                        <button type="submit" class="btn-save" style="background: #6f42c1; border-color: #6f42c1;">Simpan Pengaturan Toko</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -336,7 +361,53 @@ import BottomNav from '../components/BottomNav.astro';
             window.location.href = '/login.html';
         }
 
+        async function fetchStoreData() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/user/store`, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success) {
+                        document.getElementById('storeCategoryInput').value = data.store_category || '';
+                        document.getElementById('storeDescriptionInput').value = data.description || '';
+                        document.getElementById('storeInterestsInput').value = data.interests || '';
+                    }
+                }
+            } catch (err) {
+                console.error("Error fetching store data:", err);
+            }
+        }
+
+        async function saveStoreSettings(e) {
+            e.preventDefault();
+            const store_category = document.getElementById('storeCategoryInput').value.trim();
+            const description = document.getElementById('storeDescriptionInput').value.trim();
+            const interests = document.getElementById('storeInterestsInput').value.trim();
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/user/store`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        store_category,
+                        description,
+                        interests
+                    }),
+                    credentials: 'include'
+                });
+
+                if (res.ok) {
+                    alert('Sukses! Pengaturan Toko Anda berhasil disimpan.');
+                } else {
+                    alert('Gagal menyimpan pengaturan toko.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Terjadi kesalahan koneksi.');
+            }
+        }
+
         fetchUserData();
+        fetchStoreData();
     </script>
     <BottomNav />
 </body>

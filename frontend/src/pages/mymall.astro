@@ -11,6 +11,11 @@ import BottomNav from '../components/BottomNav.astro';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Mall | EasyMall</title>
     
+    <!-- Google Fonts - Marcellus SC -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Marcellus+SC&display=swap" rel="stylesheet">
+    
     <!-- Favicon & App Icons -->
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
@@ -108,6 +113,7 @@ import BottomNav from '../components/BottomNav.astro';
             color: #212529;
             margin-bottom: 4px;
             letter-spacing: -0.5px;
+            font-family: 'Marcellus SC', serif;
         }
 
         .store-tagline {
@@ -188,6 +194,7 @@ import BottomNav from '../components/BottomNav.astro';
             display: flex;
             justify-content: space-between;
             align-items: center;
+            font-family: 'Marcellus SC', serif;
         }
 
         /* Products Grid */
@@ -376,7 +383,8 @@ import BottomNav from '../components/BottomNav.astro';
                 </div>
                 <div class="store-info">
                     <h1 class="store-name" id="store-title-name">My Mall</h1>
-                    <div class="store-tagline">Selamat datang di lapak digital premium saya. Temukan layanan terbaik di sini!</div>
+                    <div class="store-category-label" id="store-category-display" style="font-size: 0.95rem; font-weight: 700; color: #6f42c1; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; font-family: 'Marcellus SC', serif;">Lapak Digital Premium</div>
+                    <div class="store-tagline" id="store-description-display" style="margin-bottom: 12px; font-size: 1rem; color: #6c757d;">Selamat datang di lapak digital premium saya. Temukan layanan terbaik di sini!</div>
                     <div class="store-badges">
                         <span class="store-badge verified">
                             🛡️ Merchant Terverifikasi
@@ -385,6 +393,7 @@ import BottomNav from '../components/BottomNav.astro';
                             📅 Bergabung: ...
                         </span>
                     </div>
+                    <div class="store-interests-row" id="store-interests-container" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;"></div>
                 </div>
             </div>
 
@@ -473,6 +482,42 @@ import BottomNav from '../components/BottomNav.astro';
                     document.getElementById('member-since-badge').innerHTML = `📅 Bergabung: ${formattedDate}`;
                 } else {
                     document.getElementById('member-since-badge').innerHTML = `📅 Bergabung: Baru-baru ini`;
+                }
+
+                // 1.1 Fetch user store details from real-time database
+                try {
+                    const storeRes = await fetch(`${API_BASE_URL}/api/user/store`, { credentials: 'include' });
+                    if (storeRes.ok) {
+                        const storeData = await storeRes.json();
+                        if (storeData.success) {
+                            if (storeData.store_category) {
+                                document.getElementById('store-category-display').textContent = storeData.store_category;
+                            }
+                            if (storeData.description) {
+                                document.getElementById('store-description-display').textContent = storeData.description;
+                            }
+                            
+                            const interestsContainer = document.getElementById('store-interests-container');
+                            interestsContainer.innerHTML = '';
+                            if (storeData.interests) {
+                                const list = storeData.interests.split(',').map(s => s.trim()).filter(Boolean);
+                                list.forEach(interest => {
+                                    const tag = document.createElement('span');
+                                    tag.className = 'store-badge';
+                                    tag.style.background = '#f3f0ff';
+                                    tag.style.borderColor = '#d8b4fe';
+                                    tag.style.color = '#6b21a8';
+                                    tag.style.fontSize = '0.75rem';
+                                    tag.style.fontWeight = 'bold';
+                                    tag.style.padding = '3px 8px';
+                                    tag.textContent = `# ${interest}`;
+                                    interestsContainer.appendChild(tag);
+                                });
+                            }
+                        }
+                    }
+                } catch (storeErr) {
+                    console.error("Error loading store details:", storeErr);
                 }
 
                 // 2. Fetch shared products of the user

@@ -59,6 +59,13 @@ struct SaveSettingsPayload {
 }
 
 #[derive(Deserialize)]
+struct SaveStorePayload {
+    description: Option<String>,
+    store_category: Option<String>,
+    interests: Option<String>,
+}
+
+#[derive(Deserialize)]
 struct LoginPayload {
     username: Option<String>,
     password: Option<String>,
@@ -367,6 +374,17 @@ fn init_db(db_path: &str) {
         )",
         [],
     );
+
+    let _ = conn.execute(
+        "CREATE TABLE IF NOT EXISTS stores (
+            email TEXT PRIMARY KEY,
+            description TEXT,
+            store_category TEXT,
+            interests TEXT,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    );
 }
 
 fn get_redirect_target(headers: &HeaderMap, _default_url: &str) -> String {
@@ -572,6 +590,76 @@ async fn save_user_settings(
                         params![payload.name, sid],
                     );
                     return (StatusCode::OK, Json(serde_json::json!({"success": true, "message": "Settings updated successfully"}))).into_response();
+                }
+            }
+        }
+    }
+    (StatusCode::UNAUTHORIZED, Json(serde_json::json!({"success": false, "error": "Unauthorized"}))).into_response()
+}
+
+// Handler: Get user store settings
+async fn get_user_store(
+    jar: CookieJar,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    if let Some(sid) = session_id {
+        if let Some(sess) = verify_session(&state, &sid) {
+            if let Ok(conn) = Connection::open(&state.transactions_db_path) {
+                let store_query = conn.query_row(
+                    "SELECT description, store_category, interests FROM stores WHERE email = ?",
+                    params![sess.email],
+                    |row| Ok(serde_json::json!({
+                        "success": true,
+                        "description": row.get::<_, Option<String>>(0)?.unwrap_or_default(),
+                        "store_category": row.get::<_, Option<String>>(1)?.unwrap_or_default(),
+                        "interests": row.get::<_, Option<String>>(2)?.unwrap_or_default(),
+                    }))
+                );
+                
+                match store_query {
+                    Ok(store_data) => {
+                        return (StatusCode::OK, Json(store_data)).into_response();
+                    }
+                    Err(_) => {
+                        // Return default empty store settings if not created yet
+                        return (StatusCode::OK, Json(serde_json::json!({
+                            "success": true,
+                            "description": "",
+                            "store_category": "",
+                            "interests": "",
+                        }))).into_response();
+                    }
+                }
+            }
+        }
+    }
+    (StatusCode::UNAUTHORIZED, Json(serde_json::json!({"success": false, "error": "Unauthorized"}))).into_response()
+}
+
+// Handler: Save user store settings
+async fn save_user_store(
+    jar: CookieJar,
+    State(state): State<AppState>,
+    Json(payload): Json<SaveStorePayload>,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    if let Some(sid) = session_id {
+        if let Some(sess) = verify_session(&state, &sid) {
+            if let Ok(conn) = Connection::open(&state.transactions_db_path) {
+                let upsert_res = conn.execute(
+                    "INSERT OR REPLACE INTO stores (email, description, store_category, interests, updated_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)",
+                    params![
+                        sess.email,
+                        payload.description.unwrap_or_default(),
+                        payload.store_category.unwrap_or_default(),
+                        payload.interests.unwrap_or_default(),
+                    ],
+                );
+                if upsert_res.is_ok() {
+                    return (StatusCode::OK, Json(serde_json::json!({"success": true, "message": "Store settings updated successfully"}))).into_response();
+                } else {
+                    return (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"success": false, "error": "Failed to update store in database"}))).into_response();
                 }
             }
         }
@@ -3027,6 +3115,7 @@ async fn main() {
         // API routes
         .route("/api/auth/status", get(auth_status))
         .route("/api/user/settings", get(get_user_settings).post(save_user_settings))
+        .route("/api/user/store", get(get_user_store).post(save_user_store))
         .route("/api/user/products", get(get_shared_products).post(add_shared_product))
         .route("/api/user/products/:id", get(get_single_shared_product).put(update_shared_product).delete(delete_shared_product))
         .route("/api/upload", post(upload_image_route))
