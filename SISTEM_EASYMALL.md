@@ -310,3 +310,22 @@ sqlite3 /root/ecommerce/dinamis/dashboard/ecommerce.db
 # Lihat semua tabel
 sqlite3 /root/ecommerce/dinamis/dashboard/ecommerce.db ".tables"
 ```
+
+---
+
+## ⚠️ GOTCHAS & TROUBLESHOOTING DEPLOYMENT VERCEL
+
+Jika setelah push ke GitHub halaman Vercel (`https://easymall.ilhampradani.me/`) melempar error **404 Not Found** saat memanggil API `/api/products` (dan endpoint `/api/...` lainnya):
+* **Penyebab**: Konfigurasi `vercel.json` di folder `frontend/` sempat menggunakan properti legacy `"routes"` bersamaan dengan `"rewrites"`. Di Vercel, jika properti `"routes"` didefinisikan, properti `"rewrites"` akan **diabaikan secara total**.
+* **Solusi/Aturan**: Jangan pernah menggabungkan `"routes"` dan `"rewrites"` di file `vercel.json`. Gunakan hanya format `"rewrites"` dan `"cleanUrls"` seperti di bawah ini:
+  ```json
+  {
+    "cleanUrls": true,
+    "rewrites": [
+      { "source": "/api/(.*)", "destination": "https://api.ilhampradani.me/api/$1" },
+      { "source": "/product/:code", "destination": "/product" }
+    ]
+  }
+  ```
+* **Penting**: Pastikan file `vercel.json` berada di dalam folder `/root/ecommerce/frontend/` karena Vercel melakukan build dari sub-direktori tersebut.
+

@@ -108,3 +108,23 @@ Tata letak detail produk dan laci formulir pemesanan dipisah secara modular ke d
    <script src="ecom/include_index/paykonfirmasi.js"></script>
    ```
    Variabel global dan *state* (seperti `allProducts`, `selectedProduct`, `formatRupiah`, dll.) secara otomatis terbagi secara global dan dapat saling diakses secara mulus.
+
+---
+
+## 6. Catatan Khusus & Troubleshooting (Vercel API Proxy)
+
+### A. Konflik `routes` dan `rewrites` di `vercel.json`
+* **Gejala**: Panggilan ke `/api/...` (seperti `/api/products`) mengembalikan error **404 Not Found** berupa halaman HTML utama saat diakses di Vercel (`https://easymall.ilhampradani.me/`), sementara di server lokal API berjalan lancar.
+* **Penyebab**: Vercel mengabaikan properti `"rewrites"` secara total jika terdapat array `"routes"` (legacy configuration) di dalam `vercel.json`.
+* **Solusi**: Jangan pernah menggabungkan array `"routes"` dan `"rewrites"` secara bersamaan. Hapus properti `"routes"` dan biarkan Vercel menggunakan `"rewrites"` serta `"cleanUrls"` bawaan:
+  ```json
+  {
+    "cleanUrls": true,
+    "rewrites": [
+      { "source": "/api/(.*)", "destination": "https://api.ilhampradani.me/api/$1" },
+      { "source": "/product/:code", "destination": "/product" }
+    ]
+  }
+  ```
+* **Penting**: Pastikan file `vercel.json` ini berada di dalam direktori `/frontend/` karena Vercel di-build dari sub-direktori tersebut.
+
