@@ -2,6 +2,7 @@
   "cleanUrls": true,
   "rewrites": [
     { "source": "/api/(.*)", "destination": "https://api.ilhampradani.me/api/$1" },
+    { "source": "/uploads/(.*)", "destination": "https://api.ilhampradani.me/uploads/$1" },
     { "source": "/product/:code", "destination": "/product" }
   ]
 }

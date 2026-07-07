@@ -1128,15 +1128,15 @@ import BottomNav from '../components/BottomNav.astro';
                         credentials: 'include'
                     });
 
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data.success) {
-                            editImagesList.push(data.url);
-                        } else {
-                            showToast(`Gagal mengunggah ${file.name}: ${data.error || ''}`, 'danger');
-                        }
+                    let data = {};
+                    try {
+                        data = await res.json();
+                    } catch(e) {}
+
+                    if (res.ok && data.success) {
+                        editImagesList.push(data.url);
                     } else {
-                        showToast(`Gagal mengunggah ${file.name}.`, 'danger');
+                        showToast(`Gagal mengunggah ${file.name}: ${data.error || 'Server error (' + res.status + ')'}`, 'danger');
                     }
                 } catch (err) {
                     console.error(err);
@@ -1342,15 +1342,15 @@ import BottomNav from '../components/BottomNav.astro';
                         credentials: 'include'
                     });
 
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data.success) {
-                            tambahImagesList.push(data.url);
-                        } else {
-                            showToast(`Gagal mengunggah ${file.name}: ${data.error || ''}`, 'danger');
-                        }
+                    let data = {};
+                    try {
+                        data = await res.json();
+                    } catch(e) {}
+
+                    if (res.ok && data.success) {
+                        tambahImagesList.push(data.url);
                     } else {
-                        showToast(`Gagal mengunggah ${file.name}.`, 'danger');
+                        showToast(`Gagal mengunggah ${file.name}: ${data.error || 'Server error (' + res.status + ')'}`, 'danger');
                     }
                 } catch (err) {
                     console.error(err);

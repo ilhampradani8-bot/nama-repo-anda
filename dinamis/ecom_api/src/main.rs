@@ -3020,7 +3020,7 @@ async fn main() {
                 || s.contains("ilhampradani.me")
         }))
         .allow_headers(vec![header::CONTENT_TYPE, header::AUTHORIZATION])
-        .allow_methods(vec![Method::GET, Method::POST, Method::DELETE, Method::OPTIONS])
+        .allow_methods(vec![Method::GET, Method::POST, Method::PUT, Method::DELETE, Method::OPTIONS])
         .allow_credentials(true);
 
     let app = Router::new()
