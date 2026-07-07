@@ -656,53 +656,163 @@ import BottomNav from '../components/BottomNav.astro';
             color: #212529;
         }
 
+        /* Grid view default layouts */
+        .list-main-row {
+            display: contents;
+        }
+
+        .list-img {
+            display: none;
+        }
+
+        .list-info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .list-actions {
+            order: 99; /* place actions at the bottom of the card */
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: auto; /* push to bottom */
+            padding-top: 10px;
+        }
+
+        .chevron-btn {
+            display: none; /* hide toggle arrow in grid view */
+        }
+
         /* Product List View Layout overrides */
         .product-grid.list-view {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 0.75rem;
         }
 
         .product-grid.list-view .product-item {
-            display: grid;
-            grid-template-columns: 2fr 1.5fr 1fr;
+            display: flex;
+            flex-direction: column;
+            padding: 0.75rem 1.25rem;
+            gap: 0;
+            border-radius: 8px;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .product-grid.list-view .list-main-row {
+            display: flex;
+            flex-direction: row;
             align-items: center;
-            gap: 1.5rem;
-            padding: 1.25rem 1.5rem;
+            justify-content: space-between;
+            width: 100%;
+            gap: 1.25rem;
         }
 
-        .product-grid.list-view .product-item .info-col {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
+        .product-grid.list-view .list-img {
+            display: block;
+            width: 48px;
+            height: 48px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+            flex-shrink: 0;
         }
 
-        .product-grid.list-view .product-item .mid-col {
+        .product-grid.list-view .list-info {
             display: flex;
             flex-direction: column;
+            gap: 2px;
+            flex-grow: 1;
+        }
+
+        .product-grid.list-view .list-info-header {
+            display: flex;
+            align-items: center;
             gap: 8px;
+            margin-bottom: 2px;
         }
 
-        .product-grid.list-view .product-item .action-col {
+        .product-grid.list-view .product-item-title {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 600;
+        }
+
+        .product-grid.list-view .product-item-price {
+            margin: 0;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #198754;
+        }
+
+        .product-grid.list-view .list-actions {
+            order: initial;
             display: flex;
-            flex-direction: column;
-            gap: 8px;
-            align-items: flex-end;
+            align-items: center;
+            gap: 10px;
+            margin-top: 0;
+            padding-top: 0;
+            flex-shrink: 0;
+        }
+
+        .product-grid.list-view .chevron-btn {
+            display: flex;
+            align-items: center;
             justify-content: center;
-            margin-top: 0 !important;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #495057;
+            padding: 6px 10px;
+            transition: all 0.15s ease;
+            border-radius: 4px;
+            height: fit-content;
+        }
+
+        .product-grid.list-view .chevron-btn:hover {
+            background: #e9ecef;
+            border-color: #ced4da;
+            color: #212529;
+        }
+
+        /* In list view, details are collapsed by default */
+        .product-grid.list-view .list-details-row {
+            display: none;
+            width: 100%;
+            border-top: 1px solid #e9ecef;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            animation: slideDown 0.2s ease-out;
+        }
+
+        .product-grid.list-view .product-item.expanded .list-details-row {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Responsive List View */
         @media (max-width: 768px) {
-            .product-grid.list-view .product-item {
-                display: flex;
+            .product-grid.list-view .list-main-row {
                 flex-direction: column;
-                gap: 1rem;
                 align-items: stretch;
+                gap: 0.75rem;
             }
-            .product-grid.list-view .product-item .action-col {
-                flex-direction: row;
+            .product-grid.list-view .list-actions {
                 justify-content: flex-end;
+                width: 100%;
+                border-top: 1px solid #f1f3f5;
+                padding-top: 8px;
+            }
+            .product-grid.list-view .list-img {
+                width: 60px;
+                height: 60px;
             }
         }
     </style>
@@ -1169,11 +1279,14 @@ import BottomNav from '../components/BottomNav.astro';
                 let galleryHtml = '';
                 if (p.images && p.images.length > 0) {
                     galleryHtml = `
-                        <div class="card-gallery">
+                        <div class="card-gallery" style="margin-top: 4px;">
                             ${p.images.map(url => `<img src="${url}" onclick="openLightbox('${url}')" style="cursor: zoom-in;" onerror="this.src='https://placehold.co/100x100?text=Foto'">`).join('')}
                         </div>
                     `;
                 }
+
+                // First image for list main row
+                const firstImgUrl = (p.images && p.images.length > 0) ? p.images[0] : 'https://placehold.co/100x100?text=Foto';
 
                 // Variants list
                 let variantsHtml = '';
@@ -1192,29 +1305,46 @@ import BottomNav from '../components/BottomNav.astro';
                 }
 
                 return `
-                    <div class="product-item">
-                        <div class="info-col">
-                            <div class="badge-row" style="display:flex; gap: 6px; align-items:center; margin-bottom: 6px;">
-                                <span class="product-item-badge" style="background:#f1f3f5; color:#495057; border: 1px solid #dee2e6; margin:0;">${categoryText}</span>
-                                ${statusBadge}
+                    <div class="product-item" id="prod-item-${p.id}">
+                        <!-- Main visible row (optimized for list view) -->
+                        <div class="list-main-row">
+                            <img src="${firstImgUrl}" class="list-img" onclick="openLightbox('${firstImgUrl}')" style="cursor: zoom-in;" onerror="this.src='https://placehold.co/100x100?text=Foto'">
+                            
+                            <div class="list-info">
+                                <div class="list-info-header">
+                                    <span class="product-item-badge" style="background:#f1f3f5; color:#495057; border: 1px solid #dee2e6; margin:0; font-size:0.75rem; padding: 2px 6px;">${categoryText}</span>
+                                    ${statusBadge}
+                                </div>
+                                <div class="product-item-title">${p.product_name}</div>
+                                <div class="product-item-price">Mulai ${formattedPrice}</div>
                             </div>
-                            <div class="product-item-title">${p.product_name}</div>
-                            <div class="product-item-price">Mulai ${formattedPrice}</div>
-                            <div class="product-item-meta" style="margin-top: 6px; font-size: 0.85rem; color:#6c757d;">${p.description || 'Tidak ada deskripsi.'}</div>
+                            
+                            <div class="list-actions">
+                                <button class="btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: fit-content;" onclick="openEditModal(${p.id})">
+                                    ✏️ Edit
+                                </button>
+                                <button class="btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: fit-content;" onclick="deleteProduct(${p.id})">
+                                    🗑️ Hapus
+                                </button>
+                                <button class="chevron-btn" onclick="toggleProductDetails(${p.id})" title="Tampilkan detail lengkap">
+                                    ▶
+                                </button>
+                            </div>
                         </div>
                         
-                        <div class="mid-col">
-                            ${galleryHtml}
+                        <!-- Collapsible details (description, full gallery, variants list) -->
+                        <div class="list-details-row">
+                            <div style="font-size: 0.85rem; color:#6c757d; margin-bottom: 8px;">
+                                <strong>Deskripsi:</strong>
+                                <div style="margin-top: 4px; line-height: 1.4;">${p.description || 'Tidak ada deskripsi.'}</div>
+                            </div>
+                            
+                            <div style="margin-bottom: 8px;">
+                                <strong style="font-size:0.85rem; color:#495057;">Semua Gambar (${p.images ? p.images.length : 0}):</strong>
+                                ${galleryHtml}
+                            </div>
+                            
                             ${variantsHtml}
-                        </div>
-                        
-                        <div class="action-col" style="display: flex; gap: 8px; justify-content: flex-end; align-items: center; margin-top: 10px;">
-                            <button class="btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: fit-content;" onclick="openEditModal(${p.id})">
-                                ✏️ Edit
-                            </button>
-                            <button class="btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: fit-content;" onclick="deleteProduct(${p.id})">
-                                🗑️ Hapus
-                            </button>
                         </div>
                     </div>
                 `;
@@ -1664,6 +1794,21 @@ import BottomNav from '../components/BottomNav.astro';
 
         function closeLightbox() {
             document.getElementById('lightbox-modal').classList.remove('active');
+        }
+
+        function toggleProductDetails(productId) {
+            const el = document.getElementById(`prod-item-${productId}`);
+            if (el) {
+                el.classList.toggle('expanded');
+                const btn = el.querySelector('.chevron-btn');
+                if (btn) {
+                    if (el.classList.contains('expanded')) {
+                        btn.innerHTML = '▼';
+                    } else {
+                        btn.innerHTML = '▶';
+                    }
+                }
+            }
         }
 
         // View Mode State
