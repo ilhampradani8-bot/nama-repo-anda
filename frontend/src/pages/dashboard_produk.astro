@@ -526,7 +526,6 @@ import BottomNav from '../components/BottomNav.astro';
             width: 100%;
             height: 100%;
             background-color: rgba(0,0,0,0.4);
-            backdrop-filter: blur(4px);
             justify-content: flex-end;
         }
 
@@ -542,7 +541,7 @@ import BottomNav from '../components/BottomNav.astro';
             display: flex;
             flex-direction: column;
             box-shadow: -5px 0 25px rgba(0,0,0,0.15);
-            animation: drawerSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: drawerSlideIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         @keyframes drawerSlideIn {
@@ -773,14 +772,14 @@ import BottomNav from '../components/BottomNav.astro';
         <img class="lightbox-content" id="lightbox-img">
     </div>
 
-    <!-- Edit Product Modal -->
-    <div id="edit-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
+    <!-- Edit Product Modal (Slides from Right as Drawer) -->
+    <div id="edit-modal" class="drawer">
+        <div class="drawer-content">
+            <div class="drawer-header">
                 <span>✏️ Edit Produk</span>
                 <button type="button" class="btn-outline" onclick="closeEditModal()" style="font-size: 1.2rem; padding: 2px 8px; border:none; background:none; cursor:pointer;">&times;</button>
             </div>
-            <div class="modal-body">
+            <div class="drawer-body">
                 <input type="hidden" id="edit_product_id">
                 
                 <!-- Category -->
@@ -854,7 +853,7 @@ import BottomNav from '../components/BottomNav.astro';
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="drawer-footer">
                 <button type="button" class="btn-outline" onclick="closeEditModal()" style="padding: 0.6rem 1.2rem; font-size: 0.95rem;">Batal</button>
                 <button type="button" class="btn-primary" onclick="saveProductEdit()" style="padding: 0.6rem 1.2rem; font-size: 0.95rem;">Simpan Perubahan</button>
             </div>
