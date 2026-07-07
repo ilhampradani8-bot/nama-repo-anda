@@ -869,6 +869,45 @@ import BottomNav from '../components/BottomNav.astro';
             API_BASE_URL = 'https://api.ilhampradani.me';
         }
 
+        // Utility to crop image center to 1:1 aspect ratio and compress it
+        function processImage(file, maxWidth = 800, maxHeight = 800) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = function (event) {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = function () {
+                        const canvas = document.createElement('canvas');
+                        const size = Math.min(img.width, img.height);
+                        const sourceX = (img.width - size) / 2;
+                        const sourceY = (img.height - size) / 2;
+                        
+                        const outputSize = Math.min(size, maxWidth);
+                        canvas.width = outputSize;
+                        canvas.height = outputSize;
+                        
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, sourceX, sourceY, size, size, 0, 0, outputSize, outputSize);
+                        
+                        canvas.toBlob((blob) => {
+                            if (blob) {
+                                const processedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                                    type: "image/jpeg",
+                                    lastModified: Date.now()
+                                });
+                                resolve(processedFile);
+                            } else {
+                                reject(new Error("Canvas toBlob failed"));
+                            }
+                        }, 'image/jpeg', 0.85);
+                    };
+                    img.onerror = (err) => reject(err);
+                };
+                reader.onerror = (err) => reject(err);
+            });
+        }
+
         // Tab Switching Logic
         function switchTab(tabId, btn) {
             document.querySelectorAll('.tab-content').forEach(content => {
@@ -1112,9 +1151,18 @@ import BottomNav from '../components/BottomNav.astro';
             container.appendChild(uploadPlaceholder);
 
             for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                if (file.size > 5 * 1024 * 1024) {
-                    showToast(`File ${file.name} melebihi batas 5MB!`, 'danger');
+                let file = files[i];
+                if (!file.type.startsWith('image/')) {
+                    showToast(`File ${file.name} bukan gambar yang valid!`, 'danger');
+                    continue;
+                }
+
+                // Compress & crop center to 1:1 ratio
+                try {
+                    file = await processImage(file);
+                } catch (e) {
+                    console.error("Gagal memproses gambar:", e);
+                    showToast(`Gagal memproses ${file.name}`, 'danger');
                     continue;
                 }
 
@@ -1326,9 +1374,18 @@ import BottomNav from '../components/BottomNav.astro';
             container.appendChild(uploadPlaceholder);
 
             for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                if (file.size > 5 * 1024 * 1024) {
-                    showToast(`File ${file.name} melebihi batas 5MB!`, 'danger');
+                let file = files[i];
+                if (!file.type.startsWith('image/')) {
+                    showToast(`File ${file.name} bukan gambar yang valid!`, 'danger');
+                    continue;
+                }
+
+                // Compress & crop center to 1:1 ratio
+                try {
+                    file = await processImage(file);
+                } catch (e) {
+                    console.error("Gagal memproses gambar:", e);
+                    showToast(`Gagal memproses ${file.name}`, 'danger');
                     continue;
                 }
 
