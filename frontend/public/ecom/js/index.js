@@ -105,7 +105,7 @@ window.showModernCartModal = function(onConfirm) {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('EasyMarket SPA Catalog Initialized');
+    console.log('EasyMall SPA Catalog Initialized');
     initSPA();
 });
 

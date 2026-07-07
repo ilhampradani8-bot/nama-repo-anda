@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "EasyMarket White-Label Developer API",
+    "title": "EasyMall White-Label Developer API",
     "description": "API untuk integrasi transaksi pulsa, paket data, PLN, dan top-up game secara otomatis dan white-label.",
     "version": "1.0.0"
   },

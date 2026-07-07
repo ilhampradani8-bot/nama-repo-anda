@@ -1,6 +1,6 @@
 // hasil_pencarian.js - Dedicated Client-side logic for search results page
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('EasyMarket Search Results Initialized');
+    console.log('EasyMall Search Results Initialized');
     initSearchResultsPage();
 });
 

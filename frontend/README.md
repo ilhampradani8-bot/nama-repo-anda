@@ -1,6 +1,6 @@
-# EasyMarket E-Commerce - Frontend Documentation
+# EasyMall E-Commerce - Frontend Documentation
 
-Repositori ini berisi kode sumber untuk bagian **Frontend** dari sistem E-Commerce EasyMarket. Proyek ini dibangun menggunakan framework **Astro (v7.0.6)** dengan pendekatan JAMstack modern, menggabungkan kecepatan kompilasi statis (Static Site Generation/SSG) dengan interaktivitas dinamis di sisi klien (Client-Side Rendering/CSR).
+Repositori ini berisi kode sumber untuk bagian **Frontend** dari sistem E-Commerce EasyMall. Proyek ini dibangun menggunakan framework **Astro (v7.0.6)** dengan pendekatan JAMstack modern, menggabungkan kecepatan kompilasi statis (Static Site Generation/SSG) dengan interaktivitas dinamis di sisi klien (Client-Side Rendering/CSR).
 
 ---
 
@@ -20,7 +20,7 @@ Repositori ini berisi kode sumber untuk bagian **Frontend** dari sistem E-Commer
 
 ## 📁 Struktur Proyek & File Penting
 
-Peta struktur direktori di bawah ini merincikan file-file penting yang menyusun EasyMarket Frontend:
+Peta struktur direktori di bawah ini merincikan file-file penting yang menyusun EasyMall Frontend:
 
 ```text
 frontend/
@@ -94,6 +94,6 @@ Jika Anda baru pertama kali menghubungkan repositori Git ke Vercel dan menemui e
 
 ## 🌐 Sinkronisasi API Backend
 
-Frontend berkomunikasi dengan API Backend Rust Axum EasyMarket yang berjalan di domain produksi **`https://api.ilhampradani.me`**. Penentuan base URL API diatur secara dinamis di sisi klien:
+Frontend berkomunikasi dengan API Backend Rust Axum EasyMall yang berjalan di domain produksi **`https://api.ilhampradani.me`**. Penentuan base URL API diatur secara dinamis di sisi klien:
 - Jika diakses dari domain produksi/Vercel, API akan diarahkan ke subdomain produksi `https://api.ilhampradani.me`.
 - Fitur checkout mengirimkan payload order ke `/api/checkout`, memuat kode QRIS, dan melakukan polling status pembayaran setiap 6 detik ke `/api/order/status/<transaction_id>`.

@@ -103,7 +103,7 @@ window.showModernCartModal = function(onConfirm) {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('EasyMarket Product Page Initialized');
+    console.log('EasyMall Product Page Initialized');
     initProductPage();
 });
 

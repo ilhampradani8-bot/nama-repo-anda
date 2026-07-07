@@ -1,5 +1,5 @@
 ---
-// PageUtama.astro - Shared HTML layout for EasyMarket
+// PageUtama.astro - Shared HTML layout for EasyMall
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import BottomNav from '../components/BottomNav.astro';
@@ -12,8 +12,8 @@ interface Props {
 }
 
 const { 
-	title = "EasyMarket | Top Up Game, Pulsa, & Layanan IT Instan Terlengkap", 
-	description = "EasyMarket adalah platform top up game murah, pulsa, paket data instan, SSL certificate, serta layanan IT & Bot WhatsApp automation profesional.",
+	title = "EasyMall | Top Up Game, Pulsa, & Layanan IT Instan Terlengkap", 
+	description = "EasyMall adalah platform top up game murah, pulsa, paket data instan, SSL certificate, serta layanan IT & Bot WhatsApp automation profesional.",
 	jsFile = "/ecom/js/index.js"
 } = Astro.props;
 ---
@@ -28,7 +28,7 @@ const {
     
     <title>{title}</title>
     <meta name="description" content={description}>
-    <meta name="keywords" content="top up game, pulsa murah, paket data, voucher game, bot whatsapp, bot telegram, web development, ssl certificate, easymarket, produk digital">
+    <meta name="keywords" content="top up game, pulsa murah, paket data, voucher game, bot whatsapp, bot telegram, web development, ssl certificate, easymall, produk digital">
     <link rel="canonical" href="http://139.59.122.230/">
 
     <!-- Open Graph / Facebook -->
@@ -37,7 +37,7 @@ const {
     <meta property="og:title" content={title}>
     <meta property="og:description" content={description}>
     <meta property="og:image" content="/gambar/banner.webp">
-    <meta property="og:site_name" content="EasyMarket">
+    <meta property="og:site_name" content="EasyMall">
     <meta property="og:locale" content="id_ID">
 
     <!-- Twitter -->
