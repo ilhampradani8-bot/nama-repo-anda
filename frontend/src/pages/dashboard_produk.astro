@@ -343,16 +343,176 @@ import BottomNav from '../components/BottomNav.astro';
             to { transform: translateX(0); opacity: 1; }
         }
 
-        @media (max-width: 768px) {
-            body {
-                padding-bottom: 74px !important;
-            }
-            .container {
-                grid-template-columns: 1fr;
-            }
-            .sidebar-col {
-                display: none !important;
-            }
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 2px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 2px solid #dee2e6;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .form-control:focus {
+            border-color: #0d6efd;
+        }
+
+        .btn-outline {
+            border: 2px solid #dee2e6;
+            background: #fff;
+            color: #212529;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-outline:hover {
+            background: #f8f9fa;
+        }
+
+        /* List builders in Edit Modal */
+        .list-builder-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .image-preview-card {
+            width: 80px;
+            height: 80px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-preview-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .remove-image-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: rgba(220, 53, 69, 0.85);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .variant-tag {
+            background: #e9ecef;
+            border: 1px solid #ced4da;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+
+        .variant-price {
+            color: #198754;
+            font-weight: bold;
+        }
+
+        .remove-variant {
+            background: none;
+            border: none;
+            color: #dc3545;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1.1rem;
+            line-height: 1;
+            padding: 0 2px;
         }
     </style>
 </head>
@@ -403,6 +563,94 @@ import BottomNav from '../components/BottomNav.astro';
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Product Modal -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>✏️ Edit Produk</span>
+                <button type="button" class="btn-outline" onclick="closeEditModal()" style="font-size: 1.2rem; padding: 2px 8px; border:none; background:none; cursor:pointer;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit_product_id">
+                
+                <!-- Category -->
+                <div class="form-group">
+                    <label for="edit_category">Kategori Produk <span style="color:#dc3545;">*</span></label>
+                    <select id="edit_category" class="form-control" required>
+                        <option value="digital">Produk Digital & Lisensi (Script, Panel, API, DLL)</option>
+                        <option value="jasa">Jasa & Freelancing (Jasa Coding, Desain, DLL)</option>
+                        <option value="layanan">Layanan Online (Paket Akun Premium, VPS, Server)</option>
+                        <option value="voucher">Voucher Game & Top Up</option>
+                        <option value="ebook">E-Book & Kursus Online</option>
+                        <option value="lainnya">Lainnya</option>
+                    </select>
+                </div>
+
+                <!-- Product Name -->
+                <div class="form-group">
+                    <label for="edit_product_name">Nama Produk <span style="color:#dc3545;">*</span></label>
+                    <input type="text" id="edit_product_name" class="form-control" required>
+                </div>
+
+                <!-- Base Price -->
+                <div class="form-group">
+                    <label for="edit_price">Harga Dasar Produk (Rp) <span style="color:#dc3545;">*</span></label>
+                    <input type="number" id="edit_price" class="form-control" required min="100">
+                </div>
+
+                <!-- Status -->
+                <div class="form-group">
+                    <label for="edit_status">Status Produk <span style="color:#dc3545;">*</span></label>
+                    <select id="edit_status" class="form-control" required>
+                        <option value="published">Publish</option>
+                        <option value="review">Review</option>
+                        <option value="blokir">Blokir</option>
+                        <option value="dihapus">Dihapus</option>
+                        <option value="draft">Draft</option>
+                    </select>
+                </div>
+
+                <!-- Description -->
+                <div class="form-group">
+                    <label for="edit_description">Deskripsi Lengkap</label>
+                    <textarea id="edit_description" class="form-control" rows="4"></textarea>
+                </div>
+
+                <!-- Image Upload Builder -->
+                <div class="form-group">
+                    <label>Foto Produk (Maks 5MB per gambar)</label>
+                    <input type="file" id="edit-image-file-input" class="form-control" accept="image/*" multiple onchange="handleEditImageUpload(event)">
+                    <div id="edit-image-list" class="list-builder-items">
+                        <!-- previews go here -->
+                    </div>
+                </div>
+
+                <!-- Variants Builder -->
+                <div class="form-group" style="background: #f8f9fa; padding: 1rem; border-radius: 8px; border: 1px solid #dee2e6;">
+                    <label style="margin-bottom: 6px; display: block; font-weight: bold; font-size: 0.9rem;">Variasi & Harga Varian</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: flex-end;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="edit-v-name" style="font-size: 0.75rem;">Nama Varian</label>
+                            <input type="text" id="edit-v-name" class="form-control" placeholder="Contoh: Paket Starter">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="edit-v-price" style="font-size: 0.75rem;">Harga Varian (Rp)</label>
+                            <input type="number" id="edit-v-price" class="form-control" placeholder="Contoh: 150000" min="100">
+                        </div>
+                        <button type="button" class="btn-outline" onclick="addEditVariant()" style="padding: 0.6rem 0.8rem;">➕</button>
+                    </div>
+                    <div id="edit-variant-list" class="list-builder-items" style="margin-top: 10px;">
+                        <!-- variants tags go here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-outline" onclick="closeEditModal()" style="padding: 0.6rem 1.2rem; font-size: 0.95rem;">Batal</button>
+                <button type="button" class="btn-primary" onclick="saveProductEdit()" style="padding: 0.6rem 1.2rem; font-size: 0.95rem;">Simpan Perubahan</button>
             </div>
         </div>
     </div>
@@ -569,9 +817,18 @@ import BottomNav from '../components/BottomNav.astro';
                 const categoryText = categoryMap[p.category] || categoryMap['lainnya'];
                 
                 // Status Badge
-                const statusBadge = p.status === 'draft' 
-                    ? `<span class="product-item-badge" style="background:#fff3cd; color:#664d03; border: 1px solid #ffe69c;">Draft</span>`
-                    : `<span class="product-item-badge shared">Published</span>`;
+                let statusBadge = '';
+                if (p.status === 'draft') {
+                    statusBadge = `<span class="product-item-badge" style="background:#fff3cd; color:#664d03; border: 1px solid #ffe69c;">Draft</span>`;
+                } else if (p.status === 'review') {
+                    statusBadge = `<span class="product-item-badge" style="background:#cfe2ff; color:#084298; border: 1px solid #b6d4fe;">Review</span>`;
+                } else if (p.status === 'blokir') {
+                    statusBadge = `<span class="product-item-badge" style="background:#f8d7da; color:#842029; border: 1px solid #f5c2c7;">Blokir</span>`;
+                } else if (p.status === 'dihapus') {
+                    statusBadge = `<span class="product-item-badge" style="background:#e2e3e5; color:#41464b; border: 1px solid #d3d6d8;">Dihapus</span>`;
+                } else {
+                    statusBadge = `<span class="product-item-badge" style="background:#d1e7dd; color:#0f5132; border: 1px solid #badbcc;">Publish</span>`;
+                }
 
                 // Images gallery list
                 let galleryHtml = '';
@@ -614,7 +871,10 @@ import BottomNav from '../components/BottomNav.astro';
                         
                         ${variantsHtml}
 
-                        <div style="margin-top: 10px; display: flex; justify-content: flex-end;">
+                        <div style="margin-top: 10px; display: flex; justify-content: flex-end; gap: 8px;">
+                            <button class="btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="openEditModal(${p.id})">
+                                ✏️ Edit
+                            </button>
                             <button class="btn-danger" onclick="deleteProduct(${p.id})">
                                 🗑️ Hapus
                             </button>
@@ -622,6 +882,208 @@ import BottomNav from '../components/BottomNav.astro';
                     </div>
                 `;
             }).join('');
+        }
+
+        // Global lists for edit modal
+        let editImagesList = [];
+        let editVariantsList = [];
+
+        async function handleEditImageUpload(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            const container = document.getElementById('edit-image-list');
+            
+            // Show uploading state
+            const uploadPlaceholder = document.createElement('div');
+            uploadPlaceholder.className = 'image-preview-card';
+            uploadPlaceholder.id = 'edit-uploading-state';
+            uploadPlaceholder.innerHTML = `
+                <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%; font-size:0.75rem; color:#6c757d; flex-direction:column; gap:4px;">
+                    <div class="spinner" style="width:16px; height:16px;"></div>
+                    <span>Uploading...</span>
+                </div>
+            `;
+            container.appendChild(uploadPlaceholder);
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast(`File ${file.name} melebihi batas 5MB!`, 'danger');
+                    continue;
+                }
+
+                const formData = new FormData();
+                formData.append('image', file);
+
+                try {
+                    const res = await fetch(`${API_BASE_URL}/api/upload`, {
+                        method: 'POST',
+                        body: formData,
+                        credentials: 'include'
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.success) {
+                            editImagesList.push(data.url);
+                        } else {
+                            showToast(`Gagal mengunggah ${file.name}: ${data.error || ''}`, 'danger');
+                        }
+                    } else {
+                        showToast(`Gagal mengunggah ${file.name}.`, 'danger');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showToast(`Error koneksi saat mengunggah ${file.name}`, 'danger');
+                }
+            }
+
+            const placeholderEl = document.getElementById('edit-uploading-state');
+            if (placeholderEl) placeholderEl.remove();
+            renderEditImages();
+            event.target.value = '';
+        }
+
+        function renderEditImages() {
+            const container = document.getElementById('edit-image-list');
+            container.innerHTML = editImagesList.map((url, index) => `
+                <div class="image-preview-card">
+                    <img src="${url}" alt="Preview">
+                    <button type="button" class="remove-image-btn" onclick="removeEditImage(${index})">&times;</button>
+                </div>
+            `).join('');
+        }
+
+        function removeEditImage(index) {
+            editImagesList.splice(index, 1);
+            renderEditImages();
+        }
+
+        function addEditVariant() {
+            const nameEl = document.getElementById('edit-v-name');
+            const priceEl = document.getElementById('edit-v-price');
+            const name = nameEl.value.trim();
+            const price = parseInt(priceEl.value);
+
+            if (!name || isNaN(price) || price <= 0) {
+                showToast('Nama variasi dan harga harus valid!', 'danger');
+                return;
+            }
+
+            editVariantsList.push({ name, price });
+            nameEl.value = '';
+            priceEl.value = '';
+            renderEditVariants();
+        }
+
+        function removeEditVariant(index) {
+            editVariantsList.splice(index, 1);
+            renderEditVariants();
+        }
+
+        function renderEditVariants() {
+            const container = document.getElementById('edit-variant-list');
+            if (editVariantsList.length === 0) {
+                container.innerHTML = '<span style="color:#6c757d; font-size:0.85rem;">Belum ada variasi ditambahkan.</span>';
+                return;
+            }
+
+            container.innerHTML = editVariantsList.map((v, index) => {
+                const formattedPrice = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v.price);
+                return `
+                    <div class="variant-tag">
+                        <span>${v.name}</span>
+                        <span class="variant-price">${formattedPrice}</span>
+                        <button type="button" class="remove-variant" onclick="removeEditVariant(${index})">&times;</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function openEditModal(id) {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/user/products/${id}`, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success && data.product) {
+                        const p = data.product;
+                        document.getElementById('edit_product_id').value = p.id;
+                        document.getElementById('edit_product_name').value = p.product_name || '';
+                        document.getElementById('edit_category').value = p.category || 'digital';
+                        document.getElementById('edit_price').value = p.price || 0;
+                        document.getElementById('edit_status').value = p.status || 'published';
+                        document.getElementById('edit_description').value = p.description || '';
+                        
+                        editImagesList = p.images || [];
+                        editVariantsList = p.variants || [];
+                        
+                        renderEditImages();
+                        renderEditVariants();
+                        
+                        document.getElementById('edit-modal').classList.add('active');
+                    } else {
+                        showToast('Gagal memuat detail produk: ' + (data.error || ''), 'danger');
+                    }
+                } else {
+                    showToast('Gagal mengambil data produk.', 'danger');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Gagal menghubungi server.', 'danger');
+            }
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-modal').classList.remove('active');
+        }
+
+        async function saveProductEdit() {
+            const id = document.getElementById('edit_product_id').value;
+            const productName = document.getElementById('edit_product_name').value.trim();
+            const category = document.getElementById('edit_category').value;
+            const price = parseInt(document.getElementById('edit_price').value);
+            const status = document.getElementById('edit_status').value;
+            const description = document.getElementById('edit_description').value.trim();
+
+            if (!productName || isNaN(price) || price <= 0) {
+                showToast('Nama produk dan harga dasar harus valid!', 'danger');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/user/products/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        product_name: productName,
+                        variant_name: null,
+                        price: price,
+                        description: description ? description : null,
+                        category: category,
+                        images: editImagesList,
+                        variants: editVariantsList,
+                        status: status
+                    }),
+                    credentials: 'include'
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success) {
+                        showToast('Produk berhasil diperbarui!');
+                        closeEditModal();
+                        fetchSharedProducts();
+                    } else {
+                        showToast('Gagal memperbarui: ' + (data.error || ''), 'danger');
+                    }
+                } else {
+                    showToast('Gagal menyimpan perubahan.', 'danger');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Terjadi kesalahan sistem.', 'danger');
+            }
         }
 
         async function deleteProduct(id) {

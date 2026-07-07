@@ -388,6 +388,18 @@ import BottomNav from '../components/BottomNav.astro';
                                 <input type="number" id="price" class="form-control" required placeholder="Contoh: 250000" min="100">
                             </div>
 
+                            <!-- Status -->
+                            <div class="form-group">
+                                <label for="status">Status Produk <span style="color:#dc3545;">*</span></label>
+                                <select id="status" class="form-control" required>
+                                    <option value="published">Publish</option>
+                                    <option value="review">Review</option>
+                                    <option value="blokir">Blokir</option>
+                                    <option value="dihapus">Dihapus</option>
+                                    <option value="draft">Draft</option>
+                                </select>
+                            </div>
+
                             <!-- Image Upload Builder -->
                             <div class="form-group">
                                 <label>Foto Produk (Bisa unggah lebih dari 1 gambar, maks 5MB per gambar)</label>
@@ -591,10 +603,8 @@ import BottomNav from '../components/BottomNav.astro';
         }
 
         // Form Submission logic
-        let selectedStatus = 'published';
-
         function submitDraft() {
-            selectedStatus = 'draft';
+            document.getElementById('status').value = 'draft';
             document.getElementById('product-form').requestSubmit();
         }
 
@@ -605,6 +615,7 @@ import BottomNav from '../components/BottomNav.astro';
             const category = document.getElementById('category').value;
             const description = document.getElementById('description').value.trim();
             const price = parseInt(document.getElementById('price').value);
+            const statusVal = document.getElementById('status').value;
 
             if (!productName || isNaN(price) || price <= 0) {
                 showToast('Nama produk dan harga dasar harus valid!', 'danger');
@@ -623,7 +634,7 @@ import BottomNav from '../components/BottomNav.astro';
                         category: category,
                         images: imagesList,
                         variants: variantsList,
-                        status: selectedStatus
+                        status: statusVal
                     }),
                     credentials: 'include'
                 });
@@ -631,7 +642,7 @@ import BottomNav from '../components/BottomNav.astro';
                 if (res.ok) {
                     const data = await res.json();
                     if (data.success) {
-                        showToast(selectedStatus === 'draft' ? 'Produk disimpan sebagai draft!' : 'Produk berhasil dipublikasikan!');
+                        showToast(statusVal === 'draft' ? 'Produk disimpan sebagai draft!' : 'Produk berhasil dipublikasikan!');
                         setTimeout(() => {
                             window.location.href = '/dashboard_produk.html';
                         }, 1200);

@@ -722,6 +722,105 @@ async fn delete_shared_product(
     (StatusCode::UNAUTHORIZED, Json(serde_json::json!({"success": false, "error": "Unauthorized"}))).into_response()
 }
 
+// Handler: Get single shared product details
+async fn get_single_shared_product(
+    jar: CookieJar,
+    State(state): State<AppState>,
+    Path(id): Path<i64>,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    if let Some(sid) = session_id {
+        if let Some(sess) = verify_session(&state, &sid) {
+            if let Ok(conn) = Connection::open(&state.transactions_db_path) {
+                if let Ok(mut stmt) = conn.prepare(
+                    "SELECT id, email, product_name, variant_name, price, description, category, images, variants, status, created_at \
+                     FROM shared_products \
+                     WHERE id = ? AND email = ?"
+                ) {
+                    let product = stmt.query_row(params![id, sess.email], |row| {
+                        let images_str: Option<String> = row.get(7)?;
+                        let variants_str: Option<String> = row.get(8)?;
+                        
+                        let images: Vec<String> = images_str
+                            .and_then(|s| serde_json::from_str(&s).ok())
+                            .unwrap_or_default();
+                            
+                        let variants: Vec<ProductVariant> = variants_str
+                            .and_then(|s| serde_json::from_str(&s).ok())
+                            .unwrap_or_default();
+
+                        Ok(SharedProduct {
+                            id: Some(row.get(0)?),
+                            email: Some(row.get(1)?),
+                            product_name: row.get(2)?,
+                            variant_name: row.get(3)?,
+                            price: row.get(4)?,
+                            description: row.get(5)?,
+                            category: row.get(6)?,
+                            images: Some(images),
+                            variants: Some(variants),
+                            status: row.get(9)?,
+                            created_at: Some(row.get(10)?),
+                        })
+                    });
+
+                    if let Ok(p) = product {
+                        return (StatusCode::OK, Json(serde_json::json!({"success": true, "product": p}))).into_response();
+                    } else {
+                        return (StatusCode::NOT_FOUND, Json(serde_json::json!({"success": false, "error": "Product not found"}))).into_response();
+                    }
+                }
+            }
+        }
+    }
+    (StatusCode::UNAUTHORIZED, Json(serde_json::json!({"success": false, "error": "Unauthorized"}))).into_response()
+}
+
+// Handler: Update shared product
+async fn update_shared_product(
+    jar: CookieJar,
+    State(state): State<AppState>,
+    Path(id): Path<i64>,
+    Json(payload): Json<SharedProduct>,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    if let Some(sid) = session_id {
+        if let Some(sess) = verify_session(&state, &sid) {
+            if payload.product_name.trim().is_empty() || payload.price <= 0 {
+                return (StatusCode::BAD_REQUEST, Json(serde_json::json!({"success": false, "error": "Product name and price must be valid"}))).into_response();
+            }
+            let images_json = serde_json::to_string(&payload.images.unwrap_or_default()).unwrap_or_else(|_| "[]".to_string());
+            let variants_json = serde_json::to_string(&payload.variants.unwrap_or_default()).unwrap_or_else(|_| "[]".to_string());
+            let category_val = payload.category.unwrap_or_else(|| "digital".to_string());
+            let status_val = payload.status.unwrap_or_else(|| "published".to_string());
+
+            if let Ok(conn) = Connection::open(&state.transactions_db_path) {
+                let update_res = conn.execute(
+                    "UPDATE shared_products SET product_name = ?, variant_name = ?, price = ?, description = ?, category = ?, images = ?, variants = ?, status = ? WHERE id = ? AND email = ?",
+                    params![
+                        payload.product_name,
+                        payload.variant_name,
+                        payload.price,
+                        payload.description,
+                        category_val,
+                        images_json,
+                        variants_json,
+                        status_val,
+                        id,
+                        sess.email
+                    ],
+                );
+                if update_res.is_ok() {
+                    return (StatusCode::OK, Json(serde_json::json!({"success": true, "message": "Product updated successfully"}))).into_response();
+                } else {
+                    return (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"success": false, "error": "Failed to update product"}))).into_response();
+                }
+            }
+        }
+    }
+    (StatusCode::UNAUTHORIZED, Json(serde_json::json!({"success": false, "error": "Unauthorized"}))).into_response()
+}
+
 // ─── WALLET / SALDO HANDLERS ────────────────────────────────────────────────
 
 async fn get_wallet(
@@ -2929,7 +3028,7 @@ async fn main() {
         .route("/api/auth/status", get(auth_status))
         .route("/api/user/settings", get(get_user_settings).post(save_user_settings))
         .route("/api/user/products", get(get_shared_products).post(add_shared_product))
-        .route("/api/user/products/:id", delete(delete_shared_product))
+        .route("/api/user/products/:id", get(get_single_shared_product).put(update_shared_product).delete(delete_shared_product))
         .route("/api/upload", post(upload_image_route))
         .route("/api/wallet", get(get_wallet))
         .route("/api/wallet/topup", post(create_topup_qris))
