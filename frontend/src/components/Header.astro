@@ -2,8 +2,8 @@
 // Header.astro - Navigation Header Component
 ---
 <header class="main-header">
-    <div class="container header-container">
-        <a href="/" class="logo" id="headerLogoLink">
+    <div class="container header-container" style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 1.5rem;">
+        <a href="/" class="logo" id="headerLogoLink" style="flex-shrink: 0;">
             <img src="/gambar/logo/easymall-logo.png" alt="EasyMall Logo" class="logo-img">
             <div class="logo-divider"></div>
             <div class="logo-scroller">
@@ -22,30 +22,54 @@
                 </div>
             </div>
         </a>
-        <nav class="main-nav">
-            <ul class="nav-links">
-                <li><a href="/" id="headerHomeLink">Home</a></li>
-                <li><a href="/#products" id="headerProductsLink">Products</a></li>
-                <li><a href="/dokumentasi.html" id="headerDocsLink">Dokumentasi API</a></li>
-            </ul>
-        </nav>
-        <div class="header-actions">
-            <div class="search-container">
-                <input type="text" placeholder="Cari..." class="search-input" id="headerSearchInput" autocomplete="off">
-                <button type="button" class="search-btn" id="headerSearchBtn" aria-label="Cari">
+
+        <!-- Expanded Middle Search Column with Mini Links above -->
+        <div class="search-middle-column" style="flex: 1; max-width: 600px; display: flex; flex-direction: column; gap: 4px; position: relative;">
+            <div class="header-top-mini-links" style="display: flex; gap: 8px; font-size: 0.75rem; color: var(--text-muted); align-items: center; padding-left: 2px;">
+                <a href="/dashboard.html" style="color: inherit; text-decoration: none; font-weight: 600; transition: color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='inherit'">Seller Center</a>
+                <span style="color: #dee2e6;">|</span>
+                <a href="/mymall.html" style="color: inherit; text-decoration: none; font-weight: 600; transition: color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='inherit'">MyMall</a>
+            </div>
+            
+            <div class="search-container" style="width: 100%; display: flex; align-items: center; border: 1px solid var(--border-color); border-radius: var(--radius); padding: 0.35rem 0.65rem; background-color: #fafafa;">
+                <input type="text" placeholder="Cari produk digital, voucher game, atau jasa..." class="search-input" id="headerSearchInput" autocomplete="off" style="width: 100%; border: none; background: transparent; outline: none; font-size: 0.85rem;">
+                <button type="button" class="search-btn" id="headerSearchBtn" aria-label="Cari" style="background: transparent; border: none; color: #6c757d; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                         <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
                     </svg>
                 </button>
-                <div id="search-autocomplete-dropdown" class="autocomplete-dropdown" style="display: none;"></div>
+                <div id="search-autocomplete-dropdown" class="autocomplete-dropdown" style="display: none; width: 100%;"></div>
             </div>
-            <button type="button" class="btn-cart" id="headerCartBtn" aria-label="Keranjang" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-main); border-radius: var(--radius); padding: 8px 12px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; margin-right: 8px;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 6px;">
+        </div>
+
+        <!-- Right Side Actions -->
+        <div class="header-actions" style="display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0;">
+            <button type="button" class="btn-cart" id="headerCartBtn" aria-label="Keranjang" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-main); border-radius: 50%; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; padding: 0; outline: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
                     <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M3.102 4l1.313 7h8.17l1.313-7zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
                 </svg>
-                Keranjang
             </button>
-            <button type="button" class="btn" id="loginBtn">Login</button>
+            <div class="profile-dropdown-container" style="position: relative; display: inline-block;">
+                <button type="button" class="btn" id="loginBtn" style="outline: none;">Login</button>
+                <div id="profileDropdown" class="profile-dropdown" style="display: none; position: absolute; top: calc(100% + 16px); right: 0; background: #ffffff; border: 1px solid var(--border-color); border-radius: 4px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 10000; width: 220px; overflow: hidden;">
+                    <a href="/dashboard_user.html" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; color: #212529; text-decoration: none; font-size: 0.9rem; font-weight: 600; border-bottom: 1px solid #f1f3f5; transition: all 0.15s; outline: none;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: var(--text-muted);"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        Dashboard User
+                    </a>
+                    <a href="/dashboard_reseller.html" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; color: #212529; text-decoration: none; font-size: 0.9rem; font-weight: 600; border-bottom: 1px solid #f1f3f5; transition: all 0.15s; outline: none;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: var(--text-muted);"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        Reseller Partner
+                    </a>
+                    <a href="/dashboard.html" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; color: #212529; text-decoration: none; font-size: 0.9rem; font-weight: 600; border-bottom: 1px solid #f1f3f5; transition: all 0.15s; outline: none;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: var(--text-muted);"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        Stand / MyMall
+                    </a>
+                    <button onclick="performLogout()" style="width: 100%; text-align: left; background: none; border: none; display: flex; align-items: center; gap: 10px; padding: 12px 16px; color: #dc3545; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.15s; outline: none;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: #dc3545;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        Keluar
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </header>
@@ -168,6 +192,17 @@
         color: #e03131;
         font-weight: bold;
     }
+    .profile-dropdown a {
+        transition: all 0.15s ease-in-out;
+    }
+    .profile-dropdown a:hover {
+        background-color: #f8f9fa !important;
+        color: var(--primary) !important;
+    }
+    .profile-dropdown button:hover {
+        background-color: #fff5f5 !important;
+        color: #dc3545 !important;
+    }
 </style>
 
 <script is:inline>
@@ -269,5 +304,98 @@
         }
         
         document.addEventListener('astro:page-load', initHeaderTransparency);
+    })();
+</script>
+
+<!-- Script to handle dynamic Login to Profile Circle transformation -->
+<script is:inline>
+    (function() {
+        const loginBtn = document.getElementById('loginBtn');
+        if (!loginBtn) return;
+
+        function transformToProfileCircle() {
+            loginBtn.setAttribute('data-profile-transformed', 'true');
+            
+            if (!loginBtn.querySelector('svg')) {
+                loginBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display: block;">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                `;
+            }
+            loginBtn.style.borderRadius = '50%';
+            loginBtn.style.width = '40px';
+            loginBtn.style.height = '40px';
+            loginBtn.style.padding = '0';
+            loginBtn.style.display = 'inline-flex';
+            loginBtn.style.alignItems = 'center';
+            loginBtn.style.justifyContent = 'center';
+            loginBtn.style.background = 'transparent';
+            loginBtn.style.color = 'var(--text-main)';
+            loginBtn.style.border = '1px solid var(--border-color)';
+            loginBtn.style.cursor = 'pointer';
+            loginBtn.style.boxShadow = 'none';
+            loginBtn.style.transition = 'all 0.2s';
+            loginBtn.title = 'Menu Pengguna';
+
+            loginBtn.addEventListener('mouseenter', () => {
+                loginBtn.style.background = '#f8f9fa';
+            });
+            loginBtn.addEventListener('mouseleave', () => {
+                loginBtn.style.background = 'transparent';
+            });
+        }
+
+        // Intercept clicks on the profile circle at the capture phase to override default/other listeners
+        loginBtn.addEventListener('click', (e) => {
+            if (loginBtn.getAttribute('data-profile-transformed') === 'true') {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                const dropdown = document.getElementById('profileDropdown');
+                if (dropdown) {
+                    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+                }
+            }
+        }, { capture: true });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('profileDropdown');
+            if (dropdown && !loginBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+
+        // Watch for modifications from other scripts and force profile restoration if logged in
+        const observer = new MutationObserver(() => {
+            const text = loginBtn.textContent.trim().toLowerCase();
+            const isTransformed = loginBtn.getAttribute('data-profile-transformed') === 'true';
+            if (text === 'dashboard' || text === 'dasbor' || (isTransformed && !loginBtn.querySelector('svg'))) {
+                transformToProfileCircle();
+            }
+        });
+        observer.observe(loginBtn, { childList: true, characterData: true, subtree: true });
+
+        let API_BASE_URL = '';
+        if (window.location.protocol === 'file:') {
+            API_BASE_URL = 'https://api.ilhampradani.me';
+        }
+
+        fetch(`${API_BASE_URL}/api/auth/status`, { credentials: 'include' })
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+                if (data && data.logged_in) {
+                    transformToProfileCircle();
+                } else {
+                    loginBtn.textContent = 'Login';
+                    loginBtn.onclick = (e) => {
+                        e.preventDefault();
+                        window.location.href = '/login.html';
+                    };
+                }
+            })
+            .catch(err => console.error("Header Auth Check Error:", err));
     })();
 </script>

@@ -1,0 +1,100 @@
+---
+// MymallSidebar.astro
+const { activeTab } = Astro.props;
+---
+
+<div class="sidebar-menu">
+    <a href="/dashboard.html" class={`sidebar-btn ${activeTab === 'dashboard' ? 'active' : ''}`}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        Overview & Stats
+    </a>
+    <a href="/dashboard_produk.html" class={`sidebar-btn ${activeTab === 'produk' ? 'active' : ''}`}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+        Kelola Produk
+    </a>
+    <a href="/dashboard_pesanan.html" class={`sidebar-btn ${activeTab === 'pesanan' ? 'active' : ''}`}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+        Kelola Pesanan
+    </a>
+    <a href="/dashboard_saldo.html" class={`sidebar-btn ${activeTab === 'saldo' ? 'active' : ''}`}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+        Kelola Saldo & Profit
+    </a>
+    <a href="/dashboard_pengaturan.html" class={`sidebar-btn ${activeTab === 'pengaturan' ? 'active' : ''}`}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.5 1z"></path></svg>
+        Pengaturan Toko
+    </a>
+    <hr class="sidebar-divider" />
+    <a href="/dashboard_user.html" class="sidebar-btn user-switch-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        Dashboard Pembeli
+    </a>
+    <button class="sidebar-btn logout-btn" onclick="performLogout()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"></path></svg>
+        Keluar
+    </button>
+</div>
+
+<style>
+    .sidebar-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        background: #ffffff;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        padding: 0.75rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    }
+
+    .sidebar-btn {
+        background: transparent;
+        border: none;
+        padding: 10px 12px;
+        color: #495057;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-align: left;
+        cursor: pointer;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.1s ease;
+    }
+
+    .sidebar-btn:hover {
+        background: #f3e5f5;
+        color: #6a1b9a;
+    }
+
+    .sidebar-btn.active {
+        background: #6a1b9a;
+        color: #ffffff;
+    }
+
+    .sidebar-divider {
+        border: 0;
+        border-top: 1px solid #dee2e6;
+        margin: 0.5rem 0;
+    }
+
+    .user-switch-btn {
+        color: #6a1b9a;
+    }
+
+    .user-switch-btn:hover {
+        background: #f3e5f5;
+        color: #8e24aa;
+    }
+
+    .logout-btn {
+        color: #dc3545;
+        width: 100%;
+    }
+
+    .logout-btn:hover {
+        background: #fdf2f2;
+    }
+</style>

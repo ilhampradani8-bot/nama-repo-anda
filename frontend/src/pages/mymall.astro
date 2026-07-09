@@ -51,29 +51,25 @@ import BottomNav from '../components/BottomNav.astro';
             width: 100%;
         }
 
-        /* Profile Storefront Header Card */
-        .store-header-card {
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+        /* Profile Storefront Header Wrapper (Full Width) */
+        .store-header-wrapper {
+            width: 100%;
+            background: linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.94)), url('/gambar/banner.webp') no-repeat center center;
+            background-size: cover;
+            border-bottom: 1px solid var(--border-color);
+            padding: 2.5rem 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
             margin-bottom: 2rem;
+        }
+
+        .store-header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+            width: 100%;
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .store-header-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 6px;
-            background: var(--primary-gradient);
         }
 
         .store-profile-row {
@@ -88,9 +84,8 @@ import BottomNav from '../components/BottomNav.astro';
             width: 90px;
             height: 90px;
             border-radius: 50%;
-            padding: 4px;
-            background: var(--primary-gradient);
-            box-shadow: 0 6px 15px rgba(102, 16, 242, 0.15);
+            padding: 0;
+            border: 1px solid var(--border-color);
         }
 
         .store-avatar {
@@ -98,7 +93,6 @@ import BottomNav from '../components/BottomNav.astro';
             height: 100%;
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid #ffffff;
             background: #f8f9fa;
         }
 
@@ -147,42 +141,20 @@ import BottomNav from '../components/BottomNav.astro';
             color: #2e7d32;
         }
 
-        /* Store Stats Grid */
-        .store-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
-            border-top: 1px solid #e9ecef;
-            padding-top: 1.5rem;
+        /* Store Stats List */
+        .store-stats-list {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            border-top: 1px solid #f1f3f5;
+            padding-top: 1.25rem;
+            font-size: 0.95rem;
+            color: #495057;
         }
 
-        .stat-card {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 12px;
-            padding: 1rem;
-            text-align: center;
-            transition: all 0.2s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            border-color: #ced4da;
-        }
-
-        .stat-val {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #0d6efd;
-            margin-bottom: 2px;
-        }
-
-        .stat-lbl {
-            font-size: 0.8rem;
-            color: #6c757d;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .stat-item {
+            display: flex;
+            align-items: center;
         }
 
         /* Products Listing Section */
@@ -473,9 +445,9 @@ import BottomNav from '../components/BottomNav.astro';
 <body>
     <UserNavbar />
 
-    <div class="container">
-        <!-- Store Header -->
-        <div class="store-header-card">
+    <!-- Store Header Wrapper (Full Width) -->
+    <div class="store-header-wrapper">
+        <div class="store-header-content">
             <div class="store-profile-row">
                 <div class="store-avatar-wrapper">
                     <img id="store-avatar-img" src="/grabill54-hello-2488_512.gif" alt="Avatar Mall" class="store-avatar">
@@ -485,37 +457,42 @@ import BottomNav from '../components/BottomNav.astro';
                     <div class="store-category-label" id="store-category-display" style="font-size: 0.95rem; font-weight: 700; color: #6f42c1; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; font-family: 'Marcellus SC', serif;">Lapak Digital Premium</div>
                     <div class="store-tagline" id="store-description-display" style="margin-bottom: 12px; font-size: 1rem; color: #6c757d;">Selamat datang di lapak digital premium saya. Temukan layanan terbaik di sini!</div>
                     <div class="store-badges">
-                        <span class="store-badge verified">
+                        <span class="store-badge verified" id="verified-badge" style="display: none;">
                             🛡️ Merchant Terverifikasi
                         </span>
-                        <span class="store-badge" id="member-since-badge">
-                            📅 Bergabung: ...
-                        </span>
+                        <!-- Hidden dummy inputs for compatibility with existing JS -->
+                        <span id="member-since-badge" style="display: none;"></span>
+                        <span id="stat-active-variants" style="display: none;"></span>
+                        <span id="stat-categories-count" style="display: none;"></span>
                     </div>
                     <div class="store-interests-row" id="store-interests-container" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;"></div>
                 </div>
             </div>
 
-            <!-- Stats -->
-            <div class="store-stats-grid">
-                <div class="stat-card">
-                    <div class="stat-val" id="stat-total-products">0</div>
-                    <div class="stat-lbl">Total Produk</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-val" id="stat-active-variants">0</div>
-                    <div class="stat-lbl">Varian Aktif</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-val" style="color: #6610f2;" id="stat-categories-count">0</div>
-                    <div class="stat-lbl">Kategori Terisi</div>
-                </div>
+            <!-- Stats List Plain Section -->
+            <div class="store-stats-list" style="display: flex; gap: 2rem; flex-wrap: wrap; border-top: 1px solid #f1f3f5; padding-top: 1.25rem; font-size: 0.95rem; color: #495057;">
+                <div class="stat-item"><span style="color: #868e96; margin-right: 4px;">Produk:</span> <strong id="stat-total-products" style="color: #212529;">0</strong></div>
+                <div class="stat-item"><span style="color: #868e96; margin-right: 4px;">Penilaian:</span> <strong style="color: #212529;">4.9 (482 Penilaian)</strong></div>
+                <div class="stat-item"><span style="color: #868e96; margin-right: 4px;">Performa Chat:</span> <strong style="color: #212529;">99% (Hitungan Jam)</strong></div>
+                <div class="stat-item"><span style="color: #868e96; margin-right: 4px;">Pengikut:</span> <strong style="color: #212529;">592,7RB</strong></div>
+                <div class="stat-item"><span style="color: #868e96; margin-right: 4px;">Mengikuti:</span> <strong style="color: #212529;">0</strong></div>
+                <div class="stat-item"><span style="color: #868e96; margin-right: 4px;">Bergabung:</span> <strong style="color: #212529;">7 Tahun Lalu</strong></div>
             </div>
         </div>
+    </div>
 
-        <!-- Section Products -->
-        <div class="section-title">
-            <span>Daftar Produk yang Saya Share</span>
+    <div class="container">
+
+        <!-- Section Products & Status Tabs -->
+        <div style="margin: 1.5rem 0; display: flex; flex-direction: column; gap: 1rem;">
+            <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; border-bottom: 1px solid var(--border-color);" id="status-tabs-container">
+                <button type="button" class="tab-btn active" data-status="all" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #6f42c1; background: #6f42c1; color: #ffffff; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-size: 0.8rem; outline: none;">Semua</button>
+                <button type="button" class="tab-btn" data-status="publish" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #ced4da; background: #ffffff; color: #495057; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-size: 0.8rem; outline: none;">Publish</button>
+                <button type="button" class="tab-btn" data-status="draft" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #ced4da; background: #ffffff; color: #495057; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-size: 0.8rem; outline: none;">Draft</button>
+                <button type="button" class="tab-btn" data-status="review" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #ced4da; background: #ffffff; color: #495057; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-size: 0.8rem; outline: none;">Review</button>
+                <button type="button" class="tab-btn" data-status="blokir" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #ced4da; background: #ffffff; color: #495057; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-size: 0.8rem; outline: none;">Blokir</button>
+                <button type="button" class="tab-btn" data-status="dihapus" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #ced4da; background: #ffffff; color: #495057; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-size: 0.8rem; outline: none;">Dihapus</button>
+            </div>
         </div>
 
         <div id="mall-products-container" class="product-grid">
@@ -539,6 +516,8 @@ import BottomNav from '../components/BottomNav.astro';
     <script is:inline>
         const API_BASE_URL = 'http://localhost:5002'; // Fallback to local dev API
         let merchantPhone = '';
+        let allProductsList = [];
+        let currentTabStatus = 'all';
 
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
@@ -557,6 +536,27 @@ import BottomNav from '../components/BottomNav.astro';
             }, 3500);
         }
 
+        const categoryMap = {
+            'digital': 'Produk Digital & Lisensi',
+            'jasa': 'Jasa & Freelancing',
+            'layanan': 'Layanan Online / VPS',
+            'voucher': 'Voucher Game & Top Up',
+            'ebook': 'E-Book & Kursus',
+            'lainnya': 'Lainnya'
+        };
+
+        function getCategorySvg(slug) {
+            const icons = {
+                'digital': `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: middle; display: inline-block; margin-right: 4px;"><path d="M5 0a.5.5 0 0 1 .5.5V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 .5-.5h.5a1.5 1.5 0 0 1 1.5 1.5v.5h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v.5a1.5 1.5 0 0 1-1.5 1.5h-.5v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-.5a1.5 1.5 0 0 1-1.5-1.5V12H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2V8H.5a.5.5 0 0 1 0-1H2V6H.5a.5.5 0 0 1 0-1H2v-.5A1.5 1.5 0 0 1 3.5 3H4V.5a.5.5 0 0 1 .5-.5zm7 12a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.5-.5h-7a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .5.5z"/></svg>`,
+                'jasa': `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: middle; display: inline-block; margin-right: 4px;"><path d="M9.5 0a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h.5V.5a.5.5 0 0 1 .5-.5zM2 11.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5zm1-3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5zm-2-3.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5z"/></svg>`,
+                'layanan': `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: middle; display: inline-block; margin-right: 4px;"><path d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 1.917 5.385 4.48a3.502 3.502 0 0 1-.382 6.962l-.123.003h-8.8a4.498 4.498 0 0 1-.166-8.98L4.4 4.56zm-.086 1.077A3.498 3.498 0 0 0 4.5 11.4h8.375a2.5 2.5 0 0 0 .125-4.976t-.707-.464l-.328-.095-.084-.337A4.53 4.53 0 0 0 8 3c-1.996 0-3.666 1.353-4.106 3.255l-.088.38-.387.054a3.5 3.5 0 0 0-.109 7.03z"/></svg>`,
+                'voucher': `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: middle; display: inline-block; margin-right: 4px;"><path d="M2.758 11.586l-.004-.004A1.5 1.5 0 0 1 2 10.514V5.486a1.5 1.5 0 0 1 .754-1.068l.004-.004c.244-.127.512-.2.785-.21l3.057-.102a.5.5 0 0 1-.033 1l-3.057.102a.5.5 0 0 0-.262.07L2.558 5.72a.5.5 0 0 0-.251.356v4.848a.5.5 0 0 0 .251.356l.756.446a.5.5 0 0 0 .262.07l3.057.102a.5.5 0 0 1-.033 1l-3.057-.102a1.5 1.5 0 0 1-.785-.21M13.242 4.414A1.5 1.5 0 0 1 14 5.486v5.028a1.5 1.5 0 0 1-.754 1.068l-.004.004a1.5 1.5 0 0 1-.785.21l-3.057.102a.5.5 0 0 1-.033-1l3.057-.102a.5.5 0 0 0 .262-.07l.756-.446a.5.5 0 0 0 .251-.356V6.076a.5.5 0 0 0-.251-.356l-.756-.446a.5.5 0 0 0-.262-.07l-3.057-.102a.5.5 0 0 1 .033-1l3.057.102a1.5 1.5 0 0 1 .785.21zM5 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2m0 3a1 1 0 1 0 0 2 1 1 0 0 0 0-2m5-3a1 1 0 1 0 0 2 1 1 0 0 0 0-2m0 3a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>`,
+                'ebook': `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: middle; display: inline-block; margin-right: 4px;"><path d="M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783"/></svg>`,
+                'lainnya': `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: middle; display: inline-block; margin-right: 4px;"><path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5 8 5.961 14.154 3.5zM15 4.239l-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923z"/></svg>`
+            };
+            return icons[slug] || '';
+        }
+
         async function fetchStorefrontData() {
             try {
                 // 1. Fetch authentication status to get user details
@@ -571,7 +571,7 @@ import BottomNav from '../components/BottomNav.astro';
                     return;
                 }
 
-                // Update Profile name
+                // Update Profile name fallback
                 const nickname = authData.user ? (authData.user.username || 'Merchant') : 'Merchant';
                 document.getElementById('store-title-name').textContent = `Mall milik ${nickname}`;
                 
@@ -597,17 +597,28 @@ import BottomNav from '../components/BottomNav.astro';
                     console.error("Error loading settings phone:", e);
                 }
 
-                // 1.1 Fetch user store details from real-time database
+                // 1.1 Fetch user store details from database
                 try {
                     const storeRes = await fetch(`${API_BASE_URL}/api/user/store`, { credentials: 'include' });
                     if (storeRes.ok) {
                         const storeData = await storeRes.json();
                         if (storeData.success) {
+                            // Inject store name if exists
+                            if (storeData.store_name) {
+                                document.getElementById('store-title-name').textContent = storeData.store_name;
+                            }
                             if (storeData.store_category) {
                                 document.getElementById('store-category-display').textContent = storeData.store_category;
                             }
                             if (storeData.description) {
                                 document.getElementById('store-description-display').textContent = storeData.description;
+                            }
+                            
+                            // Inject verified badge status
+                            if (storeData.verified === 1) {
+                                document.getElementById('verified-badge').style.display = 'inline-flex';
+                            } else {
+                                document.getElementById('verified-badge').style.display = 'none';
                             }
                             
                             const interestsContainer = document.getElementById('store-interests-container');
@@ -638,7 +649,8 @@ import BottomNav from '../components/BottomNav.astro';
                 if (res.ok) {
                     const data = await res.json();
                     if (data.success) {
-                        renderMallProducts(data.products || []);
+                        allProductsList = data.products || [];
+                        filterAndRenderProducts();
                     } else {
                         document.getElementById('mall-products-container').innerHTML = `<div class="no-data">Gagal memuat produk: ${data.error || ''}</div>`;
                     }
@@ -651,14 +663,35 @@ import BottomNav from '../components/BottomNav.astro';
             }
         }
 
-        const categoryMap = {
-            'digital': '🚀 Produk Digital & Lisensi',
-            'jasa': '🛠️ Jasa & Freelancing',
-            'layanan': '☁️ Layanan Online / VPS',
-            'voucher': '🎮 Voucher Game & Top Up',
-            'ebook': '📚 E-Book & Kursus',
-            'lainnya': '📦 Lainnya'
-        };
+        // Setup tab click listeners
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.tab-btn').forEach(b => {
+                    b.classList.remove('active');
+                    b.style.background = '#ffffff';
+                    b.style.color = '#495057';
+                    b.style.borderColor = '#ced4da';
+                });
+                btn.classList.add('active');
+                btn.style.background = '#6f42c1';
+                btn.style.color = '#ffffff';
+                btn.style.borderColor = '#6f42c1';
+                currentTabStatus = btn.dataset.status;
+                filterAndRenderProducts();
+            };
+        });
+
+        function filterAndRenderProducts() {
+            let filtered = [];
+            if (currentTabStatus === 'all') {
+                filtered = allProductsList;
+            } else if (currentTabStatus === 'publish') {
+                filtered = allProductsList.filter(p => !['draft', 'review', 'blokir', 'dihapus'].includes(p.status));
+            } else {
+                filtered = allProductsList.filter(p => p.status === currentTabStatus);
+            }
+            renderMallProducts(filtered);
+        }
 
         window.buyProduct = function(btn) {
             event.stopPropagation();
@@ -679,27 +712,24 @@ import BottomNav from '../components/BottomNav.astro';
         function renderMallProducts(products) {
             const container = document.getElementById('mall-products-container');
             if (products.length === 0) {
-                container.innerHTML = '<div class="no-data">Belum ada produk di mall Anda. Silakan tambahkan produk baru lewat dashboard!</div>';
+                container.innerHTML = '<div class="no-data">Tidak ada produk untuk status ini.</div>';
                 
                 // Update stats
-                document.getElementById('stat-total-products').textContent = '0';
-                document.getElementById('stat-active-variants').textContent = '0';
-                document.getElementById('stat-categories-count').textContent = '0';
+                document.getElementById('stat-total-products').textContent = allProductsList.length;
+                document.getElementById('stat-active-variants').textContent = allProductsList.reduce((acc, p) => acc + (p.variants ? p.variants.length : 0), 0);
+                document.getElementById('stat-categories-count').textContent = new Set(allProductsList.map(p => p.category)).size;
                 return;
             }
 
-            // Stats calculation
-            let totalVariants = 0;
-            const uniqueCategories = new Set();
+            // Stats calculation from total list (always show global counts)
+            let totalVariants = allProductsList.reduce((acc, p) => acc + (p.variants ? p.variants.length : 0), 0);
+            const uniqueCategories = new Set(allProductsList.map(p => p.category));
             
             container.innerHTML = products.map(p => {
                 const formattedPrice = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0 }).format(p.price);
-                const originalPrice = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0 }).format(Math.round(p.price * 1.15));
                 const categoryText = categoryMap[p.category] || categoryMap['lainnya'];
-                
-                uniqueCategories.add(p.category);
 
-                // Status Badge
+                // Status Badge (Remove publish status badge, keep draft, review, blokir, dihapus)
                 let statusBadge = '';
                 if (p.status === 'draft') {
                     statusBadge = `<span class="product-item-badge" style="background:#fff3cd; color:#664d03; border: 1px solid #ffe69c;">Draft</span>`;
@@ -709,48 +739,39 @@ import BottomNav from '../components/BottomNav.astro';
                     statusBadge = `<span class="product-item-badge" style="background:#f8d7da; color:#842029; border: 1px solid #f5c2c7;">Blokir</span>`;
                 } else if (p.status === 'dihapus') {
                     statusBadge = `<span class="product-item-badge" style="background:#e2e3e5; color:#41464b; border: 1px solid #d3d6d8;">Dihapus</span>`;
-                } else {
-                    statusBadge = `<span class="product-item-badge" style="background:#d1e7dd; color:#0f5132; border: 1px solid #badbcc;">Publish</span>`;
-                }
-
-                // Add to variants count for stats calculation (without rendering)
-                if (p.variants && p.variants.length > 0) {
-                    totalVariants += p.variants.length;
                 }
 
                 const mainImage = (p.images && p.images.length > 0) ? p.images[0] : '/gambar/logo/easymall-logo.png';
 
                 return `
-                    <div class="card product-card" onclick="window.location.href='/product_my.html?id=${p.id}'" style="cursor: pointer;">
-                        <div class="card-image-wrapper">
-                            <img src="${mainImage}" alt="${p.product_name}" style="max-height: 90px; max-width: 90%; object-fit: contain;" onerror="this.src='/gambar/logo/easymall-logo.png'">
+                    <div class="card product-card" onclick="window.location.href='/product_my.html?id=${p.id}'" style="cursor: pointer; display: flex; flex-direction: column; overflow: hidden;">
+                        <div class="card-image-wrapper" style="height: 180px; position: relative; border-bottom: 1px solid var(--border-color); overflow: hidden;">
+                            <img src="${mainImage}" alt="${p.product_name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='/gambar/logo/easymall-logo.png'">
                             ${statusBadge}
                         </div>
-                        <div class="card-body">
-                            <span class="product-category">${categoryText}</span>
-                            <h3 class="card-title">${p.product_name}</h3>
-                            <p class="card-desc">${p.description || 'Tidak ada deskripsi.'}</p>
+                        <div class="card-body" style="padding: 0.75rem; display: flex; flex-direction: column; gap: 4px; flex-grow: 1;">
+                            <h3 class="card-title" style="font-size: 0.9rem; font-weight: 700; color: #212529; margin: 0; line-height: 1.3;">${p.product_name}</h3>
+                            <span class="product-category" style="font-size: 0.65rem; color: #6c757d; font-weight: 600; display: flex; align-items: center; gap: 2px;">
+                                ${getCategorySvg(p.category)} ${categoryText}
+                            </span>
+                            <p class="card-desc" style="font-size: 0.75rem; color: #6c757d; margin: 4px 0 8px 0; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 2.8em;">
+                                ${p.description || 'Tidak ada deskripsi.'}
+                            </p>
                             
-                            <div class="product-rating">
-                                <span class="stars" style="color: #ff9f43; display: flex; align-items: center; gap: 2px;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                    </svg>
-                                    4.9
-                                </span>
-                                <span class="sold-count">100+ terjual</span>
+                            <div class="product-rating" style="display: flex; align-items: center; gap: 6px; font-size: 0.7rem; margin-bottom: 8px;">
+                                <span class="stars" style="color: #ff9f43; display: flex; align-items: center; gap: 2px;">⭐ 4.9</span>
+                                <span class="sold-count" style="color: #6c757d; border-left: 1px solid var(--border-color); padding-left: 6px;">100+ terjual</span>
                             </div>
 
-                            <div class="product-footer">
+                            <div class="product-footer" style="display: flex; align-items: flex-end; justify-content: space-between; margin-top: auto; border-top: 1px dashed var(--border-color); padding-top: 8px;">
                                 <div class="price-container">
-                                    <span class="price-label">Mulai dari</span>
+                                    <span class="price-label" style="font-size: 0.65rem; color: #6c757d;">Mulai dari</span>
                                     <div class="price-row" style="display: flex; align-items: center; flex-wrap: wrap; gap: 2px;">
-                                        <span class="price-value" style="font-size: 0.9rem; color: #e03131; font-weight: 700;">Rp${formattedPrice}</span>
-                                        <span style="text-decoration: line-through; color: #6c757d; font-size: 0.68rem; margin-left: 4px;">Rp${originalPrice}</span>
+                                        <span class="price-value" style="font-size: 0.95rem; color: #e03131; font-weight: 700;">Rp${formattedPrice}</span>
                                     </div>
                                 </div>
                                 <div style="display: flex; gap: 4px; align-items: center;">
-                                    <button type="button" class="btn btn-buy" onclick="event.stopPropagation(); buyProduct(this)" data-name="${p.product_name.replace(/"/g, '&quot;')}" data-price="${p.price}" style="font-size: 0.7rem; padding: 0.25rem 0.5rem; border-radius: 4px; background: #6f42c1; border-color: #6f42c1; color: white;">Beli</button>
+                                    <button type="button" class="btn btn-buy" onclick="event.stopPropagation(); buyProduct(this)" data-name="${p.product_name.replace(/"/g, '&quot;')}" data-price="${p.price}" style="font-size: 0.75rem; padding: 0.3rem 0.6rem; border-radius: 4px; background: #6f42c1; border: 1px solid #6f42c1; color: white; cursor: pointer;">Beli</button>
                                 </div>
                             </div>
                         </div>
@@ -759,7 +780,7 @@ import BottomNav from '../components/BottomNav.astro';
             }).join('');
 
             // Set statistics
-            document.getElementById('stat-total-products').textContent = products.length;
+            document.getElementById('stat-total-products').textContent = allProductsList.length;
             document.getElementById('stat-active-variants').textContent = totalVariants;
             document.getElementById('stat-categories-count').textContent = uniqueCategories.size;
         }

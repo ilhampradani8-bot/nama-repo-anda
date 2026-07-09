@@ -1,0 +1,128 @@
+---
+// MymallProfileCard.astro - Seller Store Profile Card component
+---
+<div class="mymall-profile-card">
+    <div class="avatar-container">
+        <div class="profile-avatar" id="mymall-avatar-initial">-</div>
+        <span class="store-badge-check" id="mymall-badge-verified" style="display: none;" title="Verified Store">✓</span>
+    </div>
+    <h3 class="profile-name" id="mymall-store-name">Memuat Toko...</h3>
+    <p class="profile-owner" id="mymall-owner-name">...</p>
+    <span class="badge-role">Mall Owner & Seller</span>
+</div>
+
+<script is:inline>
+    (async function() {
+        try {
+            let API_BASE_URL = '';
+            if (window.location.port !== '5002' && window.location.protocol !== 'file:') {
+                API_BASE_URL = 'https://api.ilhampradani.me';
+            }
+            const authRes = await fetch(`${API_BASE_URL}/api/auth/status`, { credentials: 'include' });
+            if (authRes.ok) {
+                const authData = await authRes.json();
+                if (authData.logged_in) {
+                    const nameEl = document.getElementById('mymall-owner-name');
+                    const avatarEl = document.getElementById('mymall-avatar-initial');
+                    
+                    if (nameEl) nameEl.textContent = authData.name;
+                    if (avatarEl) avatarEl.textContent = authData.name.charAt(0).toUpperCase();
+
+                    // Now load store info to populate store name and verified status
+                    const storeRes = await fetch(`${API_BASE_URL}/api/store/settings`, { credentials: 'include' });
+                    if (storeRes.ok) {
+                        const storeData = await storeRes.json();
+                        const storeNameEl = document.getElementById('mymall-store-name');
+                        const verifiedEl = document.getElementById('mymall-badge-verified');
+                        
+                        if (storeNameEl) {
+                            storeNameEl.textContent = storeData.store_name || "My Mall";
+                        }
+                        if (verifiedEl && storeData.verified === 1) {
+                            verifiedEl.style.display = 'flex';
+                        }
+                    }
+                }
+            }
+        } catch(e) {
+            console.error("Error populating MymallProfileCard:", e);
+        }
+    })();
+</script>
+
+<style>
+    .mymall-profile-card {
+        background: #ffffff;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    }
+
+    .avatar-container {
+        position: relative;
+        width: 72px;
+        height: 72px;
+        margin: 0 auto 1rem auto;
+    }
+
+    .profile-avatar {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: #f3e5f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #6a1b9a;
+        border: 2px solid #e1bee7;
+    }
+
+    .store-badge-check {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 22px;
+        height: 22px;
+        background: #4caf50;
+        color: #ffffff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: bold;
+        border: 2px solid #ffffff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .profile-name {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 0.25rem;
+    }
+
+    .profile-owner {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-bottom: 1rem;
+        word-break: break-all;
+    }
+
+    .badge-role {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        background: #f3e5f5;
+        color: #6a1b9a;
+        border: 1px solid #e1bee7;
+    }
+</style>

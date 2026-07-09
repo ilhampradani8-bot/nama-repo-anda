@@ -1,0 +1,144 @@
+---
+// MymallNavbar.astro
+---
+<div id="mymall-top-loading-bar" class="loading-bar"></div>
+
+<nav class="mymall-navbar">
+    <a href="/" class="navbar-brand">
+        <img src="/gambar/logo/easymall-logo.png" alt="EasyMall Logo">
+        <span>Seller Center & Mall</span>
+    </a>
+    <div class="nav-actions">
+        <a href="/mymall.html" class="btn-link">Lihat Mall Saya</a>
+        <button class="btn-logout" onclick="performLogout()">🚪 Keluar</button>
+    </div>
+</nav>
+
+<style>
+    .loading-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 3px;
+        background: #6a1b9a;
+        width: 0%;
+        transition: width 0.3s ease, opacity 0.3s ease;
+        z-index: 1001;
+        pointer-events: none;
+        opacity: 0;
+    }
+    .loading-bar.active {
+        opacity: 1;
+        width: 70%;
+    }
+    .loading-bar.finish {
+        opacity: 0;
+        width: 100%;
+        transition: width 0.2s ease, opacity 0.2s ease;
+    }
+
+    .mymall-navbar {
+        background: #ffffff;
+        border-bottom: 2px solid #dee2e6;
+        padding: 1rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .navbar-brand {
+        font-weight: bold;
+        font-size: 1.25rem;
+        color: #212529;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: 'Marcellus SC', serif;
+    }
+
+    .navbar-brand img {
+        height: 32px;
+    }
+
+    .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .btn-link {
+        color: #6a1b9a;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .btn-link:hover {
+        color: #8e24aa;
+        text-decoration: underline;
+    }
+
+    .btn-logout {
+        padding: 6px 12px;
+        background: #dc3545;
+        color: #ffffff;
+        border: 1px solid #dc3545;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+
+    .btn-logout:hover {
+        background: #bb2d3b;
+        border-color: #b02a37;
+    }
+</style>
+
+<script is:inline>
+    (function() {
+        const bar = document.getElementById('mymall-top-loading-bar');
+        if (!bar) return;
+
+        let activeRequests = 0;
+
+        function startLoading() {
+            activeRequests++;
+            if (activeRequests === 1) {
+                bar.classList.remove('finish');
+                bar.classList.add('active');
+            }
+        }
+
+        function stopLoading() {
+            activeRequests = Math.max(0, activeRequests - 1);
+            if (activeRequests === 0) {
+                bar.classList.remove('active');
+                bar.classList.add('finish');
+                setTimeout(() => {
+                    if (activeRequests === 0) {
+                        bar.classList.remove('finish');
+                    }
+                }, 300);
+            }
+        }
+
+        window.startMymallLoadingBar = startLoading;
+        window.stopMymallLoadingBar = stopLoading;
+
+        const originalFetch = window.fetch;
+        window.fetch = async function(...args) {
+            startLoading();
+            try {
+                return await originalFetch(...args);
+            } finally {
+                stopLoading();
+            }
+        };
+    })();
+</script>

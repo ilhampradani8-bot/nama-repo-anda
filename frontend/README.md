@@ -90,10 +90,23 @@ Jika Anda baru pertama kali menghubungkan repositori Git ke Vercel dan menemui e
 4. Klik **Save**.
 5. Lakukan deploy ulang (**Redeploy**) dari tab Deployments. Vercel akan otomatis mengenali Astro, menginstal dependensi, menjalankan `npm run build`, dan mengarahkan rute deploy statis ke folder `frontend/dist/` dengan benar.
 
----
+## 🌐 Panduan Hubungan API & Domain
 
-## 🌐 Sinkronisasi API Backend
+Seluruh jalur komunikasi API pada aplikasi EasyMall secara konsisten menggunakan domain resmi:
+* **Backend API**: **`https://api.ilhampradani.me`**
+* **Frontend Site**: **`https://easymall.ilhampradani.me`**
 
-Frontend berkomunikasi dengan API Backend Rust Axum EasyMall yang berjalan di domain produksi **`https://api.ilhampradani.me`**. Penentuan base URL API diatur secara dinamis di sisi klien:
-- Jika diakses dari domain produksi/Vercel, API akan diarahkan ke subdomain produksi `https://api.ilhampradani.me`.
-- Fitur checkout mengirimkan payload order ke `/api/checkout`, memuat kode QRIS, dan melakukan polling status pembayaran setiap 6 detik ke `/api/order/status/<transaction_id>`.
+### Arsitektur Aliran Data:
+1. **Frontend**: Melayani file-file statis dan logika UI yang di-compile menggunakan Astro di bawah domain **`https://easymall.ilhampradani.me`**.
+2. **API Backend**: Seluruh permintaan data (fetch data produk, autentikasi, pengaturan toko, checkout) dikirim langsung ke domain **`https://api.ilhampradani.me`**.
+3. **Database**: Menggunakan SQLite di server produksi yang beralamat di `/root/ecommerce/dinamis/dashboard/ecommerce.db`.
+
+### 🛠️ Cara Menjalankan & Membangun Proyek
+1. **Menjalankan Server Pengembangan**:
+   ```bash
+   npm run dev
+   ```
+2. **Kompilasi Produksi**:
+   ```bash
+   npm run build
+   ```

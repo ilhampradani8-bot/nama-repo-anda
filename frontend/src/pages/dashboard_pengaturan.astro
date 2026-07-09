@@ -248,6 +248,11 @@ import BottomNav from '../components/BottomNav.astro';
                 <div class="card-body">
                     <form onsubmit="saveStoreSettings(event)">
                         <div class="form-group">
+                            <label for="storeNameInput">Nama Toko / Mall</label>
+                            <input type="text" id="storeNameInput" class="form-control" placeholder="Contoh: Lapak Ganteng, My Mall Premium">
+                        </div>
+
+                        <div class="form-group">
                             <label for="storeCategoryInput">Kategori Toko</label>
                             <input type="text" id="storeCategoryInput" class="form-control" placeholder="Contoh: Digital Store, Voucher Game, Jasa IT">
                         </div>
@@ -367,6 +372,7 @@ import BottomNav from '../components/BottomNav.astro';
                 if (res.ok) {
                     const data = await res.json();
                     if (data.success) {
+                        document.getElementById('storeNameInput').value = data.store_name || '';
                         document.getElementById('storeCategoryInput').value = data.store_category || '';
                         document.getElementById('storeDescriptionInput').value = data.description || '';
                         document.getElementById('storeInterestsInput').value = data.interests || '';
@@ -379,6 +385,7 @@ import BottomNav from '../components/BottomNav.astro';
 
         async function saveStoreSettings(e) {
             e.preventDefault();
+            const store_name = document.getElementById('storeNameInput').value.trim();
             const store_category = document.getElementById('storeCategoryInput').value.trim();
             const description = document.getElementById('storeDescriptionInput').value.trim();
             const interests = document.getElementById('storeInterestsInput').value.trim();
@@ -388,6 +395,7 @@ import BottomNav from '../components/BottomNav.astro';
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
+                        store_name,
                         store_category,
                         description,
                         interests

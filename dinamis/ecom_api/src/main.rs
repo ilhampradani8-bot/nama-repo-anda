@@ -60,6 +60,7 @@ struct SaveSettingsPayload {
 
 #[derive(Deserialize)]
 struct SaveStorePayload {
+    store_name: Option<String>,
     description: Option<String>,
     store_category: Option<String>,
     interests: Option<String>,
@@ -378,13 +379,19 @@ fn init_db(db_path: &str) {
     let _ = conn.execute(
         "CREATE TABLE IF NOT EXISTS stores (
             email TEXT PRIMARY KEY,
+            store_name TEXT,
             description TEXT,
             store_category TEXT,
             interests TEXT,
+            verified INTEGER DEFAULT 0,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )",
         [],
     );
+
+    // Run migrations to add store_name and verified columns if they do not exist
+    let _ = conn.execute("ALTER TABLE stores ADD COLUMN store_name TEXT", []);
+    let _ = conn.execute("ALTER TABLE stores ADD COLUMN verified INTEGER DEFAULT 0", []);
 }
 
 fn get_redirect_target(headers: &HeaderMap, _default_url: &str) -> String {
@@ -607,13 +614,15 @@ async fn get_user_store(
         if let Some(sess) = verify_session(&state, &sid) {
             if let Ok(conn) = Connection::open(&state.transactions_db_path) {
                 let store_query = conn.query_row(
-                    "SELECT description, store_category, interests FROM stores WHERE email = ?",
+                    "SELECT description, store_category, interests, store_name, verified FROM stores WHERE email = ?",
                     params![sess.email],
                     |row| Ok(serde_json::json!({
                         "success": true,
                         "description": row.get::<_, Option<String>>(0)?.unwrap_or_default(),
                         "store_category": row.get::<_, Option<String>>(1)?.unwrap_or_default(),
                         "interests": row.get::<_, Option<String>>(2)?.unwrap_or_default(),
+                        "store_name": row.get::<_, Option<String>>(3)?.unwrap_or_default(),
+                        "verified": row.get::<_, Option<i32>>(4)?.unwrap_or(0),
                     }))
                 );
                 
@@ -628,6 +637,8 @@ async fn get_user_store(
                             "description": "",
                             "store_category": "",
                             "interests": "",
+                            "store_name": "",
+                            "verified": 0,
                         }))).into_response();
                     }
                 }
@@ -648,12 +659,15 @@ async fn save_user_store(
         if let Some(sess) = verify_session(&state, &sid) {
             if let Ok(conn) = Connection::open(&state.transactions_db_path) {
                 let upsert_res = conn.execute(
-                    "INSERT OR REPLACE INTO stores (email, description, store_category, interests, updated_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)",
+                    "INSERT OR REPLACE INTO stores (email, store_name, description, store_category, interests, verified, updated_at) \
+                     VALUES (?, ?, ?, ?, ?, COALESCE((SELECT verified FROM stores WHERE email = ?), 0), CURRENT_TIMESTAMP)",
                     params![
                         sess.email,
+                        payload.store_name.unwrap_or_default(),
                         payload.description.unwrap_or_default(),
                         payload.store_category.unwrap_or_default(),
                         payload.interests.unwrap_or_default(),
+                        sess.email,
                     ],
                 );
                 if upsert_res.is_ok() {
