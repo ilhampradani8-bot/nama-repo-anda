@@ -307,19 +307,32 @@ fn init_db(db_path: &str) {
     let _ = conn.execute("ALTER TABLE transactions ADD COLUMN email TEXT", []);
     let _ = conn.execute("ALTER TABLE transactions ADD COLUMN provider TEXT", []);
 
-    // Create shared_products table if it does not exist
+    // Rename shared_products to product if the old table exists
+    let _ = conn.execute("ALTER TABLE shared_products RENAME TO product", []);
+
+    // Create product table if it does not exist
     let _ = conn.execute(
-        "CREATE TABLE IF NOT EXISTS shared_products (
+        "CREATE TABLE IF NOT EXISTS product (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             email TEXT NOT NULL,
             product_name TEXT NOT NULL,
             variant_name TEXT,
             price INTEGER NOT NULL,
             description TEXT,
+            category TEXT,
+            images TEXT,
+            variants TEXT,
+            status TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )",
         [],
     );
+
+    // Migration: Add new columns if they do not exist
+    let _ = conn.execute("ALTER TABLE product ADD COLUMN category TEXT", []);
+    let _ = conn.execute("ALTER TABLE product ADD COLUMN images TEXT", []);
+    let _ = conn.execute("ALTER TABLE product ADD COLUMN variants TEXT", []);
+    let _ = conn.execute("ALTER TABLE product ADD COLUMN status TEXT", []);
 
     // Wallet / Saldo system tables
     let _ = conn.execute(
@@ -714,7 +727,7 @@ async fn get_shared_products(
                 let mut products = vec![];
                 if let Ok(mut stmt) = conn.prepare(
                     "SELECT id, email, product_name, variant_name, price, description, category, images, variants, status, created_at \
-                     FROM shared_products \
+                     FROM product \
                      WHERE email = ? \
                      ORDER BY created_at DESC"
                 ) {
@@ -775,7 +788,7 @@ async fn add_shared_product(
 
             if let Ok(conn) = Connection::open(&state.transactions_db_path) {
                 let insert_res = conn.execute(
-                    "INSERT INTO shared_products (email, product_name, variant_name, price, description, category, images, variants, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO product (email, product_name, variant_name, price, description, category, images, variants, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     params![
                         sess.email,
                         payload.product_name,
@@ -810,7 +823,7 @@ async fn delete_shared_product(
         if let Some(sess) = verify_session(&state, &sid) {
             if let Ok(conn) = Connection::open(&state.transactions_db_path) {
                 let delete_res = conn.execute(
-                    "DELETE FROM shared_products WHERE id = ? AND email = ?",
+                    "DELETE FROM product WHERE id = ? AND email = ?",
                     params![id, sess.email],
                 );
                 if delete_res.is_ok() {
@@ -836,7 +849,7 @@ async fn get_single_shared_product(
             if let Ok(conn) = Connection::open(&state.transactions_db_path) {
                 if let Ok(mut stmt) = conn.prepare(
                     "SELECT id, email, product_name, variant_name, price, description, category, images, variants, status, created_at \
-                     FROM shared_products \
+                     FROM product \
                      WHERE id = ? AND email = ?"
                 ) {
                     let product = stmt.query_row(params![id, sess.email], |row| {
@@ -898,7 +911,7 @@ async fn update_shared_product(
 
             if let Ok(conn) = Connection::open(&state.transactions_db_path) {
                 let update_res = conn.execute(
-                    "UPDATE shared_products SET product_name = ?, variant_name = ?, price = ?, description = ?, category = ?, images = ?, variants = ?, status = ? WHERE id = ? AND email = ?",
+                    "UPDATE product SET product_name = ?, variant_name = ?, price = ?, description = ?, category = ?, images = ?, variants = ?, status = ? WHERE id = ? AND email = ?",
                     params![
                         payload.product_name,
                         payload.variant_name,
