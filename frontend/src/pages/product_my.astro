@@ -1,0 +1,334 @@
+---
+// product_my.astro - EasyMall Shared Product Details Page
+import PenggabungUtama from '../layouts/PenggabungUtama.astro';
+---
+
+<PenggabungUtama 
+    title="Detail Produk Saya - EasyMall" 
+    description="Detail produk dari storefront mall pribadi Anda."
+>
+    <style is:inline>
+        .product-page-layout {
+            display: flex;
+            gap: 3rem;
+        }
+        @media (max-width: 900px) {
+            .product-page-layout {
+                flex-direction: column !important;
+                gap: 2rem !important;
+            }
+            .product-checkout-col {
+                width: 100% !important;
+            }
+            .product-details-col {
+                width: 100% !important;
+            }
+        }
+        
+        .gallery-main {
+            width: 100%;
+            height: 350px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fafafa;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        
+        .gallery-main img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+
+        .gallery-thumbs {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+
+        .gallery-thumbs img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .gallery-thumbs img.active {
+            border-color: #6f42c1;
+            box-shadow: 0 0 0 2px rgba(111, 66, 193, 0.2);
+        }
+
+        .btn-wa-checkout {
+            width: 100%;
+            padding: 12px;
+            background: #25d366;
+            color: #ffffff !important;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 700;
+            text-align: center;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-wa-checkout:hover {
+            background-color: #20ba5a;
+        }
+    </style>
+
+    <main class="main-content">
+        <div class="product-page-container" style="max-width: 1200px; margin: 0 auto; padding: 2rem 2rem 4rem 2rem;">
+            <!-- Breadcrumbs -->
+            <div style="margin-bottom: 1.5rem;">
+                <a href="/mymall.html" style="color: var(--text-muted); font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none;">
+                    ← Kembali ke My Mall
+                </a>
+            </div>
+
+            <div class="product-page-layout">
+                <!-- Left Column: Image Gallery & Details -->
+                <div class="product-details-col" style="flex: 1.5; min-width: 0;">
+                    <div id="product-images-section">
+                        <div class="gallery-main">
+                            <img id="main-product-img" src="/gambar/logo/easymall-logo.png" alt="Product Image">
+                        </div>
+                        <div class="gallery-thumbs" id="product-thumbs-container"></div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <span id="product-category-badge" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #6f42c1; font-weight: 700; display: inline-block; margin-bottom: 0.5rem;">KATEGORI</span>
+                        <h1 id="product-name-title" style="font-size: 1.8rem; font-weight: 800; color: #212529; margin: 0 0 0.5rem 0;">Nama Produk</h1>
+                        
+                        <div style="display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+                            <span>⭐ 4.9 Rating</span>
+                            <span>•</span>
+                            <span>100+ Terjual</span>
+                            <span>•</span>
+                            <span style="color: #2b8a3e; font-weight: 600;">Stok Tersedia</span>
+                        </div>
+
+                        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; color: #212529;">Deskripsi Produk</h3>
+                        <p id="product-desc-text" style="color: #495057; font-size: 0.95rem; line-height: 1.6; white-space: pre-line;">Tidak ada deskripsi.</p>
+                    </div>
+                </div>
+
+                <!-- Right Column: Purchasing & Variants -->
+                <div class="product-checkout-col" style="flex: 1; min-width: 320px;">
+                    <div style="background: #fafafa; border: 1px solid var(--border-color); border-radius: 8px; padding: 1.5rem; position: sticky; top: 90px; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+                        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; color: #212529;">Beli Produk</h3>
+                        
+                        <!-- Price section -->
+                        <div style="background: #ffffff; border: 1px solid var(--border-color); padding: 1rem; border-radius: 6px; margin-bottom: 1.25rem;">
+                            <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 2px;">Harga</span>
+                            <span id="product-price-display" style="font-size: 1.6rem; font-weight: 800; color: #e03131;">Rp 0</span>
+                        </div>
+
+                        <!-- Variant Select -->
+                        <div id="variants-section" style="margin-bottom: 1.5rem; display: none;">
+                            <label for="variant-select-dropdown" style="display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.88rem; color: #495057;">Pilih Variasi</label>
+                            <select id="variant-select-dropdown" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.95rem; outline: none; background: #ffffff;"></select>
+                        </div>
+
+                        <!-- Buy Action Button -->
+                        <button type="button" class="btn-wa-checkout" id="btn-buy-whatsapp">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.69-4.98c-.202-.1-1.194-.59-1.371-.653-.177-.064-.307-.1-.438.1-.13.19-.5.59-.613.72-.113.13-.226.145-.428.045-.2-.1-.843-.311-1.607-.994-.593-.53-1.002-1.185-1.119-1.383-.117-.2-.012-.308.089-.408.09-.09.201-.235.302-.353.1-.117.135-.2.203-.333.068-.133.034-.25-.017-.35-.05-.1-.438-1.053-.6-1.448-.158-.38-.323-.33-.438-.337-.113-.007-.243-.007-.373-.007-.13 0-.34.05-.518.25-.178.2-0.678.663-.678 1.617s.697 1.9 0.793 2.029c.1.127 1.37 2.094 3.32 2.937.464.2 0.826.32 1.11.41.467.148.89.128 1.223.078.372-.056 1.194-.487 1.362-.958.169-.47.169-.873.118-.957-.05-.085-.184-.132-.387-.233z"/>
+                            </svg>
+                            Hubungi via WhatsApp
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script is:inline>
+        const API_BASE_URL = 'http://localhost:5002';
+        let merchantPhone = '';
+        let currentProduct = null;
+
+        const categoryMap = {
+            'digital': '🚀 Produk Digital & Lisensi',
+            'jasa': '🛠️ Jasa & Freelancing',
+            'layanan': '☁️ Layanan Online / VPS',
+            'voucher': '🎮 Voucher Game & Top Up',
+            'ebook': '📚 E-Book & Kursus',
+            'lainnya': '📦 Lainnya'
+        };
+
+        // Extract ID from URL
+        function getProductId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id');
+        }
+
+        async function initProductMyPage() {
+            const id = getProductId();
+            if (!id) {
+                renderError("Parameter ID produk tidak ditemukan.");
+                return;
+            }
+
+            try {
+                // Fetch product details
+                const res = await fetch(`${API_BASE_URL}/api/user/products/${id}`, { credentials: 'include' });
+                if (!res.ok) {
+                    if (res.status === 401) {
+                        window.location.href = '/login.html';
+                        return;
+                    }
+                    throw new Error("Gagal mengambil detail produk");
+                }
+
+                const data = await res.json();
+                if (!data.success || !data.product) {
+                    renderError(data.error || "Produk tidak ditemukan.");
+                    return;
+                }
+
+                currentProduct = data.product;
+
+                // Fetch merchant phone number
+                try {
+                    const settingsRes = await fetch(`${API_BASE_URL}/api/user/settings`, { credentials: 'include' });
+                    if (settingsRes.ok) {
+                        const settingsData = await settingsRes.json();
+                        if (settingsData.success && settingsData.phone) {
+                            merchantPhone = settingsData.phone;
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error loading settings phone:", e);
+                }
+
+                renderProductDetails();
+            } catch (err) {
+                console.error(err);
+                renderError("Terjadi kesalahan saat memuat halaman produk.");
+            }
+        }
+
+        function renderError(msg) {
+            document.querySelector('.product-page-layout').innerHTML = `
+                <div style="width: 100%; text-align: center; padding: 4rem; color: #e03131; font-weight: 600;">
+                    ❌ ${msg}
+                </div>
+            `;
+        }
+
+        function formatRupiah(num) {
+            return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0 }).format(num);
+        }
+
+        function renderProductDetails() {
+            const p = currentProduct;
+            
+            // Text values
+            document.getElementById('product-name-title').textContent = p.product_name;
+            document.getElementById('product-category-badge').textContent = categoryMap[p.category] || categoryMap['lainnya'];
+            document.getElementById('product-desc-text').textContent = p.description || 'Tidak ada deskripsi.';
+            
+            // Base price display
+            const basePrice = p.price;
+            document.getElementById('product-price-display').textContent = `Rp ${formatRupiah(basePrice)}`;
+
+            // Main image
+            const mainImgElement = document.getElementById('main-product-img');
+            const mainImage = (p.images && p.images.length > 0) ? p.images[0] : '/gambar/logo/easymall-logo.png';
+            mainImgElement.src = mainImage;
+            mainImgElement.onerror = () => { mainImgElement.src = '/gambar/logo/easymall-logo.png'; };
+
+            // Thumbs gallery
+            const thumbsContainer = document.getElementById('product-thumbs-container');
+            thumbsContainer.innerHTML = '';
+            if (p.images && p.images.length > 0) {
+                p.images.forEach((imgUrl, idx) => {
+                    const img = document.createElement('img');
+                    img.src = imgUrl;
+                    if (idx === 0) img.className = 'active';
+                    img.onerror = () => { img.style.display = 'none'; };
+                    img.onclick = () => {
+                        document.querySelectorAll('.gallery-thumbs img').forEach(el => el.classList.remove('active'));
+                        img.classList.add('active');
+                        mainImgElement.src = imgUrl;
+                    };
+                    thumbsContainer.appendChild(img);
+                });
+            }
+
+            // Variants Setup
+            const selectDropdown = document.getElementById('variant-select-dropdown');
+            const variantsSection = document.getElementById('variants-section');
+            if (p.variants && p.variants.length > 0) {
+                variantsSection.style.display = 'block';
+                selectDropdown.innerHTML = '';
+                
+                // Add default main option
+                const defaultOption = document.createElement('option');
+                defaultOption.value = 'default';
+                defaultOption.dataset.price = p.price;
+                defaultOption.textContent = `${p.variant_name || 'Standar'} - Rp ${formatRupiah(p.price)}`;
+                selectDropdown.appendChild(defaultOption);
+
+                p.variants.forEach(v => {
+                    const opt = document.createElement('option');
+                    opt.value = v.name;
+                    opt.dataset.price = v.price;
+                    opt.textContent = `${v.name} - Rp ${formatRupiah(v.price)}`;
+                    selectDropdown.appendChild(opt);
+                });
+
+                selectDropdown.onchange = () => {
+                    const selected = selectDropdown.options[selectDropdown.selectedIndex];
+                    const price = selected.dataset.price;
+                    document.getElementById('product-price-display').textContent = `Rp ${formatRupiah(price)}`;
+                };
+            } else {
+                variantsSection.style.display = 'none';
+            }
+
+            // WhatsApp Button Action
+            document.getElementById('btn-buy-whatsapp').onclick = () => {
+                if (!merchantPhone) {
+                    alert('Nomor WhatsApp merchant belum diatur atau tidak ditemukan.');
+                    return;
+                }
+                
+                let selectedName = p.product_name;
+                let selectedPrice = p.price;
+                
+                if (p.variants && p.variants.length > 0) {
+                    const selected = selectDropdown.options[selectDropdown.selectedIndex];
+                    if (selected && selected.value !== 'default') {
+                        selectedName = `${p.product_name} (${selected.value})`;
+                        selectedPrice = selected.dataset.price;
+                    }
+                }
+
+                let formattedPhone = merchantPhone.replace(/[^0-9]/g, '');
+                if (formattedPhone.startsWith('0')) {
+                    formattedPhone = '62' + formattedPhone.slice(1);
+                }
+
+                const text = encodeURIComponent(`Halo, saya tertarik untuk membeli produk "${selectedName}" seharga Rp${formatRupiah(selectedPrice)} dari EasyMall Storefront Anda.`);
+                window.open(`https://wa.me/${formattedPhone}?text=${text}`, '_blank');
+            };
+        }
+
+        document.addEventListener('DOMContentLoaded', initProductMyPage);
+    </script>
+</PenggabungUtama>

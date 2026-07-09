@@ -713,37 +713,15 @@ import BottomNav from '../components/BottomNav.astro';
                     statusBadge = `<span class="product-item-badge" style="background:#d1e7dd; color:#0f5132; border: 1px solid #badbcc;">Publish</span>`;
                 }
 
-                // Images gallery list
-                let galleryHtml = '';
-                if (p.images && p.images.length > 1) {
-                    galleryHtml = `
-                        <div class="card-gallery" style="margin-top: 8px;">
-                            ${p.images.map(url => `<img src="${url}" onclick="event.stopPropagation(); openLightbox('${url}')" style="cursor: zoom-in; width: 45px; height: 45px; object-fit: cover; border-radius: 4px; border: 1px solid #dee2e6;" onerror="this.src='https://placehold.co/100x100?text=Foto'">`).join('')}
-                        </div>
-                    `;
-                }
-
-                // Variants list
-                let variantsHtml = '';
+                // Add to variants count for stats calculation (without rendering)
                 if (p.variants && p.variants.length > 0) {
                     totalVariants += p.variants.length;
-                    variantsHtml = `
-                        <div style="margin-top: 8px; font-size: 0.75rem; background: #f8f9fa; border-radius: 4px; padding: 6px; border: 1px solid #e9ecef;">
-                            <strong style="display:block; margin-bottom: 2px; font-size:0.7rem; color:#495057;">Variasi:</strong>
-                            <ul style="list-style: none; padding-left: 0; display:flex; flex-direction:column; gap:2px;">
-                                ${p.variants.map(v => {
-                                    const vPrice = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0 }).format(v.price);
-                                    return `<li style="display:flex; justify-content:space-between; color:#495057;"><span>• ${v.name}</span><span style="font-weight:600; color:#198754;">Rp${vPrice}</span></li>`;
-                                }).join('')}
-                            </ul>
-                        </div>
-                    `;
                 }
 
                 const mainImage = (p.images && p.images.length > 0) ? p.images[0] : '/gambar/logo/easymall-logo.png';
 
                 return `
-                    <div class="card product-card">
+                    <div class="card product-card" onclick="window.location.href='/product_my.html?id=${p.id}'" style="cursor: pointer;">
                         <div class="card-image-wrapper">
                             <img src="${mainImage}" alt="${p.product_name}" style="max-height: 90px; max-width: 90%; object-fit: contain;" onerror="this.src='/gambar/logo/easymall-logo.png'">
                             ${statusBadge}
@@ -763,9 +741,6 @@ import BottomNav from '../components/BottomNav.astro';
                                 <span class="sold-count">100+ terjual</span>
                             </div>
 
-                            ${galleryHtml}
-                            ${variantsHtml}
-
                             <div class="product-footer">
                                 <div class="price-container">
                                     <span class="price-label">Mulai dari</span>
@@ -775,7 +750,7 @@ import BottomNav from '../components/BottomNav.astro';
                                     </div>
                                 </div>
                                 <div style="display: flex; gap: 4px; align-items: center;">
-                                    <button type="button" class="btn btn-buy" onclick="buyProduct(this)" data-name="${p.product_name.replace(/"/g, '&quot;')}" data-price="${p.price}" style="font-size: 0.7rem; padding: 0.25rem 0.5rem; border-radius: 4px; background: #6f42c1; border-color: #6f42c1; color: white;">Beli</button>
+                                    <button type="button" class="btn btn-buy" onclick="event.stopPropagation(); buyProduct(this)" data-name="${p.product_name.replace(/"/g, '&quot;')}" data-price="${p.price}" style="font-size: 0.7rem; padding: 0.25rem 0.5rem; border-radius: 4px; background: #6f42c1; border-color: #6f42c1; color: white;">Beli</button>
                                 </div>
                             </div>
                         </div>
