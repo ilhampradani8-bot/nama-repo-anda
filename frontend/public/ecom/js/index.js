@@ -611,7 +611,7 @@ function renderProducts(categorySlug = 'all', searchQuery = '') {
                 </div>
             `;
         } else {
-            const iconEmoji = `<img src="gambar/logoeasyfast.webp" alt="${p.name}" style="height: 70px; width: auto; object-fit: contain;">`;
+            const iconEmoji = `<img src="gambar/logo/easymall-logo.png" alt="${p.name}" style="height: 70px; width: auto; object-fit: contain;">`;
             card.className = 'card product-card';
             card.innerHTML = `
                 <div class="card-image-wrapper" style="height: 110px;">
