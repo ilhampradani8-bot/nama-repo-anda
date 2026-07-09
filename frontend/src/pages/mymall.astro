@@ -200,55 +200,154 @@ import BottomNav from '../components/BottomNav.astro';
         /* Products Grid */
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 1.25rem;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1rem;
         }
 
-        .product-item {
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1.25rem;
+        @media (max-width: 600px) {
+            .product-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 0.5rem !important;
+            }
+            .card-image-wrapper {
+                height: 85px !important;
+            }
+            .card-body {
+                padding: 0.75rem !important;
+            }
+            .card-title {
+                font-size: 0.85rem !important;
+                margin-bottom: 4px !important;
+            }
+            .card-desc {
+                font-size: 0.75rem !important;
+                margin-bottom: 8px !important;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+        }
+
+        .card {
             background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-            transition: all 0.25s ease;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease;
             position: relative;
         }
 
-        .product-item:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.06);
-            border-color: #bfa6ff;
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+            border-color: #bbbbbb;
         }
 
-        .product-item-badge {
-            font-size: 0.75rem;
-            font-weight: 700;
-            padding: 3px 8px;
-            border-radius: 4px;
+        .card-image-wrapper {
+            background: #f8f9fa;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.2s ease;
+        }
+
+        .card:hover .card-image-wrapper {
+            background-color: #f1f3f5;
+        }
+
+        .card-body {
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .product-category {
+            font-size: 0.68rem;
             text-transform: uppercase;
+            color: #6c757d;
+            font-weight: 700;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
         }
 
-        .product-item-title {
-            font-size: 1.15rem;
-            font-weight: 700;
+        .card-title {
+            font-size: 0.85rem;
+            font-weight: 600;
             color: #212529;
-            margin-top: 4px;
+            margin-bottom: 6px;
             line-height: 1.3;
         }
 
-        .product-item-price {
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: #198754;
+        .card-desc {
+            font-size: 0.75rem;
+            color: #6c757d;
+            margin-bottom: 12px;
+            line-height: 1.4;
+            flex-grow: 1;
         }
 
-        .product-item-meta {
-            font-size: 0.88rem;
+        .product-rating {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.72rem;
+            margin-bottom: 12px;
+        }
+
+        .stars {
+            color: #fadb14;
+        }
+
+        .sold-count {
             color: #6c757d;
-            line-height: 1.4;
+            border-left: 1px solid var(--border-color);
+            padding-left: 6px;
+        }
+
+        .product-footer {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin-top: auto;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 10px;
+        }
+
+        .price-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .price-label {
+            font-size: 0.65rem;
+            color: #6c757d;
+        }
+
+        .price-value {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #e03131;
+        }
+
+        .product-item-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: 0.2px;
+            z-index: 2;
         }
 
         .card-gallery {
@@ -439,6 +538,7 @@ import BottomNav from '../components/BottomNav.astro';
 
     <script is:inline>
         const API_BASE_URL = 'http://localhost:5002'; // Fallback to local dev API
+        let merchantPhone = '';
 
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
@@ -482,6 +582,19 @@ import BottomNav from '../components/BottomNav.astro';
                     document.getElementById('member-since-badge').innerHTML = `📅 Bergabung: ${formattedDate}`;
                 } else {
                     document.getElementById('member-since-badge').innerHTML = `📅 Bergabung: Baru-baru ini`;
+                }
+
+                // Fetch settings to get phone number
+                try {
+                    const settingsRes = await fetch(`${API_BASE_URL}/api/user/settings`, { credentials: 'include' });
+                    if (settingsRes.ok) {
+                        const settingsData = await settingsRes.json();
+                        if (settingsData.success && settingsData.phone) {
+                            merchantPhone = settingsData.phone;
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error loading settings phone:", e);
                 }
 
                 // 1.1 Fetch user store details from real-time database
@@ -547,6 +660,22 @@ import BottomNav from '../components/BottomNav.astro';
             'lainnya': '📦 Lainnya'
         };
 
+        window.buyProduct = function(btn) {
+            event.stopPropagation();
+            const name = btn.getAttribute('data-name');
+            const price = btn.getAttribute('data-price');
+            if (!merchantPhone) {
+                alert(`Silakan hubungi merchant untuk membeli "${name}".`);
+                return;
+            }
+            let formattedPhone = merchantPhone.replace(/[^0-9]/g, '');
+            if (formattedPhone.startsWith('0')) {
+                formattedPhone = '62' + formattedPhone.slice(1);
+            }
+            const text = encodeURIComponent(`Halo, saya tertarik untuk membeli produk "${name}" seharga Rp${price} dari EasyMall Storefront Anda.`);
+            window.open(`https://wa.me/${formattedPhone}?text=${text}`, '_blank');
+        };
+
         function renderMallProducts(products) {
             const container = document.getElementById('mall-products-container');
             if (products.length === 0) {
@@ -564,7 +693,8 @@ import BottomNav from '../components/BottomNav.astro';
             const uniqueCategories = new Set();
             
             container.innerHTML = products.map(p => {
-                const formattedPrice = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(p.price);
+                const formattedPrice = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0 }).format(p.price);
+                const originalPrice = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0 }).format(Math.round(p.price * 1.15));
                 const categoryText = categoryMap[p.category] || categoryMap['lainnya'];
                 
                 uniqueCategories.add(p.category);
@@ -585,10 +715,10 @@ import BottomNav from '../components/BottomNav.astro';
 
                 // Images gallery list
                 let galleryHtml = '';
-                if (p.images && p.images.length > 0) {
+                if (p.images && p.images.length > 1) {
                     galleryHtml = `
-                        <div class="card-gallery">
-                            ${p.images.map(url => `<img src="${url}" onclick="openLightbox('${url}')" style="cursor: zoom-in;" onerror="this.src='https://placehold.co/100x100?text=Foto'">`).join('')}
+                        <div class="card-gallery" style="margin-top: 8px;">
+                            ${p.images.map(url => `<img src="${url}" onclick="event.stopPropagation(); openLightbox('${url}')" style="cursor: zoom-in; width: 45px; height: 45px; object-fit: cover; border-radius: 4px; border: 1px solid #dee2e6;" onerror="this.src='https://placehold.co/100x100?text=Foto'">`).join('')}
                         </div>
                     `;
                 }
@@ -598,32 +728,57 @@ import BottomNav from '../components/BottomNav.astro';
                 if (p.variants && p.variants.length > 0) {
                     totalVariants += p.variants.length;
                     variantsHtml = `
-                        <div style="margin-top: 5px; font-size: 0.85rem; background: #f8f9fa; border-radius: 6px; padding: 8px; border: 1px solid #e9ecef;">
-                            <strong style="display:block; margin-bottom: 4px; font-size:0.8rem; color:#495057;">Variasi Harga:</strong>
-                            <ul style="list-style: none; padding-left: 0; display:flex; flex-direction:column; gap:4px;">
+                        <div style="margin-top: 8px; font-size: 0.75rem; background: #f8f9fa; border-radius: 4px; padding: 6px; border: 1px solid #e9ecef;">
+                            <strong style="display:block; margin-bottom: 2px; font-size:0.7rem; color:#495057;">Variasi:</strong>
+                            <ul style="list-style: none; padding-left: 0; display:flex; flex-direction:column; gap:2px;">
                                 ${p.variants.map(v => {
-                                    const vPrice = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v.price);
-                                    return `<li style="display:flex; justify-content:space-between; color:#495057;"><span>• ${v.name}</span><span style="font-weight:600; color:#198754;">${vPrice}</span></li>`;
+                                    const vPrice = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0 }).format(v.price);
+                                    return `<li style="display:flex; justify-content:space-between; color:#495057;"><span>• ${v.name}</span><span style="font-weight:600; color:#198754;">Rp${vPrice}</span></li>`;
                                 }).join('')}
                             </ul>
                         </div>
                     `;
                 }
 
+                const mainImage = (p.images && p.images.length > 0) ? p.images[0] : '/gambar/logo/easymall-logo.png';
+
                 return `
-                    <div class="product-item">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span class="product-item-badge" style="background:#f1f3f5; color:#495057; border: 1px solid #dee2e6;">${categoryText}</span>
+                    <div class="card product-card">
+                        <div class="card-image-wrapper">
+                            <img src="${mainImage}" alt="${p.product_name}" style="max-height: 90px; max-width: 90%; object-fit: contain;" onerror="this.src='/gambar/logo/easymall-logo.png'">
                             ${statusBadge}
                         </div>
-                        <div class="product-item-title">${p.product_name}</div>
-                        <div class="product-item-price">Mulai ${formattedPrice}</div>
-                        
-                        ${galleryHtml}
-                        
-                        <div class="product-item-meta" style="flex-grow:1; margin-top: 5px; min-height: 40px;">${p.description || 'Tidak ada deskripsi.'}</div>
-                        
-                        ${variantsHtml}
+                        <div class="card-body">
+                            <span class="product-category">${categoryText}</span>
+                            <h3 class="card-title">${p.product_name}</h3>
+                            <p class="card-desc">${p.description || 'Tidak ada deskripsi.'}</p>
+                            
+                            <div class="product-rating">
+                                <span class="stars" style="color: #ff9f43; display: flex; align-items: center; gap: 2px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                                    </svg>
+                                    4.9
+                                </span>
+                                <span class="sold-count">100+ terjual</span>
+                            </div>
+
+                            ${galleryHtml}
+                            ${variantsHtml}
+
+                            <div class="product-footer">
+                                <div class="price-container">
+                                    <span class="price-label">Mulai dari</span>
+                                    <div class="price-row" style="display: flex; align-items: center; flex-wrap: wrap; gap: 2px;">
+                                        <span class="price-value" style="font-size: 0.9rem; color: #e03131; font-weight: 700;">Rp${formattedPrice}</span>
+                                        <span style="text-decoration: line-through; color: #6c757d; font-size: 0.68rem; margin-left: 4px;">Rp${originalPrice}</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 4px; align-items: center;">
+                                    <button type="button" class="btn btn-buy" onclick="buyProduct(this)" data-name="${p.product_name.replace(/"/g, '&quot;')}" data-price="${p.price}" style="font-size: 0.7rem; padding: 0.25rem 0.5rem; border-radius: 4px; background: #6f42c1; border-color: #6f42c1; color: white;">Beli</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 `;
             }).join('');
