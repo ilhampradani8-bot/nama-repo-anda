@@ -1,0 +1,541 @@
+---
+// dashboard_notifikasi.astro
+import UserNavbar from '../components/dashboard/UserNavbar.astro';
+import UserSidebar from '../components/dashboard/UserSidebar.astro';
+import BottomNav from '../components/BottomNav.astro';
+---
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifikasi Saya | EasyMall</title>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --border-color: #dee2e6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1140px;
+            width: 100%;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+            flex-grow: 1;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 1.5rem;
+        }
+
+        .sidebar-col {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: #ffffff;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .card-header {
+            background: #f8f9fa;
+            padding: 1rem 1.25rem;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #212529;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-body {
+            padding: 1.25rem;
+        }
+
+        /* Filter Tabs */
+        .tabs-header {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 2px solid #dee2e6;
+            margin-bottom: 1.5rem;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #6c757d;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tab-btn:hover {
+            color: #0d6efd;
+            background: rgba(13, 110, 253, 0.05);
+        }
+
+        .tab-btn.active {
+            color: #0d6efd;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background-color: #0d6efd;
+            border-radius: 3px;
+        }
+
+        .badge-count {
+            background: #e9ecef;
+            color: #495057;
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        .tab-btn.active .badge-count {
+            background: #e7f1ff;
+            color: #0d6efd;
+        }
+
+        /* Notification List */
+        .notif-list-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .notif-card-item {
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1.25rem;
+            display: flex;
+            gap: 16px;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .notif-card-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-color: #ced4da;
+        }
+
+        .notif-card-item.unread {
+            background: #fdfefe;
+            border-left: 4px solid #0d6efd;
+        }
+
+        .notif-icon-box {
+            font-size: 1.5rem;
+            width: 48px;
+            height: 48px;
+            background: #f8f9fa;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: #495057;
+            border: 1px solid #dee2e6;
+        }
+
+        .notif-card-item.unread .notif-icon-box {
+            background: #e7f1ff;
+            color: #0d6efd;
+            border-color: #b8daff;
+        }
+
+        .notif-details {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex-grow: 1;
+        }
+
+        .notif-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .notif-title {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #212529;
+        }
+
+        .notif-time {
+            font-size: 0.78rem;
+            color: #8c98a5;
+            white-space: nowrap;
+        }
+
+        .notif-message {
+            font-size: 0.9rem;
+            color: #495057;
+            line-height: 1.4;
+        }
+
+        .notif-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 8px;
+            border-top: 1px dashed #f1f3f5;
+            padding-top: 8px;
+        }
+
+        .btn-action-link {
+            background: none;
+            border: none;
+            color: #0d6efd;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0;
+            transition: color 0.15s;
+        }
+
+        .btn-action-link:hover {
+            color: #0a58ca;
+            text-decoration: underline;
+        }
+
+        .btn-action-link.delete-btn {
+            color: #dc3545;
+        }
+
+        .btn-action-link.delete-btn:hover {
+            color: #a71d2a;
+        }
+
+        .no-data {
+            padding: 3rem;
+            text-align: center;
+            color: #6c757d;
+        }
+
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem 1rem;
+            color: #0d6efd;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid rgba(13, 110, 253, 0.1);
+            border-top-color: #0d6efd;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .btn-primary-sm {
+            background: #0d6efd;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary-sm:hover {
+            background: #0b5ed7;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive Layout */
+        @media (max-width: 768px) {
+            body {
+                padding-bottom: 74px !important;
+            }
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar-col {
+                display: none !important;
+            }
+            .notif-title-row {
+                flex-direction: column;
+                gap: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- User Navbar Component -->
+    <UserNavbar />
+
+    <!-- Container Layout -->
+    <div class="container">
+        <!-- Sidebar Column -->
+        <div class="sidebar-col">
+            <UserSidebar activeTab="notifikasi" />
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="content-area">
+            <div class="card">
+                <div class="card-header">
+                    <span>🔔 Notifikasi Saya</span>
+                    <button class="btn-primary-sm" id="btnMarkAllReadPage" style="display: none;">Tandai Semua Dibaca</button>
+                </div>
+                <div class="card-body">
+                    <!-- Tabs -->
+                    <div class="tabs-header">
+                        <button class="tab-btn active" id="tabAll" onclick="changeTab('all')">
+                            Semua
+                            <span class="badge-count" id="countAll">0</span>
+                        </button>
+                        <button class="tab-btn" id="tabUnread" onclick="changeTab('unread')">
+                            Belum Dibaca
+                            <span class="badge-count" id="countUnread" style="background: #dc3545; color: white;">0</span>
+                        </button>
+                        <button class="tab-btn" id="tabRead" onclick="changeTab('read')">
+                            Sudah Dibaca
+                            <span class="badge-count" id="countRead">0</span>
+                        </button>
+                    </div>
+
+                    <!-- Notification List -->
+                    <div id="notificationsListContainer">
+                        <div class="loading-spinner">
+                            <div class="spinner"></div>
+                            Memuat notifikasi...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation for Mobile -->
+    <BottomNav />
+
+    <script is:inline>
+        let API_BASE_URL = '';
+        if (window.location.port !== '5002' && window.location.protocol !== 'file:') {
+            API_BASE_URL = 'https://api.ilhampradani.me';
+        }
+
+        let allNotifications = [];
+        let activeFilter = 'all';
+
+        async function fetchNotificationsPageData() {
+            try {
+                // 1. Check user login status
+                const authRes = await fetch(`${API_BASE_URL}/api/auth/status`, { credentials: 'include' });
+                if (!authRes.ok) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+                const authData = await authRes.json();
+                if (!authData.logged_in) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                // 2. Fetch Notifications list
+                const res = await fetch(`${API_BASE_URL}/api/notifications`, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    allNotifications = data.notifications || [];
+                    updateTabsCount();
+                    renderFilteredNotifications();
+                } else {
+                    showError();
+                }
+            } catch (err) {
+                console.error(err);
+                showError();
+            }
+        }
+
+        function updateTabsCount() {
+            const total = allNotifications.length;
+            const unread = allNotifications.filter(n => n.is_read === 0).length;
+            const read = total - unread;
+
+            document.getElementById('countAll').textContent = total;
+            document.getElementById('countUnread').textContent = unread;
+            document.getElementById('countRead').textContent = read;
+
+            const markAllBtn = document.getElementById('btnMarkAllReadPage');
+            if (markAllBtn) {
+                markAllBtn.style.display = unread > 0 ? 'inline-block' : 'none';
+            }
+        }
+
+        function renderFilteredNotifications() {
+            const container = document.getElementById('notificationsListContainer');
+            if (!container) return;
+
+            let filtered = [];
+            if (activeFilter === 'all') {
+                filtered = allNotifications;
+            } else if (activeFilter === 'unread') {
+                filtered = allNotifications.filter(n => n.is_read === 0);
+            } else if (activeFilter === 'read') {
+                filtered = allNotifications.filter(n => n.is_read === 1);
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="no-data">Tidak ada notifikasi dalam filter ini.</div>`;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="notif-list-wrapper">
+                    ${filtered.map(n => {
+                        const isUnread = n.is_read === 0 ? 'unread' : '';
+                        let icon = '🔔';
+                        if (n.type === 'order') icon = '📦';
+                        else if (n.type === 'success') icon = '✅';
+
+                        const readActionBtn = n.is_read === 0 
+                            ? `<button class="btn-action-link" onclick="markPageNotifRead(${n.id})">Tandai Dibaca</button>`
+                            : '';
+
+                        return `
+                            <div class="notif-card-item ${isUnread}">
+                                <div class="notif-icon-box">${icon}</div>
+                                <div class="notif-details">
+                                    <div class="notif-title-row">
+                                        <span class="notif-title">${n.title}</span>
+                                        <span class="notif-time">${n.created_at}</span>
+                                    </div>
+                                    <p class="notif-message">${n.message}</p>
+                                    <div class="notif-actions">
+                                        ${readActionBtn}
+                                        ${n.type === 'order' ? `<button class="btn-action-link" onclick="window.location.href='/dashboard_pesanan.html'">Lihat Pesanan</button>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        window.changeTab = function(tabName) {
+            activeFilter = tabName;
+            
+            // Toggle active classes
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            if (tabName === 'all') document.getElementById('tabAll').classList.add('active');
+            else if (tabName === 'unread') document.getElementById('tabUnread').classList.add('active');
+            else if (tabName === 'read') document.getElementById('tabRead').classList.add('active');
+
+            renderFilteredNotifications();
+        };
+
+        window.markPageNotifRead = async function(id) {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/notifications/read/${id}`, { 
+                    method: 'POST', 
+                    credentials: 'include' 
+                });
+                if (res.ok) {
+                    // Update local state
+                    const notif = allNotifications.find(n => n.id === id);
+                    if (notif) notif.is_read = 1;
+                    
+                    updateTabsCount();
+                    renderFilteredNotifications();
+                    
+                    // Also refresh navbar unread count if badge exists
+                    if (window.fetchNotifCount) {
+                        window.fetchNotifCount();
+                    }
+                }
+            } catch (e){}
+        };
+
+        function showError() {
+            const container = document.getElementById('notificationsListContainer');
+            if (container) {
+                container.innerHTML = `<div class="no-data">Gagal memuat data notifikasi. Silakan coba lagi.</div>`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const markAllBtn = document.getElementById('btnMarkAllReadPage');
+            if (markAllBtn) {
+                markAllBtn.addEventListener('click', async () => {
+                    try {
+                        const res = await fetch(`${API_BASE_URL}/api/notifications/read`, { 
+                            method: 'POST', 
+                            credentials: 'include' 
+                        });
+                        if (res.ok) {
+                            allNotifications.forEach(n => n.is_read = 1);
+                            updateTabsCount();
+                            renderFilteredNotifications();
+                            if (window.fetchNotifCount) {
+                                window.fetchNotifCount();
+                            }
+                        }
+                    } catch (e){}
+                });
+            }
+
+            fetchNotificationsPageData();
+        });
+    </script>
+</body>
+</html>

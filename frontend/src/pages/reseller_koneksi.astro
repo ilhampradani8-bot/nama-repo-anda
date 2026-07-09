@@ -467,7 +467,7 @@ print(response.json())`}</code></pre>
                 document.getElementById('avatar-initial').textContent = authData.name.charAt(0).toUpperCase();
 
                 // Fetch real reseller key from dashboard data
-                const dataRes = await fetch(`${API_BASE_URL}/api/dashboard/data`, { credentials: 'include' });
+                const dataRes = await fetch(`${API_BASE_URL}/api/dashboard/data?scope=admin`, { credentials: 'include' });
                 if (dataRes.ok) {
                     const data = await dataRes.json();
                     if (data.success && data.resellers && data.resellers.length > 0) {

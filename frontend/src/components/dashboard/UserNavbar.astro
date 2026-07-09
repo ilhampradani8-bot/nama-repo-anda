@@ -17,6 +17,28 @@ import UserProfileCard from './UserProfileCard.astro';
                 <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
             </svg>
         </a>
+        <!-- Notification Dropdown Container -->
+        <div class="notif-dropdown-container">
+            <button class="btn-link btn-notif-toggle" id="btnNotifToggle" title="Notifikasi" aria-label="Toggle Menu Notifikasi" style="position: relative; background: none; border: none; cursor: pointer; padding: 0; outline: none; height: 100%; display: flex; align-items: center;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <span class="badge-notif" id="badgeNotifCount" style="display: none; position: absolute; top: 12px; right: -6px; background: #dc3545; color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 0.65rem; font-weight: bold; align-items: center; justify-content: center; box-shadow: 0 0 0 2px #e2ffff;">0</span>
+            </button>
+            <div class="notif-dropdown-menu" id="notifDropdownMenu">
+                <div class="notif-header">
+                    <span>Notifikasi Baru</span>
+                    <button id="btnMarkAllRead" style="background: none; border: none; color: #0d6efd; font-size: 0.75rem; font-weight: bold; cursor: pointer; padding: 0;">Tandai Semua Dibaca</button>
+                </div>
+                <div class="notif-list" id="notifNavbarList">
+                    <div style="text-align: center; color: #6c757d; font-size: 0.8rem; padding: 1.5rem 0;">Memuat notifikasi...</div>
+                </div>
+                <div class="notif-footer">
+                    <a href="/dashboard_notifikasi.html" style="color: #0d6efd; text-decoration: none; font-size: 0.8rem; font-weight: bold;">Lihat Semua</a>
+                </div>
+            </div>
+        </div>
         <a href="/mymall.html" class="btn-mymall" title="Kunjungi My Mall Anda">
             <svg class="castle-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 19V8H18V5H15V8H9V5H6V8H3V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19Z"></path>
@@ -306,6 +328,132 @@ import UserProfileCard from './UserProfileCard.astro';
         background: #bb2d3b;
         border-color: #b02a37;
     }
+
+    /* Notification Dropdown Styling */
+    .notif-dropdown-container {
+        position: relative;
+        display: inline-block;
+        height: 100%;
+        display: flex;
+        align-items: center;
+    }
+    .btn-notif-toggle {
+        color: #495057;
+        transition: color 0.15s ease, transform 0.15s ease;
+    }
+    .btn-notif-toggle:hover {
+        color: #0d6efd;
+        transform: scale(1.1);
+    }
+    .badge-notif {
+        display: flex;
+        box-shadow: 0 0 0 2px #e2ffff;
+    }
+    .notif-dropdown-menu {
+        position: absolute;
+        top: 60px;
+        right: 0;
+        width: 320px;
+        background: #ffffff;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        display: none;
+        flex-direction: column;
+        z-index: 1000;
+        overflow: hidden;
+        animation: dropdown-fade-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .notif-dropdown-menu.active {
+        display: flex;
+    }
+    .notif-header {
+        padding: 0.75rem 1rem;
+        background: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #212529;
+    }
+    .notif-list {
+        max-height: 280px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+    }
+    .notif-item {
+        display: flex;
+        gap: 10px;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #f1f3f5;
+        cursor: pointer;
+        transition: background 0.15s ease;
+        position: relative;
+        text-align: left;
+    }
+    .notif-item:hover {
+        background: #f8f9fa;
+    }
+    .notif-item.unread::before {
+        content: '';
+        position: absolute;
+        left: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 6px;
+        height: 6px;
+        background-color: #0d6efd;
+        border-radius: 50%;
+    }
+    .notif-item-icon {
+        font-size: 1.25rem;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        background: #e7f1ff;
+        border-radius: 50%;
+        color: #0d6efd;
+    }
+    .notif-item-content {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+    }
+    .notif-item-title {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #212529;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .notif-item-desc {
+        font-size: 0.75rem;
+        color: #6c757d;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.3;
+    }
+    .notif-item-time {
+        font-size: 0.65rem;
+        color: #adb5bd;
+        margin-top: 2px;
+    }
+    .notif-footer {
+        padding: 0.75rem 1rem;
+        background: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+        text-align: center;
+    }
 </style>
 
 <script is:inline>
@@ -376,11 +524,132 @@ import UserProfileCard from './UserProfileCard.astro';
             });
         }
 
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initProfileDropdown);
-        } else {
-            initProfileDropdown();
+        // 4. Notification Toggle & Loading logic
+        async function fetchNotifCount() {
+            try {
+                let API_BASE_URL = '';
+                if (window.location.port !== '5002' && window.location.protocol !== 'file:') {
+                    API_BASE_URL = 'https://api.ilhampradani.me';
+                }
+                const res = await fetch(`${API_BASE_URL}/api/notifications/unread-count`, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    const badge = document.getElementById('badgeNotifCount');
+                    if (badge) {
+                        if (data.unread_count > 0) {
+                            badge.textContent = data.unread_count;
+                            badge.style.display = 'flex';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+                }
+            } catch(e){}
         }
-        document.addEventListener('astro:page-load', initProfileDropdown);
+
+        async function fetchNotifList() {
+            try {
+                let API_BASE_URL = '';
+                if (window.location.port !== '5002' && window.location.protocol !== 'file:') {
+                    API_BASE_URL = 'https://api.ilhampradani.me';
+                }
+                const res = await fetch(`${API_BASE_URL}/api/notifications`, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    const listContainer = document.getElementById('notifNavbarList');
+                    if (listContainer) {
+                        const list = data.notifications || [];
+                        if (list.length === 0) {
+                            listContainer.innerHTML = '<div style="text-align: center; color: #6c757d; font-size: 0.8rem; padding: 1.5rem 0;">Tidak ada notifikasi baru</div>';
+                        } else {
+                            listContainer.innerHTML = list.slice(0, 5).map(n => {
+                                const isUnread = n.is_read === 0 ? 'unread' : '';
+                                let icon = '🔔';
+                                if (n.type === 'order') icon = '📦';
+                                else if (n.type === 'success') icon = '✅';
+                                return `
+                                    <div class="notif-item ${isUnread}" onclick="clickNotifItem(${n.id}, '${n.type}')">
+                                        <div class="notif-item-icon">${icon}</div>
+                                        <div class="notif-item-content">
+                                            <span class="notif-item-title">${n.title}</span>
+                                            <span class="notif-item-desc">${n.message}</span>
+                                            <span class="notif-item-time">${n.created_at}</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('');
+                        }
+                    }
+                }
+            } catch(e){}
+        }
+
+        window.clickNotifItem = async function(id, type) {
+            try {
+                let API_BASE_URL = '';
+                if (window.location.port !== '5002' && window.location.protocol !== 'file:') {
+                    API_BASE_URL = 'https://api.ilhampradani.me';
+                }
+                await fetch(`${API_BASE_URL}/api/notifications/read/${id}`, { method: 'POST', credentials: 'include' });
+                fetchNotifCount();
+                if (type === 'order') {
+                    window.location.href = '/dashboard_pesanan.html';
+                } else {
+                    window.location.href = '/dashboard_notifikasi.html';
+                }
+            } catch(e){}
+        };
+
+        function initNotifToggle() {
+            const toggle = document.getElementById('btnNotifToggle');
+            const menu = document.getElementById('notifDropdownMenu');
+            const markAllBtn = document.getElementById('btnMarkAllRead');
+            if (!toggle || !menu) return;
+
+            toggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                menu.classList.toggle('active');
+                if (menu.classList.contains('active')) {
+                    fetchNotifList();
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!menu.contains(e.target) && e.target !== toggle) {
+                    menu.classList.remove('active');
+                }
+            });
+
+            if (markAllBtn) {
+                markAllBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    try {
+                        let API_BASE_URL = '';
+                        if (window.location.port !== '5002' && window.location.protocol !== 'file:') {
+                            API_BASE_URL = 'https://api.ilhampradani.me';
+                        }
+                        await fetch(`${API_BASE_URL}/api/notifications/read`, { method: 'POST', credentials: 'include' });
+                        fetchNotifCount();
+                        fetchNotifList();
+                    } catch(e){}
+                });
+            }
+
+            fetchNotifCount();
+            // Poll every 30s
+            setInterval(fetchNotifCount, 30000);
+        }
+
+        function initAllNavbarDropdowns() {
+            initProfileDropdown();
+            initNotifToggle();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initAllNavbarDropdowns);
+        } else {
+            initAllNavbarDropdowns();
+        }
+        document.addEventListener('astro:page-load', initAllNavbarDropdowns);
     })();
 </script>

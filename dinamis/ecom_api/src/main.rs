@@ -95,6 +95,17 @@ struct DashboardData {
     resellers: Vec<Reseller>,
 }
 
+#[derive(Serialize, Deserialize, Clone)]
+struct Notification {
+    id: i64,
+    email: String,
+    title: String,
+    message: String,
+    r#type: String,
+    is_read: i32,
+    created_at: String,
+}
+
 #[derive(Serialize)]
 struct Transaction {
     transaction_id: String,
@@ -448,6 +459,19 @@ fn init_db(db_path: &str) {
             message TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             is_read INTEGER DEFAULT 0
+        )",
+        [],
+    );
+
+    let _ = conn.execute(
+        "CREATE TABLE IF NOT EXISTS notifications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT NOT NULL,
+            title TEXT NOT NULL,
+            message TEXT NOT NULL,
+            type TEXT NOT NULL DEFAULT 'info',
+            is_read INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )",
         [],
     );
@@ -1769,6 +1793,7 @@ async fn logout_route(
 // Handler: Dashboard Data API
 async fn dashboard_data_route(
     jar: CookieJar,
+    Query(params_map): Query<HashMap<String, String>>,
     State(state): State<AppState>,
 ) -> impl IntoResponse {
     let session_id = jar.get("session_id").map(|c| c.value().to_string());
@@ -1802,25 +1827,29 @@ async fn dashboard_data_route(
         Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, "Database Connection Error").into_response(),
     };
 
+    let scope = params_map.get("scope").cloned().unwrap_or_default();
+
     // 1. Check if user is Admin
     let mut is_admin = false;
-    if let Ok(count) = conn_tx.query_row(
-        "SELECT COUNT(*) FROM admins WHERE email = ?",
-        params![user.email],
-        |row| row.get::<_, i64>(0),
-    ) {
-        if count > 0 {
-            is_admin = true;
-        }
-    }
-    if !is_admin {
-        if let Ok(role) = conn_tx.query_row(
-            "SELECT role FROM users WHERE email = ?",
+    if scope == "admin" {
+        if let Ok(count) = conn_tx.query_row(
+            "SELECT COUNT(*) FROM admins WHERE email = ?",
             params![user.email],
-            |row| row.get::<_, String>(0),
+            |row| row.get::<_, i64>(0),
         ) {
-            if role == "admin" {
+            if count > 0 {
                 is_admin = true;
+            }
+        }
+        if !is_admin {
+            if let Ok(role) = conn_tx.query_row(
+                "SELECT role FROM users WHERE email = ?",
+                params![user.email],
+                |row| row.get::<_, String>(0),
+            ) {
+                if role == "admin" {
+                    is_admin = true;
+                }
             }
         }
     }
@@ -2483,6 +2512,15 @@ async fn checkout_route(
                     "INSERT INTO transactions (transaction_id, whatsapp_id, product_name, variant_name, amount, email, provider) VALUES (?, ?, ?, ?, ?, ?, ?)",
                     params![transaction_id, whatsapp_id, product_name, variant_name, total_amount, user_email, "koalastore"],
                 );
+                let _ = conn.execute(
+                    "INSERT INTO notifications (email, title, message, type) VALUES (?, ?, ?, ?)",
+                    params![
+                        user_email,
+                        "Pembayaran Baru",
+                        format!("Menunggu pembayaran untuk {} ({}) sebesar Rp {}", product_name.clone(), variant_name.clone(), total_amount),
+                        "order"
+                    ],
+                );
             }
 
             let mut qr_image_url = "".to_string();
@@ -2587,6 +2625,15 @@ async fn checkout_route(
                 let _ = conn.execute(
                     "INSERT INTO transactions (transaction_id, whatsapp_id, product_name, variant_name, amount, email, provider) VALUES (?, ?, ?, ?, ?, ?, ?)",
                     params![transaction_id, whatsapp_id, product_name, variant_name, total_amount, user_email, provider],
+                );
+                let _ = conn.execute(
+                    "INSERT INTO notifications (email, title, message, type) VALUES (?, ?, ?, ?)",
+                    params![
+                        user_email,
+                        "Pembayaran Baru",
+                        format!("Menunggu pembayaran untuk {} ({}) sebesar Rp {}", product_name.clone(), variant_name.clone(), total_amount),
+                        "order"
+                    ],
                 );
             }
 
@@ -3427,6 +3474,116 @@ async fn get_unread_message_count(
     (StatusCode::UNAUTHORIZED, Json(serde_json::json!({"success": false, "error": "Unauthorized"}))).into_response()
 }
 
+async fn get_notifications(
+    jar: CookieJar,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    let email = match session_id.and_then(|sid| verify_session(&state, &sid)) {
+        Some(sess) => sess.email,
+        None => return (StatusCode::UNAUTHORIZED, "Unauthorized").into_response(),
+    };
+
+    let conn = match Connection::open(&state.transactions_db_path) {
+        Ok(c) => c,
+        Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, "Database Connection Error").into_response(),
+    };
+
+    let mut stmt = match conn.prepare(
+        "SELECT id, email, title, message, type, is_read, created_at \
+         FROM notifications \
+         WHERE email = ? \
+         ORDER BY created_at DESC"
+    ) {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, "Failed to prepare query").into_response(),
+    };
+
+    let mapped = stmt.query_map(params![email], |row| {
+        Ok(Notification {
+            id: row.get(0)?,
+            email: row.get(1)?,
+            title: row.get(2)?,
+            message: row.get(3)?,
+            r#type: row.get(4)?,
+            is_read: row.get(5)?,
+            created_at: row.get(6)?,
+        })
+    });
+
+    let list: Vec<Notification> = match mapped {
+        Ok(iter) => iter.filter_map(|r| r.ok()).collect(),
+        Err(_) => Vec::new(),
+    };
+
+    Json(serde_json::json!({ "success": true, "notifications": list })).into_response()
+}
+
+async fn mark_notifications_read(
+    jar: CookieJar,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    let email = match session_id.and_then(|sid| verify_session(&state, &sid)) {
+        Some(sess) => sess.email,
+        None => return (StatusCode::UNAUTHORIZED, "Unauthorized").into_response(),
+    };
+
+    if let Ok(conn) = Connection::open(&state.transactions_db_path) {
+        let _ = conn.execute(
+            "UPDATE notifications SET is_read = 1 WHERE email = ?",
+            params![email],
+        );
+        Json(serde_json::json!({ "success": true })).into_response()
+    } else {
+        (StatusCode::INTERNAL_SERVER_ERROR, "Database Connection Error").into_response()
+    }
+}
+
+async fn mark_single_notification_read(
+    jar: CookieJar,
+    State(state): State<AppState>,
+    Path(id): Path<i64>,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    let email = match session_id.and_then(|sid| verify_session(&state, &sid)) {
+        Some(sess) => sess.email,
+        None => return (StatusCode::UNAUTHORIZED, "Unauthorized").into_response(),
+    };
+
+    if let Ok(conn) = Connection::open(&state.transactions_db_path) {
+        let _ = conn.execute(
+            "UPDATE notifications SET is_read = 1 WHERE id = ? AND email = ?",
+            params![id, email],
+        );
+        Json(serde_json::json!({ "success": true })).into_response()
+    } else {
+        (StatusCode::INTERNAL_SERVER_ERROR, "Database Connection Error").into_response()
+    }
+}
+
+async fn get_unread_notifications_count(
+    jar: CookieJar,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    let email = match session_id.and_then(|sid| verify_session(&state, &sid)) {
+        Some(sess) => sess.email,
+        None => return (StatusCode::UNAUTHORIZED, "Unauthorized").into_response(),
+    };
+
+    if let Ok(conn) = Connection::open(&state.transactions_db_path) {
+        let count: i64 = conn.query_row(
+            "SELECT COUNT(*) FROM notifications WHERE email = ? AND is_read = 0",
+            params![email],
+            |row| row.get(0),
+        ).unwrap_or(0);
+        Json(serde_json::json!({ "success": true, "unread_count": count })).into_response()
+    } else {
+        (StatusCode::INTERNAL_SERVER_ERROR, "Database Connection Error").into_response()
+    }
+}
+
 async fn index_page() -> impl IntoResponse {
     match tokio::fs::read_to_string("/root/ecommerce/frontend/dist/index.html").await {
         Ok(html) => axum::response::Html(html).into_response(),
@@ -3575,6 +3732,10 @@ async fn main() {
         .route("/api/messages/chat", get(get_chat_messages))
         .route("/api/messages/send", post(send_message))
         .route("/api/messages/unread-count", get(get_unread_message_count))
+        .route("/api/notifications", get(get_notifications))
+        .route("/api/notifications/read", post(mark_notifications_read))
+        .route("/api/notifications/read/:id", post(mark_single_notification_read))
+        .route("/api/notifications/unread-count", get(get_unread_notifications_count))
         
         // Static UI Pages
         .route("/pesan", get(pesan_page))

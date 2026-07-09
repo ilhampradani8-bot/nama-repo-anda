@@ -217,7 +217,7 @@ import BottomNav from '../components/BottomNav.astro';
                 document.getElementById('reseller-email').textContent = authData.email;
                 document.getElementById('avatar-initial').textContent = authData.name.charAt(0).toUpperCase();
 
-                const dataRes = await fetch(`${API_BASE_URL}/api/dashboard/data`, { credentials: 'include' });
+                const dataRes = await fetch(`${API_BASE_URL}/api/dashboard/data?scope=admin`, { credentials: 'include' });
                 if (dataRes.ok) {
                     const data = await dataRes.json();
                     if (data.success) {
