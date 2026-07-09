@@ -64,6 +64,8 @@ struct SaveStorePayload {
     description: Option<String>,
     store_category: Option<String>,
     interests: Option<String>,
+    show_email: Option<bool>,
+    show_buttons: Option<bool>,
 }
 
 #[derive(Deserialize)]
@@ -405,6 +407,50 @@ fn init_db(db_path: &str) {
     // Run migrations to add store_name and verified columns if they do not exist
     let _ = conn.execute("ALTER TABLE stores ADD COLUMN store_name TEXT", []);
     let _ = conn.execute("ALTER TABLE stores ADD COLUMN verified INTEGER DEFAULT 0", []);
+    let _ = conn.execute("ALTER TABLE stores ADD COLUMN id INTEGER", []);
+    let _ = conn.execute("ALTER TABLE stores ADD COLUMN slug TEXT", []);
+
+    // Assign autoincrement-like id and slug if null
+    let _ = conn.execute(
+        "UPDATE stores SET id = (SELECT COUNT(*) FROM stores s2 WHERE s2.email <= stores.email) WHERE id IS NULL",
+        [],
+    );
+    let _ = conn.execute(
+        "UPDATE stores SET slug = LOWER(REPLACE(store_name, ' ', '-')) WHERE slug IS NULL AND store_name IS NOT NULL AND store_name != ''",
+        [],
+    );
+    let _ = conn.execute(
+        "UPDATE stores SET slug = 'store-' || id WHERE slug IS NULL",
+        [],
+    );
+
+    let _ = conn.execute(
+        "CREATE TABLE IF NOT EXISTS store_settings (
+            email TEXT PRIMARY KEY,
+            show_email INTEGER DEFAULT 1,
+            show_buttons INTEGER DEFAULT 1,
+            custom_theme TEXT,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    );
+
+    let _ = conn.execute(
+        "INSERT OR IGNORE INTO store_settings (email) SELECT email FROM stores",
+        [],
+    );
+
+    let _ = conn.execute(
+        "CREATE TABLE IF NOT EXISTS messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sender_email TEXT NOT NULL,
+            receiver_email TEXT NOT NULL,
+            message TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            is_read INTEGER DEFAULT 0
+        )",
+        [],
+    );
 }
 
 fn get_redirect_target(headers: &HeaderMap, _default_url: &str) -> String {
@@ -627,7 +673,11 @@ async fn get_user_store(
         if let Some(sess) = verify_session(&state, &sid) {
             if let Ok(conn) = Connection::open(&state.transactions_db_path) {
                 let store_query = conn.query_row(
-                    "SELECT description, store_category, interests, store_name, verified FROM stores WHERE email = ?",
+                    "SELECT s.description, s.store_category, s.interests, s.store_name, s.verified, s.id, s.slug, \
+                            COALESCE(st.show_email, 1), COALESCE(st.show_buttons, 1) \
+                     FROM stores s \
+                     LEFT JOIN store_settings st ON s.email = st.email \
+                     WHERE s.email = ?",
                     params![sess.email],
                     |row| Ok(serde_json::json!({
                         "success": true,
@@ -636,6 +686,10 @@ async fn get_user_store(
                         "interests": row.get::<_, Option<String>>(2)?.unwrap_or_default(),
                         "store_name": row.get::<_, Option<String>>(3)?.unwrap_or_default(),
                         "verified": row.get::<_, Option<i32>>(4)?.unwrap_or(0),
+                        "id": row.get::<_, Option<i32>>(5)?,
+                        "slug": row.get::<_, Option<String>>(6)?.unwrap_or_default(),
+                        "show_email": row.get::<_, i32>(7)? == 1,
+                        "show_buttons": row.get::<_, i32>(8)? == 1,
                     }))
                 );
                 
@@ -652,6 +706,10 @@ async fn get_user_store(
                             "interests": "",
                             "store_name": "",
                             "verified": 0,
+                            "id": serde_json::Value::Null,
+                            "slug": "",
+                            "show_email": true,
+                            "show_buttons": true,
                         }))).into_response();
                     }
                 }
@@ -683,10 +741,21 @@ async fn save_user_store(
                         sess.email,
                     ],
                 );
-                if upsert_res.is_ok() {
+                
+                let settings_res = conn.execute(
+                    "INSERT OR REPLACE INTO store_settings (email, show_email, show_buttons) \
+                     VALUES (?, ?, ?)",
+                    params![
+                        sess.email,
+                        payload.show_email.unwrap_or(true) as i32,
+                        payload.show_buttons.unwrap_or(true) as i32,
+                    ],
+                );
+
+                if upsert_res.is_ok() && settings_res.is_ok() {
                     return (StatusCode::OK, Json(serde_json::json!({"success": true, "message": "Store settings updated successfully"}))).into_response();
                 } else {
-                    return (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"success": false, "error": "Failed to update store in database"}))).into_response();
+                    return (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"success": false, "error": "Failed to update store settings in database"}))).into_response();
                 }
             }
         }
@@ -2436,7 +2505,7 @@ async fn checkout_route(
             let msg = data.message.unwrap_or_else(|| "Failed to checkout from KoalaStore".to_string());
             (StatusCode::BAD_REQUEST, Json(serde_json::json!({ "success": false, "message": msg }))).into_response()
         }
-    } else if provider == "portalpulsa" || provider == "sslstore" || provider == "miraclegaming" {
+    } else if provider == "portalpulsa" || provider == "sslstore" || provider == "miraclegaming" || provider == "mymall" || provider == "manual" || provider.is_empty() {
         let account_id = match std::env::var("BUATQRIS_ACCOUNT_ID") {
             Ok(v) => v,
             Err(_) => {
@@ -3023,6 +3092,341 @@ async fn get_products_route(State(state): State<AppState>) -> impl IntoResponse 
     Json(response).into_response()
 }
 
+// Handler: Get public database products (manual products)
+async fn get_public_db_products(State(state): State<AppState>) -> impl IntoResponse {
+    if let Ok(conn) = Connection::open(&state.transactions_db_path) {
+        let mut products = vec![];
+        if let Ok(mut stmt) = conn.prepare(
+            "SELECT id, email, product_name, variant_name, price, description, category, images, variants, status, created_at \
+             FROM product \
+             WHERE status = 'published' \
+             ORDER BY created_at DESC"
+        ) {
+            if let Ok(rows) = stmt.query_map([], |row| {
+                let images_str: Option<String> = row.get(7)?;
+                let variants_str: Option<String> = row.get(8)?;
+                
+                let images: Vec<String> = images_str
+                    .and_then(|s| serde_json::from_str(&s).ok())
+                    .unwrap_or_default();
+                    
+                let variants: Vec<ProductVariant> = variants_str
+                    .and_then(|s| serde_json::from_str(&s).ok())
+                    .unwrap_or_default();
+
+                Ok(SharedProduct {
+                    id: Some(row.get(0)?),
+                    email: Some(row.get(1)?),
+                    product_name: row.get(2)?,
+                    variant_name: row.get(3)?,
+                    price: row.get(4)?,
+                    description: row.get(5)?,
+                    category: row.get(6)?,
+                    images: Some(images),
+                    variants: Some(variants),
+                    status: row.get(9)?,
+                    created_at: Some(row.get(10)?),
+                })
+            }) {
+                for r in rows.flatten() {
+                    products.push(r);
+                }
+            }
+        }
+        return (StatusCode::OK, Json(serde_json::json!({"success": true, "products": products}))).into_response();
+    }
+    (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"success": false, "error": "Database error"}))).into_response()
+}
+
+// Handler: Get public storefront info by email or ID/slug
+async fn get_public_storefront_info(
+    axum::extract::Path(id_or_email): axum::extract::Path<String>,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
+    if let Ok(conn) = Connection::open(&state.transactions_db_path) {
+        let email = if id_or_email.contains('@') {
+            id_or_email.clone()
+        } else {
+            let found_email: Option<String> = conn.query_row(
+                "SELECT email FROM stores WHERE CAST(id AS TEXT) = ? OR slug = ? OR store_name = ?",
+                params![id_or_email, id_or_email, id_or_email],
+                |row| row.get(0),
+            ).ok();
+            match found_email {
+                Some(e) => e,
+                None => id_or_email.clone(),
+            }
+        };
+
+        let store_details = conn.query_row(
+            "SELECT s.description, s.store_category, s.interests, s.store_name, s.verified, s.id, s.slug, \
+                    COALESCE(st.show_email, 1), COALESCE(st.show_buttons, 1) \
+             FROM stores s \
+             LEFT JOIN store_settings st ON s.email = st.email \
+             WHERE s.email = ?",
+            params![email],
+            |row| Ok(serde_json::json!({
+                "description": row.get::<_, Option<String>>(0)?.unwrap_or_default(),
+                "store_category": row.get::<_, Option<String>>(1)?.unwrap_or_default(),
+                "interests": row.get::<_, Option<String>>(2)?.unwrap_or_default(),
+                "store_name": row.get::<_, Option<String>>(3)?.unwrap_or_default(),
+                "verified": row.get::<_, Option<i32>>(4)?.unwrap_or(0),
+                "id": row.get::<_, Option<i32>>(5)?,
+                "slug": row.get::<_, Option<String>>(6)?.unwrap_or_default(),
+                "show_email": row.get::<_, i32>(7)? == 1,
+                "show_buttons": row.get::<_, i32>(8)? == 1,
+            }))
+        ).unwrap_or_else(|_| serde_json::json!({
+            "description": "Selamat datang di lapak digital premium saya. Temukan layanan terbaik di sini!",
+            "store_category": "Lapak Digital",
+            "interests": "",
+            "store_name": format!("Mall {}", email.split('@').next().unwrap_or("Merchant")),
+            "verified": 0,
+            "id": serde_json::Value::Null,
+            "slug": "",
+            "show_email": true,
+            "show_buttons": true,
+        }));
+
+        let mut products = vec![];
+        if let Ok(mut stmt) = conn.prepare(
+            "SELECT id, email, product_name, variant_name, price, description, category, images, variants, status, created_at \
+             FROM product \
+             WHERE status = 'published' AND email = ? \
+             ORDER BY created_at DESC"
+        ) {
+            if let Ok(rows) = stmt.query_map(params![email], |row| {
+                let images_str: Option<String> = row.get(7)?;
+                let variants_str: Option<String> = row.get(8)?;
+                
+                let images: Vec<String> = images_str
+                    .and_then(|s| serde_json::from_str(&s).ok())
+                    .unwrap_or_default();
+                    
+                let variants: Vec<ProductVariant> = variants_str
+                    .and_then(|s| serde_json::from_str(&s).ok())
+                    .unwrap_or_default();
+
+                Ok(SharedProduct {
+                    id: Some(row.get(0)?),
+                    email: Some(row.get(1)?),
+                    product_name: row.get(2)?,
+                    variant_name: row.get(3)?,
+                    price: row.get(4)?,
+                    description: row.get(5)?,
+                    category: row.get(6)?,
+                    images: Some(images),
+                    variants: Some(variants),
+                    status: row.get(9)?,
+                    created_at: Some(row.get(10)?),
+                })
+            }) {
+                for r in rows.flatten() {
+                    products.push(r);
+                }
+            }
+        }
+
+        let phone: Option<String> = conn.query_row(
+            "SELECT phone FROM users WHERE email = ?",
+            params![email],
+            |row| row.get(0)
+        ).unwrap_or(None);
+
+        return (StatusCode::OK, Json(serde_json::json!({
+            "success": true,
+            "store": store_details,
+            "products": products,
+            "phone": phone.unwrap_or_default(),
+            "email": email
+        }))).into_response();
+    }
+    (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"success": false, "error": "Database error"}))).into_response()
+}
+
+async fn viewstore_page() -> impl IntoResponse {
+    match tokio::fs::read_to_string("/root/ecommerce/frontend/dist/viewstore.html").await {
+        Ok(html) => axum::response::Html(html).into_response(),
+        Err(_) => (StatusCode::NOT_FOUND, "File viewstore.html not found").into_response(),
+    }
+}
+
+async fn pesan_page() -> impl IntoResponse {
+    match tokio::fs::read_to_string("/root/ecommerce/frontend/dist/pesan.html").await {
+        Ok(html) => axum::response::Html(html).into_response(),
+        Err(_) => (StatusCode::NOT_FOUND, "File pesan.html not found").into_response(),
+    }
+}
+
+#[derive(Deserialize)]
+struct SendMessagePayload {
+    receiver_email: String,
+    message: String,
+}
+
+#[derive(Serialize)]
+struct ChatMessage {
+    id: i64,
+    sender_email: String,
+    receiver_email: String,
+    message: String,
+    created_at: String,
+    is_read: i32,
+}
+
+#[derive(Serialize)]
+struct ContactInfo {
+    contact_email: String,
+    contact_name: String,
+    contact_avatar: String,
+    unread_count: i64,
+    last_message: String,
+    last_message_time: String,
+}
+
+#[derive(Deserialize)]
+struct GetChatQuery {
+    with_email: String,
+}
+
+async fn get_message_contacts(
+    jar: CookieJar,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    if let Some(sid) = session_id {
+        if let Some(sess) = verify_session(&state, &sid) {
+            if let Ok(conn) = Connection::open(&state.transactions_db_path) {
+                let query = "
+                    SELECT 
+                        c.email AS contact_email,
+                        COALESCE(s.store_name, u.name, c.email) AS contact_name,
+                        COALESCE(u.avatar, '') AS contact_avatar,
+                        (SELECT COUNT(*) FROM messages WHERE sender_email = c.email AND receiver_email = ?1 AND is_read = 0) AS unread_count,
+                        COALESCE((SELECT message FROM messages WHERE (sender_email = ?1 AND receiver_email = c.email) OR (sender_email = c.email AND receiver_email = ?1) ORDER BY created_at DESC LIMIT 1), '') AS last_message,
+                        COALESCE((SELECT created_at FROM messages WHERE (sender_email = ?1 AND receiver_email = c.email) OR (sender_email = c.email AND receiver_email = ?1) ORDER BY created_at DESC LIMIT 1), '') AS last_message_time
+                    FROM (
+                        SELECT receiver_email AS email FROM messages WHERE sender_email = ?1
+                        UNION
+                        SELECT sender_email AS email FROM messages WHERE receiver_email = ?1
+                    ) c
+                    LEFT JOIN stores s ON c.email = s.email
+                    LEFT JOIN users u ON c.email = u.email
+                ";
+                let mut stmt = match conn.prepare(query) {
+                    Ok(s) => s,
+                    Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"success": false, "error": "Query preparation error"}))).into_response(),
+                };
+                let rows = stmt.query_map(params![sess.email], |row| {
+                    Ok(ContactInfo {
+                        contact_email: row.get(0)?,
+                        contact_name: row.get(1)?,
+                        contact_avatar: row.get(2)?,
+                        unread_count: row.get(3)?,
+                        last_message: row.get(4)?,
+                        last_message_time: row.get(5)?,
+                    })
+                });
+                if let Ok(rows) = rows {
+                    let contacts: Vec<ContactInfo> = rows.flatten().collect();
+                    return (StatusCode::OK, Json(serde_json::json!({"success": true, "contacts": contacts}))).into_response();
+                }
+            }
+        }
+    }
+    (StatusCode::UNAUTHORIZED, Json(serde_json::json!({"success": false, "error": "Unauthorized"}))).into_response()
+}
+
+async fn get_chat_messages(
+    jar: CookieJar,
+    State(state): State<AppState>,
+    axum::extract::Query(query): axum::extract::Query<GetChatQuery>,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    if let Some(sid) = session_id {
+        if let Some(sess) = verify_session(&state, &sid) {
+            if let Ok(conn) = Connection::open(&state.transactions_db_path) {
+                // Mark messages as read
+                let _ = conn.execute(
+                    "UPDATE messages SET is_read = 1 WHERE sender_email = ? AND receiver_email = ?",
+                    params![query.with_email, sess.email],
+                );
+
+                let mut stmt = match conn.prepare(
+                    "SELECT id, sender_email, receiver_email, message, created_at, is_read \
+                     FROM messages \
+                     WHERE (sender_email = ?1 AND receiver_email = ?2) \
+                        OR (sender_email = ?2 AND receiver_email = ?1) \
+                     ORDER BY created_at ASC"
+                ) {
+                    Ok(s) => s,
+                    Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"success": false, "error": "Query preparation error"}))).into_response(),
+                };
+                let rows = stmt.query_map(params![sess.email, query.with_email], |row| {
+                    Ok(ChatMessage {
+                        id: row.get(0)?,
+                        sender_email: row.get(1)?,
+                        receiver_email: row.get(2)?,
+                        message: row.get(3)?,
+                        created_at: row.get(4)?,
+                        is_read: row.get(5)?,
+                    })
+                });
+                if let Ok(rows) = rows {
+                    let messages: Vec<ChatMessage> = rows.flatten().collect();
+                    return (StatusCode::OK, Json(serde_json::json!({"success": true, "messages": messages}))).into_response();
+                }
+            }
+        }
+    }
+    (StatusCode::UNAUTHORIZED, Json(serde_json::json!({"success": false, "error": "Unauthorized"}))).into_response()
+}
+
+async fn send_message(
+    jar: CookieJar,
+    State(state): State<AppState>,
+    Json(payload): Json<SendMessagePayload>,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    if let Some(sid) = session_id {
+        if let Some(sess) = verify_session(&state, &sid) {
+            if payload.receiver_email.is_empty() || payload.message.trim().is_empty() {
+                return (StatusCode::BAD_REQUEST, Json(serde_json::json!({"success": false, "error": "Receiver and message content cannot be empty"}))).into_response();
+            }
+            if let Ok(conn) = Connection::open(&state.transactions_db_path) {
+                let res = conn.execute(
+                    "INSERT INTO messages (sender_email, receiver_email, message) VALUES (?, ?, ?)",
+                    params![sess.email, payload.receiver_email, payload.message],
+                );
+                if res.is_ok() {
+                    return (StatusCode::OK, Json(serde_json::json!({"success": true, "message": "Message sent successfully"}))).into_response();
+                }
+            }
+        }
+    }
+    (StatusCode::UNAUTHORIZED, Json(serde_json::json!({"success": false, "error": "Unauthorized"}))).into_response()
+}
+
+async fn get_unread_message_count(
+    jar: CookieJar,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
+    let session_id = jar.get("session_id").map(|c| c.value().to_string());
+    if let Some(sid) = session_id {
+        if let Some(sess) = verify_session(&state, &sid) {
+            if let Ok(conn) = Connection::open(&state.transactions_db_path) {
+                let count: i64 = conn.query_row(
+                    "SELECT COUNT(*) FROM messages WHERE receiver_email = ? AND is_read = 0",
+                    params![sess.email],
+                    |row| row.get(0),
+                ).unwrap_or(0);
+                return (StatusCode::OK, Json(serde_json::json!({"success": true, "unread_count": count}))).into_response();
+            }
+        }
+    }
+    (StatusCode::UNAUTHORIZED, Json(serde_json::json!({"success": false, "error": "Unauthorized"}))).into_response()
+}
+
 async fn index_page() -> impl IntoResponse {
     match tokio::fs::read_to_string("/root/ecommerce/frontend/dist/index.html").await {
         Ok(html) => axum::response::Html(html).into_response(),
@@ -3151,6 +3555,7 @@ async fn main() {
         .route("/api/wallet/topup/status", get(check_topup_status))
         .route("/api/wallet/withdraw", post(create_withdrawal))
         .route("/api/products", get(get_products_route))
+        .route("/api/db-products", get(get_public_db_products))
         .route("/login", post(login_admin).get(login_page))
         .route("/login/google", post(login_google_route))
         .route("/login/discord", get(login_discord_route))
@@ -3165,8 +3570,15 @@ async fn main() {
         .route("/api/order/status/:transaction_id", get(order_status_route))
         .route("/api/cart", get(get_cart).post(add_to_cart).delete(clear_cart))
         .route("/api/cart/:id", delete(delete_cart_item))
+        .route("/api/store/info/:email", get(get_public_storefront_info))
+        .route("/api/messages/contacts", get(get_message_contacts))
+        .route("/api/messages/chat", get(get_chat_messages))
+        .route("/api/messages/send", post(send_message))
+        .route("/api/messages/unread-count", get(get_unread_message_count))
         
         // Static UI Pages
+        .route("/pesan", get(pesan_page))
+        .route("/pesan.html", get(pesan_page))
         .route("/", get(index_page))
         .route("/index.html", get(index_page))
         .route("/login.html", get(login_page))
@@ -3184,6 +3596,9 @@ async fn main() {
         .route("/product", get(product_query_route))
         .route("/paykonfirmasi", get(product_view_route))
         .route("/productview", get(product_view_route))
+        .route("/viewstore/:email", get(viewstore_page))
+        .route("/viewstore.html", get(viewstore_page))
+        .route("/viewstore", get(viewstore_page))
         
         .nest_service("/uploads", ServeDir::new("/root/ecommerce/dinamis/ecom_api/uploads"))
         .fallback_service(ServeDir::new("/root/ecommerce/frontend/dist"))

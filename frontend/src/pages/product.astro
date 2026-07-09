@@ -14,6 +14,159 @@ import PenggabungUtama from '../layouts/PenggabungUtama.astro';
             grid-template-columns: repeat(4, 1fr) !important;
             gap: 1.5rem;
         }
+        #load {
+          position:absolute;
+          width:600px;
+          height:36px;
+          left:50%;
+          top:40%;
+          margin-left:-300px;
+          overflow:visible;
+          -webkit-user-select:none;
+          -moz-user-select:none;
+          -ms-user-select:none;
+          user-select:none;
+          cursor:default;
+        }
+
+        #load div {
+          position:absolute;
+          width:20px;
+          height:36px;
+          opacity:0;
+          font-family: 'Marcellus SC', serif;
+          font-weight: 800;
+          font-size: 1.6rem;
+          animation:move 2s linear infinite;
+          -o-animation:move 2s linear infinite;
+          -moz-animation:move 2s linear infinite;
+          -webkit-animation:move 2s linear infinite;
+          transform:rotate(180deg);
+          -o-transform:rotate(180deg);
+          -moz-transform:rotate(180deg);
+          -webkit-transform:rotate(180deg);
+          color: var(--primary, #000000);
+        }
+
+        #load div:nth-child(2) {
+          animation-delay:0.2s;
+          -o-animation-delay:0.2s;
+          -moz-animation-delay:0.2s;
+          -webkit-animation-delay:0.2s;
+        }
+        #load div:nth-child(3) {
+          animation-delay:0.4s;
+          -o-animation-delay:0.4s;
+          -webkit-animation-delay:0.4s;
+          -moz-animation-delay:0.4s;
+        }
+        #load div:nth-child(4) {
+          animation-delay:0.6s;
+          -o-animation-delay:0.6s;
+          -webkit-animation-delay:0.6s;
+          -moz-animation-delay:0.6s;
+        }
+        #load div:nth-child(5) {
+          animation-delay:0.8s;
+          -o-animation-delay:0.8s;
+          -webkit-animation-delay:0.8s;
+          -moz-animation-delay:0.8s;
+        }
+        #load div:nth-child(6) {
+          animation-delay:1s;
+          -o-animation-delay:1s;
+          -webkit-animation-delay:1s;
+          -moz-animation-delay:1s;
+        }
+        #load div:nth-child(7) {
+          animation-delay:1.2s;
+          -o-animation-delay:1.2s;
+          -webkit-animation-delay:1.2s;
+          -moz-animation-delay:1.2s;
+        }
+
+        @keyframes move {
+          0% {
+            left:0;
+            opacity:0;
+          }
+          35% {
+            left: 41%; 
+            -moz-transform:rotate(0deg);
+            -webkit-transform:rotate(0deg);
+            -o-transform:rotate(0deg);
+            transform:rotate(0deg);
+            opacity:1;
+          }
+          65% {
+            left:59%; 
+            -moz-transform:rotate(0deg); 
+            -webkit-transform:rotate(0deg); 
+            -o-transform:rotate(0deg);
+            transform:rotate(0deg); 
+            opacity:1;
+          }
+          100% {
+            left:100%; 
+            -moz-transform:rotate(-180deg); 
+            -webkit-transform:rotate(-180deg); 
+            -o-transform:rotate(-180deg); 
+            transform:rotate(-180deg);
+            opacity:0;
+          }
+        }
+
+        @-moz-keyframes move {
+          0% {
+            left:0; 
+            opacity:0;
+          }
+          35% {
+            left:41%; 
+            -moz-transform:rotate(0deg); 
+            transform:rotate(0deg);
+            opacity:1;
+          }
+          65% {
+            left:59%; 
+            -moz-transform:rotate(0deg); 
+            transform:rotate(0deg);
+            opacity:1;
+          }
+          100% {
+            left:100%; 
+            -moz-transform:rotate(-180deg); 
+            -moz-transform:rotate(-180deg); 
+            transform:rotate(-180deg);
+            opacity:0;
+          }
+        }
+
+        @-webkit-keyframes move {
+          0% {
+            left:0; 
+            opacity:0;
+          }
+          35% {
+            left:41%; 
+            -webkit-transform:rotate(0deg); 
+            transform:rotate(0deg); 
+            opacity:1;
+          }
+          65% {
+            left:59%; 
+            -webkit-transform:rotate(0deg); 
+            transform:rotate(0deg); 
+            opacity:1;
+          }
+          100% {
+            left:100%;
+            -webkit-transform:rotate(-180deg); 
+            transform:rotate(-180deg); 
+            opacity:0;
+          }
+        }
+
         @media (max-width: 900px) {
             .product-page-layout {
                 flex-direction: column !important;
@@ -46,8 +199,19 @@ import PenggabungUtama from '../layouts/PenggabungUtama.astro';
                 <!-- Left Column: Details -->
                 <div class="product-details-col" style="flex: 1.5; min-width: 0;">
                     <div id="productViewLayout" style="display: flex; flex-direction: column; gap: 1.5rem;">
-                        <div style="text-align: center; padding: 4rem; color: var(--text-muted);">
-                            Memuat detail produk...
+                        <div style="text-align: center; padding: 6rem 0; color: var(--primary); position: relative; min-height: 250px; overflow: hidden; width: 100%;">
+                            <div id="load">
+                              <div>G</div>
+                              <div>N</div>
+                              <div>I</div>
+                              <div>D</div>
+                              <div>A</div>
+                              <div>O</div>
+                              <div>L</div>
+                            </div>
+                            <div style="margin-top: 5rem; font-size: 0.95rem; color: var(--text-muted); font-weight: 500;">
+                                Memuat detail produk...
+                            </div>
                         </div>
                     </div>
                     

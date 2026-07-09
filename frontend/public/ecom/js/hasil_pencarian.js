@@ -187,10 +187,65 @@ function renderSearchResults(queryText) {
         return;
     }
 
-    const filtered = allProducts.filter(p => 
-        p.name.toLowerCase().includes(query) || 
-        (p.description && p.description.toLowerCase().includes(query))
-    );
+    const queryLower = query.toLowerCase().trim();
+    const filtered = allProducts.filter(p => {
+        const name = (p.name || '').toLowerCase();
+        const desc = (p.description || '').toLowerCase();
+        const cat = (p.category_slug || '').toLowerCase();
+        
+        // Base match
+        if (name.includes(queryLower) || desc.includes(queryLower) || cat.includes(queryLower)) {
+            return true;
+        }
+
+        // Match "Perangkat Lunak & Aplikasi" / "Software & Apps"
+        if (queryLower.includes('perangkat lunak') || queryLower.includes('software') || queryLower.includes('aplikasi')) {
+            if (['aplikasi-lapangan', 'software-investigasi', 'manajemen-kasus', 'gis-pemetaan'].includes(cat)) {
+                return true;
+            }
+        }
+
+        // Match "Jasa Desain & Kreatif" / "Design & Creative Services"
+        if (queryLower.includes('desain') || queryLower.includes('design') || queryLower.includes('kreatif') || queryLower.includes('ui/ux') || queryLower.includes('figma')) {
+            if (['jasa-desain'].includes(cat)) {
+                return true;
+            }
+        }
+
+        // Match "Jasa Pengembangan & IT" / "Development & IT Services"
+        if (queryLower.includes('pengembangan') || queryLower.includes('development') || queryLower.includes('kustomisasi') || queryLower.includes('setup server') || queryLower.includes('it services')) {
+            if (['jasa-pengembangan', 'jasa-setup'].includes(cat)) {
+                return true;
+            }
+        }
+
+        // Match "Konten Digital & Edukasi" / "Digital Content & E-Learning"
+        if (queryLower.includes('konten digital') || queryLower.includes('edukasi') || queryLower.includes('e-learning') || queryLower.includes('pelatihan') || queryLower.includes('sertifikasi') || queryLower.includes('e-book') || queryLower.includes('voucher kursus')) {
+            if (['pelatihan-digital'].includes(cat)) {
+                return true;
+            }
+        }
+
+        // Subcategory sub-matching logic:
+        // - "Aplikasi Manajemen Lapangan"
+        if (queryLower.includes('lapangan') || queryLower.includes('patroli')) {
+            if (cat === 'aplikasi-lapangan') return true;
+        }
+        // - "Sistem Manajemen Kasus & Berkas"
+        if (queryLower.includes('kasus') || queryLower.includes('berkas') || queryLower.includes('dokumen')) {
+            if (cat === 'manajemen-kasus') return true;
+        }
+        // - "Software Analisis Data & Intelijen" / "Software Forensik & Keamanan Siber"
+        if (queryLower.includes('analisis data') || queryLower.includes('intelijen') || queryLower.includes('forensik') || queryLower.includes('siber') || queryLower.includes('cyber') || queryLower.includes('osint')) {
+            if (cat === 'software-investigasi') return true;
+        }
+        // - "Voucher Kursus & Sertifikasi" / "Modul Pelatihan & Panduan"
+        if (queryLower.includes('kursus') || queryLower.includes('sertifikasi') || queryLower.includes('pelatihan') || queryLower.includes('panduan') || queryLower.includes('e-book') || queryLower.includes('dokumen')) {
+            if (cat === 'pelatihan-digital') return true;
+        }
+        
+        return false;
+    });
 
     if (searchSub) {
         searchSub.textContent = `Menampilkan ${filtered.length} produk yang cocok dengan pencarian Anda.`;

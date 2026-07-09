@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Marcellus+SC&display=swap');
+
 /* Minimalist, Ultra-Lightweight CSS */
 :root {
     --bg-color: #ffffff;
@@ -6,7 +8,7 @@
     --border-color: #e5e5e5;
     --primary: #000000;
     --radius: 4px;
-    --font-sans: "Times New Roman", Times, Baskerville, Georgia, serif;
+    --font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 html {
@@ -44,7 +46,8 @@ a:hover {
 }
 
 /* Typography */
-h1, h2, h3 {
+h1, h2, h3, h4, h5, h6, .hero-title, .section-title {
+    font-family: "Marcellus SC", serif;
     margin-bottom: 1rem;
     font-weight: 600;
     line-height: 1.2;

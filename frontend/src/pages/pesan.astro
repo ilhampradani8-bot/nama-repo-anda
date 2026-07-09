@@ -1,0 +1,610 @@
+---
+// pesan.astro
+import UserNavbar from '../components/dashboard/UserNavbar.astro';
+import UserSidebar from '../components/dashboard/UserSidebar.astro';
+import BottomNav from '../components/BottomNav.astro';
+---
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesan | EasyMall</title>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --border-color: #dee2e6;
+            --primary: #0d6efd;
+            --primary-light: #e7f1ff;
+            --radius: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+            flex-grow: 1;
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 1.5rem;
+        }
+
+        .sidebar-col {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .content-area {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            background: #ffffff;
+            border: 2px solid #dee2e6;
+            border-radius: var(--radius);
+            overflow: hidden;
+            height: 70vh;
+            min-height: 500px;
+        }
+
+        /* Contacts List */
+        .contacts-sidebar {
+            border-right: 2px solid #dee2e6;
+            display: flex;
+            flex-direction: column;
+            background: #f8f9fa;
+        }
+
+        .contacts-header {
+            padding: 1rem;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #212529;
+            background: #ffffff;
+        }
+
+        .contacts-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-bottom: 1px solid #dee2e6;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            background: #ffffff;
+        }
+
+        .contact-item:hover {
+            background: #f1f3f5;
+        }
+
+        .contact-item.active {
+            background: var(--primary-light);
+            border-left: 4px solid var(--primary);
+        }
+
+        .contact-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #dee2e6;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            border: 1px solid #ced4da;
+        }
+
+        .contact-info {
+            flex-grow: 1;
+            min-width: 0;
+        }
+
+        .contact-name-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .contact-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #212529;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .contact-time {
+            font-size: 0.75rem;
+            color: #868e96;
+        }
+
+        .contact-lastmsg-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .contact-lastmsg {
+            font-size: 0.8rem;
+            color: #6c757d;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-grow: 1;
+        }
+
+        .unread-badge {
+            background: #dc3545;
+            color: #ffffff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        /* Chat Area */
+        .chat-main {
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+        }
+
+        .chat-header {
+            padding: 12px 16px;
+            border-bottom: 2px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ffffff;
+        }
+
+        .chat-header-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-header-name {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #212529;
+        }
+
+        .chat-header-status {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+
+        .chat-body {
+            flex-grow: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .msg-bubble-wrapper {
+            display: flex;
+            flex-direction: column;
+            max-width: 70%;
+        }
+
+        .msg-bubble-wrapper.sent {
+            align-self: flex-end;
+            align-items: flex-end;
+        }
+
+        .msg-bubble-wrapper.received {
+            align-self: flex-start;
+            align-items: flex-start;
+        }
+
+        .msg-bubble {
+            padding: 10px 14px;
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .msg-bubble-wrapper.sent .msg-bubble {
+            background: var(--primary);
+            color: #ffffff;
+            border-bottom-right-radius: 1px;
+        }
+
+        .msg-bubble-wrapper.received .msg-bubble {
+            background: #ffffff;
+            color: #212529;
+            border-bottom-left-radius: 1px;
+            border: 1px solid #dee2e6;
+        }
+
+        .msg-meta {
+            font-size: 0.7rem;
+            color: #868e96;
+            margin-top: 4px;
+        }
+
+        .chat-footer {
+            padding: 1rem;
+            border-top: 2px solid #dee2e6;
+            background: #ffffff;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex-grow: 1;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.15s ease;
+        }
+
+        .chat-input:focus {
+            border-color: var(--primary);
+        }
+
+        .btn-send {
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: var(--radius);
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .btn-send:hover {
+            background: #0b5ed7;
+        }
+
+        .btn-send:disabled {
+            background: #ced4da;
+            cursor: not-allowed;
+        }
+
+        .no-chat-selected {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+            color: #868e96;
+            gap: 12px;
+            background: #f8f9fa;
+        }
+
+        .no-chat-icon {
+            font-size: 3rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar-col {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <UserNavbar />
+
+    <div class="container">
+        <div class="sidebar-col">
+            <UserSidebar activeTab="pesan" />
+        </div>
+
+        <div class="content-area">
+            <!-- Contacts -->
+            <div class="contacts-sidebar">
+                <div class="contacts-header">✉️ Pesan Masuk</div>
+                <div class="contacts-list" id="contactsList">
+                    <!-- Loading state -->
+                    <div style="padding: 2rem; text-align: center; color: #868e96;">Memuat kontak...</div>
+                </div>
+            </div>
+
+            <!-- Chat Main Window -->
+            <div class="chat-main" id="chatMain">
+                <div class="no-chat-selected">
+                    <div class="no-chat-icon">💬</div>
+                    <div>Pilih percakapan untuk mulai berkirim pesan</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script is:inline>
+        let API_BASE_URL = '';
+        if (window.location.port !== '5002' && window.location.protocol !== 'file:') {
+            API_BASE_URL = 'https://api.ilhampradani.me';
+        }
+
+        let activeContactEmail = null;
+        let messagesList = [];
+        let contactsList = [];
+        let pollingInterval = null;
+        let activeUserEmail = null;
+
+        async function initChat() {
+            try {
+                // Check auth status
+                const authRes = await fetch(`${API_BASE_URL}/api/auth/status`, { credentials: 'include' });
+                if (!authRes.ok) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+                const authData = await authRes.json();
+                if (!authData.logged_in) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+                activeUserEmail = authData.email;
+
+                // Load initial contacts
+                await loadContacts();
+
+                // Check query string ?chat=merchant@domain.com
+                const params = new URLSearchParams(window.location.search);
+                const chatParam = params.get('chat');
+                if (chatParam) {
+                    activeContactEmail = chatParam;
+                    // Check if contact already exists in list, if not we add a temporary contact placeholder
+                    const exists = contactsList.some(c => c.contact_email === chatParam);
+                    if (!exists) {
+                        const tempContact = {
+                            contact_email: chatParam,
+                            contact_name: chatParam.split('@')[0],
+                            contact_avatar: '',
+                            unread_count: 0,
+                            last_message: 'Mulai percakapan baru...',
+                            last_message_time: ''
+                        };
+                        contactsList.unshift(tempContact);
+                        renderContacts();
+                    }
+                    await selectContact(chatParam);
+                }
+
+                // Poll for new messages/contacts every 3 seconds
+                pollingInterval = setInterval(async () => {
+                    await loadContacts();
+                    if (activeContactEmail) {
+                        await loadChatHistory(activeContactEmail, false);
+                    }
+                }, 3000);
+
+            } catch (err) {
+                console.error("Chat init error:", err);
+            }
+        }
+
+        async function loadContacts() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/messages/contacts`, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success) {
+                        contactsList = data.contacts || [];
+                        renderContacts();
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to load contacts:", e);
+            }
+        }
+
+        function renderContacts() {
+            const listContainer = document.getElementById('contactsList');
+            if (!listContainer) return;
+
+            if (contactsList.length === 0) {
+                listContainer.innerHTML = '<div style="padding: 2rem; text-align: center; color: #868e96;">Belum ada pesan masuk.</div>';
+                return;
+            }
+
+            listContainer.innerHTML = contactsList.map(c => {
+                const isActive = c.contact_email === activeContactEmail ? 'active' : '';
+                const initial = c.contact_name ? c.contact_name.charAt(0).toUpperCase() : '?';
+                const unreadBadge = c.unread_count > 0 ? `<span class="unread-badge">${c.unread_count}</span>` : '';
+                
+                return `
+                    <div class="contact-item ${isActive}" onclick="selectContact('${c.contact_email}')">
+                        <div class="contact-avatar">${initial}</div>
+                        <div class="contact-info">
+                            <div class="contact-name-row">
+                                <span class="contact-name">${c.contact_name}</span>
+                                <span class="contact-time">${c.last_message_time || ''}</span>
+                            </div>
+                            <div class="contact-lastmsg-row">
+                                <span class="contact-lastmsg">${c.last_message || ''}</span>
+                                ${unreadBadge}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function selectContact(email) {
+            activeContactEmail = email;
+            renderContacts();
+            
+            // Render active chat container skeleton
+            const chatMain = document.getElementById('chatMain');
+            const contact = contactsList.find(c => c.contact_email === email);
+            const contactName = contact ? contact.contact_name : email.split('@')[0];
+
+            chatMain.innerHTML = `
+                <div class="chat-header">
+                    <div class="chat-header-user">
+                        <div class="contact-avatar" style="width: 38px; height: 38px; font-size: 1rem;">${contactName.charAt(0).toUpperCase()}</div>
+                        <div>
+                            <div class="chat-header-name">${contactName}</div>
+                            <div class="chat-header-status">${email}</div>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="/viewstore/${encodeURIComponent(email)}" class="btn-send" style="background: transparent; border: 1px solid var(--primary); color: var(--primary); text-decoration: none; padding: 6px 12px; font-size: 0.8rem;">Lihat Toko</a>
+                    </div>
+                </div>
+                <div class="chat-body" id="chatBody">
+                    <div style="padding: 2rem; text-align: center; color: #868e96;">Memuat riwayat pesan...</div>
+                </div>
+                <div class="chat-footer">
+                    <input type="text" id="messageInput" class="chat-input" placeholder="Tulis pesan Anda..." onkeydown="handleInputKeyDown(event)">
+                    <button class="btn-send" id="sendBtn" onclick="sendMessage()">Kirim</button>
+                </div>
+            `;
+
+            await loadChatHistory(email, true);
+        }
+
+        async function loadChatHistory(email, shouldScroll = false) {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/messages/chat?with_email=${encodeURIComponent(email)}`, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success) {
+                        messagesList = data.messages || [];
+                        renderMessages(shouldScroll);
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to load chat history:", e);
+            }
+        }
+
+        function renderMessages(shouldScroll = false) {
+            const chatBody = document.getElementById('chatBody');
+            if (!chatBody) return;
+
+            if (messagesList.length === 0) {
+                chatBody.innerHTML = '<div style="padding: 4rem; text-align: center; color: #868e96;">Kirim pesan pertama Anda untuk memulai percakapan!</div>';
+                return;
+            }
+
+            chatBody.innerHTML = messagesList.map(m => {
+                const isSent = m.sender_email === activeUserEmail;
+                const alignmentClass = isSent ? 'sent' : 'received';
+                const timeString = m.created_at || '';
+
+                return `
+                    <div class="msg-bubble-wrapper ${alignmentClass}">
+                        <div class="msg-bubble">${m.message}</div>
+                        <span class="msg-meta">${timeString}</span>
+                    </div>
+                `;
+            }).join('');
+
+            if (shouldScroll) {
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('sendBtn');
+            if (!input || !input.value.trim() || !activeContactEmail) return;
+
+            const message = input.value.trim();
+            input.value = '';
+            input.disabled = true;
+            sendBtn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/messages/send`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        receiver_email: activeContactEmail,
+                        message: message
+                    }),
+                    credentials: 'include'
+                });
+
+                if (res.ok) {
+                    await loadChatHistory(activeContactEmail, true);
+                    await loadContacts();
+                } else {
+                    alert('Gagal mengirim pesan.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Terjadi kesalahan koneksi.');
+            } finally {
+                input.disabled = false;
+                sendBtn.disabled = false;
+                input.focus();
+            }
+        }
+
+        function handleInputKeyDown(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        async function performLogout() {
+            try {
+                await fetch(`${API_BASE_URL}/logout`, { credentials: 'include' });
+            } catch(e){}
+            window.location.href = '/login.html';
+        }
+
+        // Initialize Chat Page
+        initChat();
+    </script>
+
+    <BottomNav />
+</body>
+</html>

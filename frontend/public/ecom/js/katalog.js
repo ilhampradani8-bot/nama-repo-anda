@@ -1,4 +1,4 @@
-// index.js - Unified Client-side SPA Logic for Catalog and Checkout
+// katalog.js - API Product Catalog (KoalaStore, MiracleGaming, etc.)
 window.productViewMode = 'grid';
 
 window.showModernCartModal = function(onConfirm) {
@@ -359,24 +359,11 @@ async function initSPA() {
         allProducts = data.products || [];
         allCategories = data.categories || [];
         
-        console.log(`[SPA] Loaded ${allProducts.length} products`);
-        
-        if (allProducts.length === 0) {
-            console.warn('[SPA] Server returned 0 products. APIs might be failing on backend.');
-        }
+        console.log(`[Katalog] Loaded ${allProducts.length} products`);
 
-        // Fetch DB products publicly
-        let dbProducts = [];
-        try {
-            console.log(`[SPA] Fetching database products from: ${API_BASE_URL}/api/db-products`);
-            const dbResponse = await fetch(`${API_BASE_URL}/api/db-products`);
-            if (dbResponse.ok) {
-                const dbData = await dbResponse.json();
-                dbProducts = dbData.products || [];
-            }
-        } catch (e) {
-            console.error('Failed to fetch public DB products:', e);
-        }
+        // Update product count badge
+        const badge = document.getElementById('productCountBadge');
+        if (badge) badge.textContent = `${allProducts.length} Produk`;
 
         renderCategories();
         setupHeaderActions();
@@ -387,7 +374,6 @@ async function initSPA() {
         const searchParam = urlParams.get('search') || '';
         showAllProducts = false;
         renderProducts('all', searchParam);
-        renderDbProducts(dbProducts);
 
         // Setup view mode toggles (Grid/List)
         const btnViewGrid = document.getElementById('btnViewGrid');
@@ -625,10 +611,10 @@ function renderProducts(categorySlug = 'all', searchQuery = '') {
                 </div>
             `;
         } else {
-            const iconEmoji = `<img src="gambar/logo/easymall-logo.png" alt="${p.name}" style="height: 70px; width: auto; object-fit: contain;">`;
+            const iconEmoji = `<img src="gambar/logo/easymall-logo.png" alt="${p.name}" style="width: 100%; height: 100%; object-fit: cover; display: block;">`;
             card.className = 'card product-card';
             card.innerHTML = `
-                <div class="card-image-wrapper" style="height: 110px;">
+                <div class="card-image-wrapper" style="height: 160px; width: 100%; overflow: hidden; position: relative;">
                     ${iconEmoji}
                     ${p.badge ? `<span class="badge ${getBadgeClass(p.badge)}">${p.badge}</span>` : ''}
                 </div>

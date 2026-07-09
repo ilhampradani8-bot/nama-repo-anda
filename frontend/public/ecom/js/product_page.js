@@ -109,10 +109,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 let selectedProduct = null;
 let statusPollingInterval = null;
+let loggedInUserEmail = "";
 
 // Determine API base URL dynamically for static files, Live Server, and native Flask environment
 let API_BASE_URL = '';
-if (window.location.protocol === 'file:') {
+if (window.location.port !== '5002' && window.location.protocol !== 'file:') {
+    API_BASE_URL = 'https://api.ilhampradani.me';
+} else if (window.location.protocol === 'file:') {
     API_BASE_URL = 'https://api.ilhampradani.me';
 }
 
@@ -139,13 +142,65 @@ async function initProductPage() {
     }
 
     try {
+        // Fetch Auth Status first
+        try {
+            const authRes = await fetch(`${API_BASE_URL}/api/auth/status`, { credentials: 'include' });
+            if (authRes.ok) {
+                const authData = await authRes.json();
+                if (authData.logged_in) {
+                    loggedInUserEmail = authData.email || "";
+                }
+            }
+        } catch (e) {
+            console.error("Auth check error:", e);
+        }
+
         const response = await fetch(`${API_BASE_URL}/api/products`);
         if (!response.ok) {
             throw new Error('Gagal memuat database produk');
         }
         const data = await response.json();
-        const allProducts = data.products || [];
+        const apiProducts = data.products || [];
         const allCategories = data.categories || [];
+
+        // Fetch DB products publicly
+        let dbProducts = [];
+        try {
+            const dbRes = await fetch(`${API_BASE_URL}/api/db-products`);
+            if (dbRes.ok) {
+                const dbData = await dbRes.json();
+                dbProducts = (dbData.products || []).map(p => ({
+                    code: p.id ? `DB-${p.id}` : '',
+                    raw_code: p.id ? `DB-${p.id}` : '',
+                    name: p.product_name,
+                    price: p.price,
+                    description: p.description || '',
+                    category_slug: p.category || 'digital',
+                    provider: 'mymall',
+                    badge: 'Rekomendasi',
+                    sold_count: '500+',
+                    email: p.email,
+                    variants: p.variants && p.variants.length > 0 ? p.variants.map(v => ({
+                        code: v.code || `DB-${p.id}-${v.name}`,
+                        name: v.name,
+                        price: v.price,
+                        original_price: Math.round(v.price * 1.15)
+                    })) : [
+                        {
+                            code: p.id ? `DB-${p.id}` : '',
+                            name: p.variant_name || p.product_name,
+                            price: p.price,
+                            original_price: Math.round(p.price * 1.15)
+                        }
+                    ],
+                    images: p.images || []
+                }));
+            }
+        } catch (e) {
+            console.error('Failed to fetch public DB products:', e);
+        }
+
+        const allProducts = [...apiProducts, ...dbProducts];
 
         const product = allProducts.find(p => p.code === productCode);
         if (!product) {
@@ -156,7 +211,20 @@ async function initProductPage() {
         selectedProduct = product;
         const category = allCategories.find(c => c.slug === product.category_slug);
 
-        renderProductDetails(product, category);
+        // Fetch store details if product has email (local database product)
+        let storeInfo = null;
+        if (product.email) {
+            try {
+                const storeRes = await fetch(`${API_BASE_URL}/api/store/info/${encodeURIComponent(product.email)}`);
+                if (storeRes.ok) {
+                    storeInfo = await storeRes.json();
+                }
+            } catch (err) {
+                console.error("Error fetching store info for product details:", err);
+            }
+        }
+
+        renderProductDetails(product, category, storeInfo);
         initCheckoutForm(product);
         renderRecommendations(product, allProducts, allCategories);
         setupSearchActions();
@@ -179,11 +247,12 @@ function renderError(message) {
     }
 }
 
-function renderProductDetails(product, category) {
+function renderProductDetails(product, category, storeInfo) {
     const layout = document.getElementById('productViewLayout');
     if (!layout) return;
 
-    const iconEmoji = `<img src="/gambar/logo/easymall-logo.png" alt="${product.name}" style="max-width: 100%; height: auto; max-height: 200px; object-fit: contain; margin-bottom: 1rem;">`;
+    const imageUrl = product.images && product.images[0] ? product.images[0] : '/gambar/logo/easymall-logo.png';
+    const iconEmoji = `<img src="${imageUrl}" alt="${product.name}" style="width: 100%; height: auto; border-radius: 6px; object-fit: contain;">`;
     const originalPrice = Math.round(product.price * 1.15);
 
     let specHtml = '';
@@ -203,12 +272,86 @@ function renderProductDetails(product, category) {
         }
     }
 
-    layout.innerHTML = `
-        <div style="display: flex; flex-direction: column; align-items: center; padding: 2rem; border: 1px solid var(--border-color); border-radius: 8px; background: #ffffff;">
-            ${iconEmoji}
-            <div style="font-size: 0.85rem; color: var(--text-muted); text-align: center; font-weight: 500;">
-                Jaminan Transaksi Aman & Instan ⚡
+    let storeHtml = '';
+    const storeName = (storeInfo && storeInfo.store && storeInfo.store.store_name) 
+        || (product.email ? `Mall milik ${product.email.split('@')[0]}` : 'EasyMall Official Store');
+    const storeDesc = (storeInfo && storeInfo.store && storeInfo.store.description) 
+        || (product.email ? 'Selamat datang di lapak digital premium saya. Temukan layanan terbaik di sini!' : 'Layanan resmi EasyMall untuk top up instant, pengiriman otomatis dan bantuan CS 24 jam.');
+    const storeCat = (storeInfo && storeInfo.store && storeInfo.store.store_category) 
+        || (product.email ? 'Lapak Digital' : 'Official Support');
+    const isVerified = (storeInfo && storeInfo.store && storeInfo.store.verified === 1) || !product.email;
+    const phone = storeInfo && storeInfo.phone;
+    
+    let chatUrl = product.email ? `mailto:${product.email}` : 'https://wa.me/6281234567890?text=Halo%20Admin%20EasyMall';
+    let chatText = product.email ? 'Kirim Email' : 'Chat Admin';
+    if (phone) {
+        const cleanPhone = phone.replace(/[^0-9]/g, '');
+        let waPhone = cleanPhone;
+        if (waPhone.startsWith('0')) {
+            waPhone = '62' + waPhone.slice(1);
+        }
+        chatUrl = `https://wa.me/${waPhone}?text=Halo%20${encodeURIComponent(storeName)},%20saya%20tertarik%20dengan%20produk%20Anda%20"${encodeURIComponent(product.name)}"%20di%20EasyMall.`;
+        chatText = 'Chat Toko';
+    }
+
+    const storeIdOrEmail = (storeInfo && storeInfo.store && (storeInfo.store.slug || storeInfo.store.id))
+        ? (storeInfo.store.slug || storeInfo.store.id)
+        : product.email;
+
+    const storeLinkHtml = product.email 
+        ? `<a href="/viewstore/${encodeURIComponent(storeIdOrEmail)}" style="padding: 6px 14px; background: transparent; border: 1px solid var(--primary); color: var(--primary); font-weight: 700; font-size: 0.85rem; border-radius: var(--radius); text-decoration: none; display: inline-flex; align-items: center; transition: all 0.2s; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">Lihat Toko</a>`
+        : '';
+
+    const showStoreEmail = storeInfo && storeInfo.store 
+        ? (storeInfo.store.show_email !== false && storeInfo.store.show_email !== 0)
+        : true;
+    const storeEmailDisplay = showStoreEmail && product.email 
+        ? `<div style="font-size: 0.8rem; color: var(--text-muted); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">${product.email}</div>`
+        : '';
+
+    const showStoreButtons = storeInfo && storeInfo.store 
+        ? (storeInfo.store.show_buttons !== false && storeInfo.store.show_buttons !== 0)
+        : true;
+
+    let storeButtonsHtml = '';
+    if (showStoreButtons) {
+        storeButtonsHtml = `
+            <div style="display: flex; gap: 8px;">
+                <a href="${chatUrl}" target="_blank" style="padding: 6px 14px; background: #25d366; color: #ffffff; font-weight: 700; font-size: 0.85rem; border-radius: var(--radius); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.907h.004c4.368 0 7.926-3.558 7.93-7.93a7.896 7.896 0 0 0-2.327-5.545zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592z"/></svg>
+                    ${chatText}
+                </a>
+                <a href="/pesan.html?chat=${encodeURIComponent(product.email || '')}" style="padding: 6px 14px; background: var(--primary); color: #ffffff; font-weight: 700; font-size: 0.85rem; border-radius: var(--radius); text-decoration: none; display: inline-flex; align-items: center; transition: all 0.2s; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">Chat Toko</a>
+                ${storeLinkHtml}
             </div>
+        `;
+    }
+
+    storeHtml = `
+        <div class="store-card" style="margin-top: 3rem; border: 1px solid var(--border-color); border-radius: var(--radius); padding: 1.5rem; background: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 1rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid #f1f3f5; padding-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <img src="/gambar/logo/easymall-logo.png" alt="Avatar" style="width: 50px; height: 50px; border-radius: 50%; border: 1px solid var(--border-color); object-fit: cover;">
+                    <div>
+                        <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--primary); font-family: 'Marcellus SC', serif;">${storeCat}</div>
+                        <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); font-family: 'Marcellus SC', serif; margin: 2px 0; display: inline-flex; align-items: center; gap: 6px;">
+                            ${storeName}
+                            ${isVerified ? '<span style="font-size: 0.85rem;" title="Merchant Terverifikasi">🛡️</span>' : ''}
+                        </h3>
+                        ${storeEmailDisplay}
+                    </div>
+                </div>
+                ${storeButtonsHtml}
+            </div>
+            <div style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                ${storeDesc}
+            </div>
+        </div>
+    `;
+
+    layout.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 8px; background: #ffffff; width: 100%; overflow: hidden;">
+            ${iconEmoji}
         </div>
         <div style="display: flex; flex-direction: column;">
             <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--primary); font-weight: 700; margin-bottom: 0.4rem;">${category ? category.name : product.category_slug}</span>
@@ -235,6 +378,7 @@ function renderProductDetails(product, category) {
             </div>
 
             ${specHtml}
+            ${storeHtml}
         </div>
     `;
 }
@@ -288,26 +432,32 @@ function initCheckoutForm(product) {
 
     // Configure target inputs based on category slug
     const slug = product.category_slug;
-    if (slug === 'game') {
-        targetLabel.textContent = 'ID Pengguna / Akun Game';
-        targetInput.placeholder = 'Contoh: 12345678 (Zone ID)';
-        targetHelp.textContent = '*Pastikan ID akun game Anda sudah sesuai untuk menghindari kesalahan top up.';
-    } else if (slug === 'pulsa' || slug === 'data') {
-        targetLabel.textContent = 'Nomor Handphone Tujuan';
-        targetInput.placeholder = 'Contoh: 081234567890';
-        targetHelp.textContent = '*Masukkan nomor handphone tujuan pengisian pulsa/data yang aktif.';
-    } else if (slug === 'pln') {
-        targetLabel.textContent = 'Nomor Meteran / ID Pelanggan';
-        targetInput.placeholder = 'Contoh: 51234567890';
-        targetHelp.textContent = '*Nomor meteran PLN tujuan pengisian Token.';
-    } else if (slug === 'ssl') {
-        targetLabel.textContent = 'Domain Utama (Common Name)';
-        targetInput.placeholder = 'Contoh: domainanda.com';
-        targetHelp.textContent = '*Masukkan nama domain utama tanpa http:// atau https://.';
+    const isSpecialCategory = ['game', 'pulsa', 'data', 'pln', 'ssl'].includes(slug);
+    
+    if (isSpecialCategory) {
+        if (targetInput.parentElement) targetInput.parentElement.style.display = 'block';
+        targetInput.setAttribute('required', 'true');
+        if (slug === 'game') {
+            targetLabel.textContent = 'ID Pengguna / Akun Game';
+            targetInput.placeholder = 'Contoh: 12345678 (Zone ID)';
+            targetHelp.textContent = '*Pastikan ID akun game Anda sudah sesuai untuk menghindari kesalahan top up.';
+        } else if (slug === 'pulsa' || slug === 'data') {
+            targetLabel.textContent = 'Nomor Handphone Tujuan';
+            targetInput.placeholder = 'Contoh: 081234567890';
+            targetHelp.textContent = '*Masukkan nomor handphone tujuan pengisian pulsa/data yang aktif.';
+        } else if (slug === 'pln') {
+            targetLabel.textContent = 'Nomor Meteran / ID Pelanggan';
+            targetInput.placeholder = 'Contoh: 51234567890';
+            targetHelp.textContent = '*Nomor meteran PLN tujuan pengisian Token.';
+        } else if (slug === 'ssl') {
+            targetLabel.textContent = 'Domain Utama (Common Name)';
+            targetInput.placeholder = 'Contoh: domainanda.com';
+            targetHelp.textContent = '*Masukkan nama domain utama tanpa http:// atau https://.';
+        }
     } else {
-        targetLabel.textContent = 'Nomor WhatsApp / Email Kontak';
-        targetInput.placeholder = 'Contoh: 081234567890 atau email@domain.com';
-        targetHelp.textContent = '*Kontak detail untuk pengiriman detail kredensial akun.';
+        if (targetInput.parentElement) targetInput.parentElement.style.display = 'none';
+        targetInput.removeAttribute('required');
+        targetInput.value = loggedInUserEmail || '';
     }
 
     confirmBuyBtn.onclick = submitCheckout;
@@ -390,11 +540,20 @@ async function submitCheckout() {
     const variantSelect = document.getElementById('variantSelect');
     const targetInput = document.getElementById('targetInput');
     
-    const targetVal = targetInput.value.trim();
+    const slug = selectedProduct ? selectedProduct.category_slug : '';
+    const isSpecialCategory = ['game', 'pulsa', 'data', 'pln', 'ssl'].includes(slug);
+    
+    let targetVal = targetInput.value.trim();
     if (!targetVal) {
-        alert('Mohon lengkapi ID Pengguna / Nomor Tujuan Anda terlebih dahulu!');
-        targetInput.focus();
-        return;
+        if (!isSpecialCategory) {
+            alert('Silakan login terlebih dahulu untuk melanjutkan pembayaran!');
+            window.location.href = '/login.html';
+            return;
+        } else {
+            alert('Mohon lengkapi ID Pengguna / Nomor Tujuan Anda terlebih dahulu!');
+            targetInput.focus();
+            return;
+        }
     }
     
     const selectedOption = variantSelect.options[variantSelect.selectedIndex];
