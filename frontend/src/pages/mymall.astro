@@ -440,64 +440,431 @@ import BottomNav from '../components/BottomNav.astro';
             border-radius: 12px;
             grid-column: 1/-1;
         }
+
+        /* Premium Settings and Application Forms */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+            margin: 2rem auto;
+            max-width: 700px;
+        }
+
+        .apply-title {
+            font-family: 'Marcellus SC', serif;
+            font-size: 2rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            margin-bottom: 1rem;
+            font-weight: 800;
+        }
+
+        .apply-subtitle {
+            text-align: center;
+            color: #6c757d;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: #ffffff;
+            color: #212529;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            border-color: #6f42c1;
+            box-shadow: 0 0 0 3px rgba(111, 66, 193, 0.15);
+            outline: none;
+        }
+
+        .social-input-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .social-icon-prefix {
+            position: absolute;
+            left: 12px;
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+
+        .social-input-group .form-control {
+            padding-left: 2.5rem;
+        }
+
+        .switch-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            margin-bottom: 1.5rem;
+        }
+
+        .switch-label-desc {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #6f42c1;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        .btn-primary-gradient {
+            background: var(--primary-gradient);
+            color: #ffffff;
+            border: none;
+            padding: 0.85rem 2rem;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(13, 110, 253, 0.2);
+            text-align: center;
+        }
+
+        .btn-primary-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(13, 110, 253, 0.3);
+        }
+
+        .settings-btn {
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            color: #495057;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .settings-btn:hover {
+            background: #f1f3f5;
+            border-color: #ced4da;
+            color: #212529;
+        }
+
+        .settings-panel {
+            display: none;
+            animation: fadeIn 0.3s ease;
+            margin-bottom: 2rem;
+        }
+
+        .social-link-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            color: #495057;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            font-size: 1.1rem;
+        }
+
+        .social-link-icon:hover {
+            transform: scale(1.1);
+            color: #6f42c1;
+            border-color: #6f42c1;
+            box-shadow: 0 4px 12px rgba(111, 66, 193, 0.15);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
     <UserNavbar />
 
-    <!-- Store Header Wrapper (Full Width) -->
-    <div class="store-header-wrapper">
-        <div class="store-header-content">
-            <div class="store-profile-row">
-                <div class="store-avatar-wrapper">
-                    <img id="store-avatar-img" src="/grabill54-hello-2488_512.gif" alt="Avatar Mall" class="store-avatar">
+    <!-- Application Form View (Shown when store doesn't exist) -->
+    <div id="store-apply-view" style="display: none;" class="container">
+        <div class="glass-card">
+            <h1 class="apply-title">Pengajuan Buka Toko</h1>
+            <p class="apply-subtitle">Mulai bangun reputasi lapak digital premium Anda di EasyMall</p>
+            
+            <form id="apply-store-form" onsubmit="submitApplyStore(event)">
+                <div class="form-group">
+                    <label for="apply-store-name">Nama Toko *</label>
+                    <input type="text" id="apply-store-name" class="form-control" placeholder="Contoh: Easy Fast Cell" required>
                 </div>
-                <div class="store-info">
-                    <h1 class="store-name" id="store-title-name">My Mall</h1>
-                    <div class="store-category-label" id="store-category-display" style="font-size: 0.95rem; font-weight: 700; color: #6f42c1; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; font-family: 'Marcellus SC', serif;">Lapak Digital Premium</div>
-                    <div class="store-tagline" id="store-description-display" style="margin-bottom: 12px; font-size: 1rem; color: #6c757d;">Selamat datang di lapak digital premium saya. Temukan layanan terbaik di sini!</div>
-                    <div class="store-badges">
-                        <span class="store-badge verified" id="verified-badge" style="display: none;">
-                            🛡️ Merchant Terverifikasi
-                        </span>
-                        <!-- Hidden dummy inputs for compatibility with existing JS -->
-                        <span id="member-since-badge" style="display: none;"></span>
-                        <span id="stat-active-variants" style="display: none;"></span>
-                        <span id="stat-categories-count" style="display: none;"></span>
-                    </div>
-                    <div class="store-interests-row" id="store-interests-container" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;"></div>
+                
+                <div class="form-group">
+                    <label for="apply-store-category">Kategori Toko *</label>
+                    <select id="apply-store-category" class="form-control" required>
+                        <option value="digital">Digital & Lisensi</option>
+                        <option value="jasa">Jasa & Freelancing</option>
+                        <option value="layanan">Layanan Online / VPS</option>
+                        <option value="voucher">Voucher & Top Up</option>
+                        <option value="ebook">E-Book & Kursus</option>
+                        <option value="lainnya">Lainnya</option>
+                    </select>
                 </div>
-            </div>
+                
+                <div class="form-group">
+                    <label for="apply-store-desc">Deskripsi Toko *</label>
+                    <textarea id="apply-store-desc" class="form-control" rows="3" placeholder="Jelaskan jenis produk atau layanan yang Anda sediakan..." required></textarea>
+                </div>
 
-            <!-- Stats List Plain Section -->
-            <div class="store-stats-list" style="display: flex; gap: 2rem; flex-wrap: wrap; border-top: 1px solid #f1f3f5; padding-top: 1.25rem; font-size: 0.95rem; color: #495057;">
-                <div class="stat-item"><span style="color: #868e96; margin-right: 4px;">Produk:</span> <strong id="stat-total-products" style="color: #212529;">0</strong></div>
-                <div class="stat-item"><span style="color: #868e96; margin-right: 4px;">Penilaian:</span> <strong style="color: #212529;">4.9 (482 Penilaian)</strong></div>
-                <div class="stat-item"><span style="color: #868e96; margin-right: 4px;">Performa Chat:</span> <strong style="color: #212529;">99% (Hitungan Jam)</strong></div>
-                <div class="stat-item"><span style="color: #868e96; margin-right: 4px;">Pengikut:</span> <strong style="color: #212529;">592,7RB</strong></div>
-                <div class="stat-item"><span style="color: #868e96; margin-right: 4px;">Mengikuti:</span> <strong style="color: #212529;">0</strong></div>
-                <div class="stat-item"><span style="color: #868e96; margin-right: 4px;">Bergabung:</span> <strong style="color: #212529;">7 Tahun Lalu</strong></div>
-            </div>
+                <div class="form-group">
+                    <label for="apply-store-interests">Tag / Minat (Pisahkan dengan koma)</label>
+                    <input type="text" id="apply-store-interests" class="form-control" placeholder="Contoh: pulsa, games, voucher, hosting">
+                </div>
+
+                <div class="form-group">
+                    <label for="apply-store-phone">Nomor Kontak WhatsApp *</label>
+                    <input type="text" id="apply-store-phone" class="form-control" placeholder="Contoh: 081234567890 atau 6281234567890" required>
+                </div>
+
+                <button type="submit" class="btn-primary-gradient">Kirim Pengajuan Pembukaan Toko</button>
+            </form>
         </div>
     </div>
 
-    <div class="container">
+    <!-- Active Storefront View (Shown when store exists) -->
+    <div id="storefront-active-view" style="display: none;">
+        <!-- Store Header Wrapper (Full Width) -->
+        <div class="store-header-wrapper">
+            <div class="store-header-content">
+                <div class="store-profile-row" style="justify-content: space-between; width: 100%;">
+                    <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; flex: 1;">
+                        <div class="store-avatar-wrapper">
+                            <img id="store-avatar-img" src="/grabill54-hello-2488_512.gif" alt="Avatar Mall" class="store-avatar">
+                        </div>
+                        <div class="store-info">
+                            <h1 class="store-name" id="store-title-name">My Mall</h1>
+                            <div class="store-category-label" id="store-category-display" style="font-size: 0.95rem; font-weight: 700; color: #6f42c1; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; font-family: 'Marcellus SC', serif;">Lapak Digital Premium</div>
+                            <div class="store-tagline" id="store-description-display" style="margin-bottom: 12px; font-size: 1rem; color: #6c757d;">Selamat datang di lapak digital premium saya. Temukan layanan terbaik di sini!</div>
+                            <div class="store-badges">
+                                <span class="store-badge verified" id="verified-badge" style="display: none;">
+                                    🛡️ Merchant Terverifikasi
+                                </span>
+                                <span class="store-badge" id="pending-badge" style="display: none; background: #fff3cd; border-color: #ffe69c; color: #664d03;">
+                                    ⌛ Menunggu Verifikasi
+                                </span>
+                                <span class="store-badge" id="hidden-badge" style="display: none; background: #f8d7da; border-color: #f5c2c7; color: #842029;">
+                                    👁️ Hidden dari Publik
+                                </span>
+                                <span id="member-since-badge" style="display: none;"></span>
+                                <span id="stat-active-variants" style="display: none;"></span>
+                                <span id="stat-categories-count" style="display: none;"></span>
+                            </div>
+                            <div class="store-interests-row" id="store-interests-container" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;"></div>
+                            
+                            <!-- Socials Container -->
+                            <div id="store-socials-container" style="display: flex; gap: 8px; margin-top: 15px;"></div>
+                        </div>
+                    </div>
 
-        <!-- Section Products & Status Tabs -->
-        <div style="margin: 1.5rem 0; display: flex; flex-direction: column; gap: 1rem;">
-            <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; border-bottom: 1px solid var(--border-color);" id="status-tabs-container">
-                <button type="button" class="tab-btn active" data-status="all" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #6f42c1; background: #6f42c1; color: #ffffff; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-size: 0.8rem; outline: none;">Semua</button>
-                <button type="button" class="tab-btn" data-status="publish" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #ced4da; background: #ffffff; color: #495057; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-size: 0.8rem; outline: none;">Publish</button>
-                <button type="button" class="tab-btn" data-status="draft" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #ced4da; background: #ffffff; color: #495057; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-size: 0.8rem; outline: none;">Draft</button>
-                <button type="button" class="tab-btn" data-status="review" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #ced4da; background: #ffffff; color: #495057; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-size: 0.8rem; outline: none;">Review</button>
-                <button type="button" class="tab-btn" data-status="blokir" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #ced4da; background: #ffffff; color: #495057; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-size: 0.8rem; outline: none;">Blokir</button>
-                <button type="button" class="tab-btn" data-status="dihapus" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #ced4da; background: #ffffff; color: #495057; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-size: 0.8rem; outline: none;">Dihapus</button>
+                    <!-- Open settings button -->
+                    <div style="margin-top: 10px; display: flex; align-self: flex-start;">
+                        <button id="open-settings-btn" class="settings-btn" onclick="toggleSettingsPanel()">
+                            ⚙️ Pengaturan Toko
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats List Plain Section -->
+                <div class="store-stats-list" style="display: flex; gap: 2rem; flex-wrap: wrap; border-top: 1px solid #f1f3f5; padding-top: 1.25rem; font-size: 0.95rem; color: #495057;">
+                    <div class="stat-item"><span style="color: #868e96; margin-right: 4px;">Produk:</span> <strong id="stat-total-products" style="color: #212529;">0</strong></div>
+                    <div class="stat-item"><span style="color: #868e96; margin-right: 4px;">Penilaian:</span> <strong style="color: #212529;">4.9 (482 Penilaian)</strong></div>
+                    <div class="stat-item"><span style="color: #868e96; margin-right: 4px;">Performa Chat:</span> <strong style="color: #212529;">99% (Hitungan Jam)</strong></div>
+                    <div class="stat-item"><span style="color: #868e96; margin-right: 4px;">Pengikut:</span> <strong style="color: #212529;">592,7RB</strong></div>
+                    <div class="stat-item"><span style="color: #868e96; margin-right: 4px;">Mengikuti:</span> <strong style="color: #212529;">0</strong></div>
+                    <div class="stat-item"><span style="color: #868e96; margin-right: 4px;">Bergabung:</span> <strong style="color: #212529;">7 Tahun Lalu</strong></div>
+                </div>
             </div>
         </div>
 
-        <div id="mall-products-container" class="product-grid">
-            <div style="text-align: center; padding: 2rem; grid-column: 1/-1;">
-                Memuat produk dari mall...
+        <div class="container">
+            <!-- Settings Panel Section -->
+            <div id="settings-panel" class="settings-panel glass-card" style="margin-top: 0; margin-bottom: 2rem;">
+                <h2 style="font-family: 'Marcellus SC', serif; margin-bottom: 1.5rem; color: #212529;">Pengaturan Toko</h2>
+                
+                <form id="settings-store-form" onsubmit="saveStoreSettings(event)">
+                    <div class="form-group">
+                        <label for="settings-store-name">Nama Toko</label>
+                        <input type="text" id="settings-store-name" class="form-control" placeholder="Nama Toko Anda" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="settings-store-category">Kategori Toko</label>
+                        <select id="settings-store-category" class="form-control" required>
+                            <option value="digital">Digital & Lisensi</option>
+                            <option value="jasa">Jasa & Freelancing</option>
+                            <option value="layanan">Layanan Online / VPS</option>
+                            <option value="voucher">Voucher & Top Up</option>
+                            <option value="ebook">E-Book & Kursus</option>
+                            <option value="lainnya">Lainnya</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="settings-store-desc">Deskripsi Toko</label>
+                        <textarea id="settings-store-desc" class="form-control" rows="3" placeholder="Deskripsi toko..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="settings-store-interests">Tag / Minat (Pisahkan dengan koma)</label>
+                        <input type="text" id="settings-store-interests" class="form-control" placeholder="pulsa, games, voucher">
+                    </div>
+
+                    <div class="switch-group">
+                        <div>
+                            <span style="font-weight: 600; font-size: 0.9rem; color: #495057;">Tampilkan Toko ke Publik</span>
+                            <div class="switch-label-desc">Sembunyikan toko jika sedang dalam mode maintenance.</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="settings-store-visible" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <h3 style="font-size: 1.05rem; font-weight: 700; margin: 1.5rem 0 1rem 0; color: #212529; border-bottom: 1px solid #dee2e6; padding-bottom: 6px;">Kontak & Media Sosial</h3>
+
+                    <div class="form-group">
+                        <label for="settings-store-phone">No. WhatsApp</label>
+                        <div class="social-input-group">
+                            <span class="social-icon-prefix">💬</span>
+                            <input type="text" id="settings-store-phone" class="form-control" placeholder="Contoh: 6281234567890">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="settings-store-instagram">Instagram Link</label>
+                        <div class="social-input-group">
+                            <span class="social-icon-prefix">📸</span>
+                            <input type="text" id="settings-store-instagram" class="form-control" placeholder="https://instagram.com/username">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="settings-store-facebook">Facebook Link</label>
+                        <div class="social-input-group">
+                            <span class="social-icon-prefix">👤</span>
+                            <input type="text" id="settings-store-facebook" class="form-control" placeholder="https://facebook.com/username">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="settings-store-tiktok">TikTok Link</label>
+                        <div class="social-input-group">
+                            <span class="social-icon-prefix">🎵</span>
+                            <input type="text" id="settings-store-tiktok" class="form-control" placeholder="https://tiktok.com/@username">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="settings-store-youtube">YouTube Link</label>
+                        <div class="social-input-group">
+                            <span class="social-icon-prefix">📺</span>
+                            <input type="text" id="settings-store-youtube" class="form-control" placeholder="https://youtube.com/channel/...">
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 2rem;">
+                        <button type="submit" class="btn-primary-gradient" style="flex: 2;">Simpan Pengaturan</button>
+                        <button type="button" onclick="toggleSettingsPanel()" class="settings-btn" style="flex: 1; justify-content: center; height: auto;">Batal</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Section Products & Status Tabs -->
+            <div style="margin: 1.5rem 0; display: flex; flex-direction: column; gap: 1rem;">
+                <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; border-bottom: 1px solid var(--border-color);" id="status-tabs-container">
+                    <button type="button" class="tab-btn active" data-status="all" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #6f42c1; background: #6f42c1; color: #ffffff; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-size: 0.8rem; outline: none;">Semua</button>
+                    <button type="button" class="tab-btn" data-status="publish" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #ced4da; background: #ffffff; color: #495057; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-size: 0.8rem; outline: none;">Publish</button>
+                    <button type="button" class="tab-btn" data-status="draft" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #ced4da; background: #ffffff; color: #495057; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-size: 0.8rem; outline: none;">Draft</button>
+                    <button type="button" class="tab-btn" data-status="review" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #ced4da; background: #ffffff; color: #495057; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-size: 0.8rem; outline: none;">Review</button>
+                    <button type="button" class="tab-btn" data-status="blokir" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #ced4da; background: #ffffff; color: #495057; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-size: 0.8rem; outline: none;">Blokir</button>
+                    <button type="button" class="tab-btn" data-status="dihapus" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #ced4da; background: #ffffff; color: #495057; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-size: 0.8rem; outline: none;">Dihapus</button>
+                </div>
+            </div>
+
+            <div id="mall-products-container" class="product-grid">
+                <div style="text-align: center; padding: 2rem; grid-column: 1/-1;">
+                    Memuat produk dari mall...
+                </div>
             </div>
         </div>
     </div>
@@ -518,6 +885,7 @@ import BottomNav from '../components/BottomNav.astro';
         let merchantPhone = '';
         let allProductsList = [];
         let currentTabStatus = 'all';
+        let storeDataObj = {};
 
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
@@ -555,6 +923,156 @@ import BottomNav from '../components/BottomNav.astro';
                 'lainnya': `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: middle; display: inline-block; margin-right: 4px;"><path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5 8 5.961 14.154 3.5zM15 4.239l-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923z"/></svg>`
             };
             return icons[slug] || '';
+        }
+
+        function toggleSettingsPanel() {
+            const panel = document.getElementById('settings-panel');
+            if (panel.style.display === 'none' || !panel.style.display) {
+                panel.style.display = 'block';
+                // Populate fields
+                document.getElementById('settings-store-name').value = storeDataObj.store_name || '';
+                document.getElementById('settings-store-category').value = storeDataObj.store_category || 'digital';
+                document.getElementById('settings-store-desc').value = storeDataObj.description || '';
+                document.getElementById('settings-store-interests').value = storeDataObj.interests || '';
+                document.getElementById('settings-store-visible').checked = storeDataObj.is_visible !== false && storeDataObj.is_visible !== 0;
+                document.getElementById('settings-store-phone').value = storeDataObj.phone || '';
+                document.getElementById('settings-store-instagram').value = storeDataObj.instagram || '';
+                document.getElementById('settings-store-facebook').value = storeDataObj.facebook || '';
+                document.getElementById('settings-store-tiktok').value = storeDataObj.tiktok || '';
+                document.getElementById('settings-store-youtube').value = storeDataObj.youtube || '';
+                
+                panel.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
+        async function submitApplyStore(e) {
+            e.preventDefault();
+            const store_name = document.getElementById('apply-store-name').value.trim();
+            const store_category = document.getElementById('apply-store-category').value;
+            const description = document.getElementById('apply-store-desc').value.trim();
+            const interests = document.getElementById('apply-store-interests').value.trim();
+            const phone = document.getElementById('apply-store-phone').value.trim();
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/user/store`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        store_name,
+                        store_category,
+                        description,
+                        interests,
+                        phone,
+                        is_visible: true
+                    }),
+                    credentials: 'include'
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success) {
+                        showToast('Registrasi toko berhasil diajukan!', 'success');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showToast(`Gagal mengajukan toko: ${data.error || ''}`, 'danger');
+                    }
+                } else {
+                    showToast('Gagal mengajukan toko. Silakan coba lagi.', 'danger');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Terjadi kesalahan jaringan.', 'danger');
+            }
+        }
+
+        async function saveStoreSettings(e) {
+            e.preventDefault();
+            const store_name = document.getElementById('settings-store-name').value.trim();
+            const store_category = document.getElementById('settings-store-category').value;
+            const description = document.getElementById('settings-store-desc').value.trim();
+            const interests = document.getElementById('settings-store-interests').value.trim();
+            const is_visible = document.getElementById('settings-store-visible').checked;
+            const phone = document.getElementById('settings-store-phone').value.trim();
+            const instagram = document.getElementById('settings-store-instagram').value.trim();
+            const facebook = document.getElementById('settings-store-facebook').value.trim();
+            const tiktok = document.getElementById('settings-store-tiktok').value.trim();
+            const youtube = document.getElementById('settings-store-youtube').value.trim();
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/user/store`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        store_name,
+                        store_category,
+                        description,
+                        interests,
+                        is_visible,
+                        phone,
+                        instagram,
+                        facebook,
+                        tiktok,
+                        youtube,
+                        whatsapp: phone
+                    }),
+                    credentials: 'include'
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success) {
+                        showToast('Pengaturan toko berhasil disimpan!', 'success');
+                        document.getElementById('settings-panel').style.display = 'none';
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showToast(`Gagal menyimpan pengaturan: ${data.error || ''}`, 'danger');
+                    }
+                } else {
+                    showToast('Gagal menyimpan pengaturan. Silakan coba lagi.', 'danger');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Terjadi kesalahan jaringan.', 'danger');
+            }
+        }
+
+        function renderSocialLinks(store) {
+            const container = document.getElementById('store-socials-container');
+            container.innerHTML = '';
+            
+            const socials = [
+                { key: 'phone', label: 'WhatsApp', prefix: 'wa.me/', urlPrefix: 'https://wa.me/', icon: '💬' },
+                { key: 'instagram', label: 'Instagram', prefix: 'instagram.com/', urlPrefix: '', icon: '📸' },
+                { key: 'facebook', label: 'Facebook', prefix: 'facebook.com/', urlPrefix: '', icon: '👤' },
+                { key: 'tiktok', label: 'TikTok', prefix: 'tiktok.com/', urlPrefix: '', icon: '🎵' },
+                { key: 'youtube', label: 'YouTube', prefix: 'youtube.com/', urlPrefix: '', icon: '📺' }
+            ];
+
+            socials.forEach(s => {
+                let val = store[s.key] || '';
+                if (val) {
+                    let href = val;
+                    if (s.key === 'phone') {
+                        let num = val.replace(/[^0-9]/g, '');
+                        if (num.startsWith('0')) {
+                            num = '62' + num.slice(1);
+                        }
+                        href = `${s.urlPrefix}${num}`;
+                    } else if (!val.startsWith('http')) {
+                        href = `https://${val}`;
+                    }
+                    
+                    const el = document.createElement('a');
+                    el.href = href;
+                    el.target = '_blank';
+                    el.className = 'social-link-icon';
+                    el.title = s.label;
+                    el.innerHTML = s.icon;
+                    container.appendChild(el);
+                }
+            });
         }
 
         async function fetchStorefrontData() {
@@ -602,23 +1120,39 @@ import BottomNav from '../components/BottomNav.astro';
                     const storeRes = await fetch(`${API_BASE_URL}/api/user/store`, { credentials: 'include' });
                     if (storeRes.ok) {
                         const storeData = await storeRes.json();
-                        if (storeData.success) {
-                            // Inject store name if exists
-                            if (storeData.store_name) {
-                                document.getElementById('store-title-name').textContent = storeData.store_name;
-                            }
-                            if (storeData.store_category) {
-                                document.getElementById('store-category-display').textContent = storeData.store_category;
-                            }
-                            if (storeData.description) {
-                                document.getElementById('store-description-display').textContent = storeData.description;
-                            }
+                        if (storeData.success && storeData.store_name) {
+                            // Store exists! Show storefront active view, hide apply view
+                            document.getElementById('storefront-active-view').style.display = 'block';
+                            document.getElementById('store-apply-view').style.display = 'none';
+
+                            storeDataObj = storeData;
                             
-                            // Inject verified badge status
+                            // Inject store details
+                            document.getElementById('store-title-name').textContent = storeData.store_name;
+                            document.getElementById('store-category-display').textContent = categoryMap[storeData.store_category] || storeData.store_category || 'Lapak Premium';
+                            document.getElementById('store-description-display').textContent = storeData.description || 'Selamat datang di lapak digital premium saya.';
+                            
+                            // Inject verified / pending badge status
                             if (storeData.verified === 1) {
                                 document.getElementById('verified-badge').style.display = 'inline-flex';
+                                document.getElementById('pending-badge').style.display = 'none';
                             } else {
                                 document.getElementById('verified-badge').style.display = 'none';
+                                document.getElementById('pending-badge').style.display = 'inline-flex';
+                            }
+
+                            // Inject visibility badge
+                            if (storeData.is_visible === 0 || storeData.is_visible === false) {
+                                document.getElementById('hidden-badge').style.display = 'inline-flex';
+                            } else {
+                                document.getElementById('hidden-badge').style.display = 'none';
+                            }
+
+                            // Render socials
+                            renderSocialLinks(storeData);
+                            
+                            if (storeData.phone) {
+                                merchantPhone = storeData.phone;
                             }
                             
                             const interestsContainer = document.getElementById('store-interests-container');
@@ -638,10 +1172,21 @@ import BottomNav from '../components/BottomNav.astro';
                                     interestsContainer.appendChild(tag);
                                 });
                             }
+                        } else {
+                            // Store does not exist! Show apply view, hide active storefront view
+                            document.getElementById('store-apply-view').style.display = 'block';
+                            document.getElementById('storefront-active-view').style.display = 'none';
                         }
+                    } else {
+                        // Failed to fetch store, default to show apply view
+                        document.getElementById('store-apply-view').style.display = 'block';
+                        document.getElementById('storefront-active-view').style.display = 'none';
                     }
                 } catch (storeErr) {
                     console.error("Error loading store details:", storeErr);
+                    // Fallback to show apply view
+                    document.getElementById('store-apply-view').style.display = 'block';
+                    document.getElementById('storefront-active-view').style.display = 'none';
                 }
 
                 // 2. Fetch shared products of the user

@@ -35,6 +35,7 @@ struct AppState {
 
 #[derive(Clone, Serialize, Deserialize)]
 struct SessionData {
+    user_id: i64,
     email: String,
     name: String,
 }
@@ -66,6 +67,13 @@ struct SaveStorePayload {
     interests: Option<String>,
     show_email: Option<bool>,
     show_buttons: Option<bool>,
+    phone: Option<String>,
+    instagram: Option<String>,
+    facebook: Option<String>,
+    tiktok: Option<String>,
+    youtube: Option<String>,
+    whatsapp: Option<String>,
+    is_visible: Option<bool>,
 }
 
 #[derive(Deserialize)]
@@ -420,6 +428,13 @@ fn init_db(db_path: &str) {
     let _ = conn.execute("ALTER TABLE stores ADD COLUMN verified INTEGER DEFAULT 0", []);
     let _ = conn.execute("ALTER TABLE stores ADD COLUMN id INTEGER", []);
     let _ = conn.execute("ALTER TABLE stores ADD COLUMN slug TEXT", []);
+    let _ = conn.execute("ALTER TABLE stores ADD COLUMN phone TEXT", []);
+    let _ = conn.execute("ALTER TABLE stores ADD COLUMN instagram TEXT", []);
+    let _ = conn.execute("ALTER TABLE stores ADD COLUMN facebook TEXT", []);
+    let _ = conn.execute("ALTER TABLE stores ADD COLUMN tiktok TEXT", []);
+    let _ = conn.execute("ALTER TABLE stores ADD COLUMN youtube TEXT", []);
+    let _ = conn.execute("ALTER TABLE stores ADD COLUMN whatsapp TEXT", []);
+    let _ = conn.execute("ALTER TABLE stores ADD COLUMN is_visible INTEGER DEFAULT 1", []);
 
     // Assign autoincrement-like id and slug if null
     let _ = conn.execute(
@@ -475,6 +490,31 @@ fn init_db(db_path: &str) {
         )",
         [],
     );
+
+    // Run migrations to add user_id column to all tables for strict user verification
+    let tables_to_alter = vec![
+        "sessions", "transactions", "resellers", "reseller_profits",
+        "notifications", "keranjang", "user_wallet", "topup_requests",
+        "withdrawal_requests", "wallet_history", "stores", "store_settings"
+    ];
+    for table in tables_to_alter {
+        let alter_sql = format!("ALTER TABLE {} ADD COLUMN user_id INTEGER", table);
+        let _ = conn.execute(&alter_sql, []);
+    }
+
+    // Backfill user_id from users table where applicable
+    let _ = conn.execute("UPDATE sessions SET user_id = (SELECT id FROM users WHERE users.email = sessions.email) WHERE user_id IS NULL OR user_id = 0", []);
+    let _ = conn.execute("UPDATE transactions SET user_id = (SELECT id FROM users WHERE users.email = transactions.email) WHERE user_id IS NULL OR user_id = 0", []);
+    let _ = conn.execute("UPDATE resellers SET user_id = (SELECT id FROM users WHERE users.phone = resellers.whatsapp_id OR users.phone LIKE '%' || resellers.whatsapp_id OR resellers.whatsapp_id LIKE '%' || users.phone) WHERE user_id IS NULL OR user_id = 0", []);
+    let _ = conn.execute("UPDATE reseller_profits SET user_id = (SELECT id FROM users WHERE users.phone = reseller_profits.reseller_wa OR users.phone LIKE '%' || reseller_profits.reseller_wa OR reseller_profits.reseller_wa LIKE '%' || users.phone) WHERE user_id IS NULL OR user_id = 0", []);
+    let _ = conn.execute("UPDATE notifications SET user_id = (SELECT id FROM users WHERE users.email = notifications.email) WHERE user_id IS NULL OR user_id = 0", []);
+    let _ = conn.execute("UPDATE keranjang SET user_id = (SELECT id FROM users WHERE users.email = keranjang.email) WHERE user_id IS NULL OR user_id = 0", []);
+    let _ = conn.execute("UPDATE user_wallet SET user_id = (SELECT id FROM users WHERE users.email = user_wallet.email) WHERE user_id IS NULL OR user_id = 0", []);
+    let _ = conn.execute("UPDATE topup_requests SET user_id = (SELECT id FROM users WHERE users.email = topup_requests.email) WHERE user_id IS NULL OR user_id = 0", []);
+    let _ = conn.execute("UPDATE withdrawal_requests SET user_id = (SELECT id FROM users WHERE users.email = withdrawal_requests.email) WHERE user_id IS NULL OR user_id = 0", []);
+    let _ = conn.execute("UPDATE wallet_history SET user_id = (SELECT id FROM users WHERE users.email = wallet_history.email) WHERE user_id IS NULL OR user_id = 0", []);
+    let _ = conn.execute("UPDATE stores SET user_id = (SELECT id FROM users WHERE users.email = stores.email) WHERE user_id IS NULL OR user_id = 0", []);
+    let _ = conn.execute("UPDATE store_settings SET user_id = (SELECT id FROM users WHERE users.email = store_settings.email) WHERE user_id IS NULL OR user_id = 0", []);
 }
 
 fn get_redirect_target(headers: &HeaderMap, _default_url: &str) -> String {
@@ -525,11 +565,12 @@ fn verify_session(state: &AppState, sid: &str) -> Option<SessionData> {
     // 2. Check DB
     if let Ok(conn) = Connection::open(&state.transactions_db_path) {
         let db_query = conn.query_row(
-            "SELECT email, name FROM sessions WHERE session_id = ?",
+            "SELECT s.email, s.name, u.id FROM sessions s LEFT JOIN users u ON s.email = u.email WHERE s.session_id = ?",
             params![sid],
             |row| Ok(SessionData {
                 email: row.get(0)?,
                 name: row.get(1)?,
+                user_id: row.get::<_, Option<i64>>(2)?.unwrap_or(0),
             }),
         );
         if let Ok(sess) = db_query {
@@ -542,10 +583,22 @@ fn verify_session(state: &AppState, sid: &str) -> Option<SessionData> {
 }
 
 fn insert_session(state: &AppState, session_id: String, email: String, name: String) {
+    let mut user_id = 0;
+    if let Ok(conn) = Connection::open(&state.transactions_db_path) {
+        if let Ok(id) = conn.query_row(
+            "SELECT id FROM users WHERE email = ?",
+            params![email],
+            |row| row.get::<_, i64>(0),
+        ) {
+            user_id = id;
+        }
+    }
+
     // 1. Insert in memory
     state.sessions.lock().unwrap().insert(
         session_id.clone(),
         SessionData {
+            user_id,
             email: email.clone(),
             name: name.clone(),
         },
@@ -553,8 +606,8 @@ fn insert_session(state: &AppState, session_id: String, email: String, name: Str
     // 2. Insert in SQLite DB
     if let Ok(conn) = Connection::open(&state.transactions_db_path) {
         let _ = conn.execute(
-            "INSERT OR REPLACE INTO sessions (session_id, email, name) VALUES (?, ?, ?)",
-            params![session_id, email, name],
+            "INSERT OR REPLACE INTO sessions (session_id, email, name, user_id) VALUES (?, ?, ?, ?)",
+            params![session_id, email, name, user_id],
         );
     }
 }
@@ -698,7 +751,8 @@ async fn get_user_store(
             if let Ok(conn) = Connection::open(&state.transactions_db_path) {
                 let store_query = conn.query_row(
                     "SELECT s.description, s.store_category, s.interests, s.store_name, s.verified, s.id, s.slug, \
-                            COALESCE(st.show_email, 1), COALESCE(st.show_buttons, 1) \
+                            COALESCE(st.show_email, 1), COALESCE(st.show_buttons, 1), \
+                            s.phone, s.instagram, s.facebook, s.tiktok, s.youtube, s.whatsapp, COALESCE(s.is_visible, 1) \
                      FROM stores s \
                      LEFT JOIN store_settings st ON s.email = st.email \
                      WHERE s.email = ?",
@@ -714,6 +768,13 @@ async fn get_user_store(
                         "slug": row.get::<_, Option<String>>(6)?.unwrap_or_default(),
                         "show_email": row.get::<_, i32>(7)? == 1,
                         "show_buttons": row.get::<_, i32>(8)? == 1,
+                        "phone": row.get::<_, Option<String>>(9)?.unwrap_or_default(),
+                        "instagram": row.get::<_, Option<String>>(10)?.unwrap_or_default(),
+                        "facebook": row.get::<_, Option<String>>(11)?.unwrap_or_default(),
+                        "tiktok": row.get::<_, Option<String>>(12)?.unwrap_or_default(),
+                        "youtube": row.get::<_, Option<String>>(13)?.unwrap_or_default(),
+                        "whatsapp": row.get::<_, Option<String>>(14)?.unwrap_or_default(),
+                        "is_visible": row.get::<_, i32>(15)? == 1,
                     }))
                 );
                 
@@ -734,6 +795,13 @@ async fn get_user_store(
                             "slug": "",
                             "show_email": true,
                             "show_buttons": true,
+                            "phone": "",
+                            "instagram": "",
+                            "facebook": "",
+                            "tiktok": "",
+                            "youtube": "",
+                            "whatsapp": "",
+                            "is_visible": true,
                         }))).into_response();
                     }
                 }
@@ -754,8 +822,8 @@ async fn save_user_store(
         if let Some(sess) = verify_session(&state, &sid) {
             if let Ok(conn) = Connection::open(&state.transactions_db_path) {
                 let upsert_res = conn.execute(
-                    "INSERT OR REPLACE INTO stores (email, store_name, description, store_category, interests, verified, updated_at) \
-                     VALUES (?, ?, ?, ?, ?, COALESCE((SELECT verified FROM stores WHERE email = ?), 0), CURRENT_TIMESTAMP)",
+                    "INSERT OR REPLACE INTO stores (email, store_name, description, store_category, interests, verified, phone, instagram, facebook, tiktok, youtube, whatsapp, is_visible, user_id, updated_at) \
+                     VALUES (?, ?, ?, ?, ?, COALESCE((SELECT verified FROM stores WHERE email = ?), 0), ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)",
                     params![
                         sess.email,
                         payload.store_name.unwrap_or_default(),
@@ -763,6 +831,14 @@ async fn save_user_store(
                         payload.store_category.unwrap_or_default(),
                         payload.interests.unwrap_or_default(),
                         sess.email,
+                        payload.phone.unwrap_or_default(),
+                        payload.instagram.unwrap_or_default(),
+                        payload.facebook.unwrap_or_default(),
+                        payload.tiktok.unwrap_or_default(),
+                        payload.youtube.unwrap_or_default(),
+                        payload.whatsapp.unwrap_or_default(),
+                        payload.is_visible.unwrap_or(true) as i32,
+                        sess.user_id,
                     ],
                 );
                 
@@ -774,6 +850,20 @@ async fn save_user_store(
                         payload.show_email.unwrap_or(true) as i32,
                         payload.show_buttons.unwrap_or(true) as i32,
                     ],
+                );
+
+                // Assign id and slug if null after save
+                let _ = conn.execute(
+                    "UPDATE stores SET id = (SELECT COUNT(*) FROM stores s2 WHERE s2.email <= stores.email) WHERE id IS NULL",
+                    [],
+                );
+                let _ = conn.execute(
+                    "UPDATE stores SET slug = LOWER(REPLACE(store_name, ' ', '-')) WHERE slug IS NULL AND store_name IS NOT NULL AND store_name != ''",
+                    [],
+                );
+                let _ = conn.execute(
+                    "UPDATE stores SET slug = 'store-' || id WHERE slug IS NULL",
+                    [],
                 );
 
                 if upsert_res.is_ok() && settings_res.is_ok() {
@@ -1909,87 +1999,129 @@ async fn dashboard_data_route(
             }
         }
     } else {
-        // Regular users can only see their own records based on their email
-        if let Ok(mut stmt) = conn_tx.prepare(
-            "SELECT transaction_id, whatsapp_id, product_name, variant_name, amount, created_at \
-             FROM transactions \
-             WHERE email = ? \
-             ORDER BY created_at DESC"
-        ) {
-            if let Ok(rows) = stmt.query_map(params![user.email], |row| {
-                Ok(Transaction {
-                    transaction_id: row.get(0)?,
-                    whatsapp_id: row.get(1)?,
-                    product_name: row.get(2)?,
-                    variant_name: row.get(3)?,
-                    amount: row.get(4)?,
-                    created_at: row.get(5)?,
-                })
-            }) {
-                for r in rows.flatten() {
-                    transactions.push(r);
-                }
-            }
-        }
-
-        // Regular users can only see their own profits and reseller records based on their phone number
+        // Regular users/resellers:
+        
+        // Load their phone number first to help with reseller-specific queries
         let mut user_phone: Option<String> = None;
         if let Ok(phone) = conn_tx.query_row(
-            "SELECT phone FROM users WHERE email = ?",
-            params![user.email],
+            "SELECT phone FROM users WHERE id = ?",
+            params![user.user_id],
             |row| row.get::<_, Option<String>>(0),
         ) {
             user_phone = phone;
         }
 
+        let mut has_phone = false;
+        let mut clean_phone = "".to_string();
+        let mut suffix = "".to_string();
         if let Some(ref phone) = user_phone {
-            let clean_phone: String = phone.chars().filter(|c| c.is_ascii_digit()).collect();
+            clean_phone = phone.chars().filter(|c| c.is_ascii_digit()).collect();
             if !clean_phone.is_empty() {
-                let suffix = if clean_phone.len() > 9 {
+                has_phone = true;
+                suffix = if clean_phone.len() > 9 {
                     format!("%{}", &clean_phone[clean_phone.len() - 9..])
                 } else {
                     format!("%{}", clean_phone)
                 };
+            }
+        }
 
+        if scope == "admin" {
+            // Reseller panel view: Only load customer transactions that generated profits for this reseller
+            if has_phone {
+                let phone_str = user_phone.as_ref().unwrap();
                 if let Ok(mut stmt) = conn_tx.prepare(
-                    "SELECT transaction_id, reseller_wa, profit_amount, created_at \
-                     FROM reseller_profits \
-                     WHERE reseller_wa = ? OR reseller_wa = ? OR reseller_wa LIKE ? \
+                    "SELECT transaction_id, whatsapp_id, product_name, variant_name, amount, created_at \
+                     FROM transactions \
+                     WHERE user_id = ? OR transaction_id IN ( \
+                         SELECT transaction_id \
+                         FROM reseller_profits \
+                         WHERE user_id = ? OR reseller_wa = ? OR reseller_wa = ? OR reseller_wa LIKE ? \
+                     ) \
                      ORDER BY created_at DESC"
                 ) {
-                    if let Ok(rows) = stmt.query_map(params![phone, clean_phone, suffix], |row| {
-                        Ok(Profit {
+                    if let Ok(rows) = stmt.query_map(params![user.user_id, user.user_id, phone_str, &clean_phone, &suffix], |row| {
+                        Ok(Transaction {
                             transaction_id: row.get(0)?,
-                            reseller_wa: row.get(1)?,
-                            profit_amount: row.get(2)?,
-                            created_at: row.get(3)?,
-                        })
-                    }) {
-                        for r in rows.flatten() {
-                            profits.push(r);
-                        }
-                    }
-                }
-
-                if let Ok(mut stmt) = conn_tx.prepare(
-                    "SELECT activation_code, whatsapp_id, store_name, markup, is_active, created_at \
-                     FROM resellers \
-                     WHERE whatsapp_id = ? OR whatsapp_id = ? OR whatsapp_id LIKE ? \
-                     ORDER BY created_at DESC"
-                ) {
-                    if let Ok(rows) = stmt.query_map(params![phone, clean_phone, suffix], |row| {
-                        Ok(Reseller {
-                            activation_code: row.get(0)?,
                             whatsapp_id: row.get(1)?,
-                            store_name: row.get(2)?,
-                            markup: row.get(3)?,
-                            is_active: row.get(4)?,
+                            product_name: row.get(2)?,
+                            variant_name: row.get(3)?,
+                            amount: row.get(4)?,
                             created_at: row.get(5)?,
                         })
                     }) {
                         for r in rows.flatten() {
-                            resellers.push(r);
+                            transactions.push(r);
                         }
+                    }
+                }
+            }
+        } else {
+            // Personal user dashboard view: Only load their own personal transactions (strictly filtered by user_id or email)
+            if let Ok(mut stmt) = conn_tx.prepare(
+                "SELECT transaction_id, whatsapp_id, product_name, variant_name, amount, created_at \
+                 FROM transactions \
+                 WHERE user_id = ? OR email = ? \
+                 ORDER BY created_at DESC"
+            ) {
+                if let Ok(rows) = stmt.query_map(params![user.user_id, user.email], |row| {
+                    Ok(Transaction {
+                        transaction_id: row.get(0)?,
+                        whatsapp_id: row.get(1)?,
+                        product_name: row.get(2)?,
+                        variant_name: row.get(3)?,
+                        amount: row.get(4)?,
+                        created_at: row.get(5)?,
+                    })
+                }) {
+                    for r in rows.flatten() {
+                        transactions.push(r);
+                    }
+                }
+            }
+        }
+
+        // Always load profits and resellers if phone is present, so the stats/tables can be displayed
+        if has_phone {
+            let phone_str = user_phone.as_ref().unwrap();
+            if let Ok(mut stmt) = conn_tx.prepare(
+                "SELECT transaction_id, reseller_wa, profit_amount, created_at \
+                  FROM reseller_profits \
+                  WHERE user_id = ? OR reseller_wa = ? OR reseller_wa = ? OR reseller_wa LIKE ? \
+                  ORDER BY created_at DESC"
+            ) {
+                if let Ok(rows) = stmt.query_map(params![user.user_id, phone_str, &clean_phone, &suffix], |row| {
+                    Ok(Profit {
+                        transaction_id: row.get(0)?,
+                        reseller_wa: row.get(1)?,
+                        profit_amount: row.get(2)?,
+                        created_at: row.get(3)?,
+                    })
+                }) {
+                    for r in rows.flatten() {
+                        profits.push(r);
+                    }
+                }
+            }
+
+            if let Ok(mut stmt) = conn_tx.prepare(
+                "SELECT activation_code, whatsapp_id, store_name, markup, is_active, created_at \
+                  FROM resellers \
+                  WHERE user_id = ? OR whatsapp_id = ? OR whatsapp_id = ? OR whatsapp_id LIKE ? \
+                  ORDER BY created_at DESC"
+            ) {
+                if let Ok(rows) = stmt.query_map(params![user.user_id, phone_str, &clean_phone, &suffix], |row| {
+                    Ok(Reseller {
+                        activation_code: row.get(0)?,
+                        whatsapp_id: row.get(1)?,
+                        store_name: row.get(2)?,
+                        markup: row.get(3)?,
+                        is_active: row.get(4)?,
+                        created_at: row.get(5)?,
+                    })
+                }) {
+                    for r in rows.flatten() {
+                        resellers.push(r);
                     }
                 }
             }
@@ -2543,7 +2675,7 @@ async fn checkout_route(
             let msg = data.message.unwrap_or_else(|| "Failed to checkout from KoalaStore".to_string());
             (StatusCode::BAD_REQUEST, Json(serde_json::json!({ "success": false, "message": msg }))).into_response()
         }
-    } else if provider == "portalpulsa" || provider == "sslstore" || provider == "miraclegaming" || provider == "mymall" || provider == "manual" || provider.is_empty() {
+    } else if provider == "portalpulsa" || provider == "sslstore" || provider == "miraclegaming" || provider == "mymall" || provider == "manual" || provider == "digiflazz" || provider.is_empty() {
         let account_id = match std::env::var("BUATQRIS_ACCOUNT_ID") {
             Ok(v) => v,
             Err(_) => {
@@ -3479,8 +3611,8 @@ async fn get_notifications(
     State(state): State<AppState>,
 ) -> impl IntoResponse {
     let session_id = jar.get("session_id").map(|c| c.value().to_string());
-    let email = match session_id.and_then(|sid| verify_session(&state, &sid)) {
-        Some(sess) => sess.email,
+    let user = match session_id.and_then(|sid| verify_session(&state, &sid)) {
+        Some(sess) => sess,
         None => return (StatusCode::UNAUTHORIZED, "Unauthorized").into_response(),
     };
 
@@ -3492,14 +3624,14 @@ async fn get_notifications(
     let mut stmt = match conn.prepare(
         "SELECT id, email, title, message, type, is_read, created_at \
          FROM notifications \
-         WHERE email = ? \
+         WHERE user_id = ? OR email = ? \
          ORDER BY created_at DESC"
     ) {
         Ok(s) => s,
         Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, "Failed to prepare query").into_response(),
     };
 
-    let mapped = stmt.query_map(params![email], |row| {
+    let mapped = stmt.query_map(params![user.user_id, user.email], |row| {
         Ok(Notification {
             id: row.get(0)?,
             email: row.get(1)?,
@@ -3524,15 +3656,15 @@ async fn mark_notifications_read(
     State(state): State<AppState>,
 ) -> impl IntoResponse {
     let session_id = jar.get("session_id").map(|c| c.value().to_string());
-    let email = match session_id.and_then(|sid| verify_session(&state, &sid)) {
-        Some(sess) => sess.email,
+    let user = match session_id.and_then(|sid| verify_session(&state, &sid)) {
+        Some(sess) => sess,
         None => return (StatusCode::UNAUTHORIZED, "Unauthorized").into_response(),
     };
 
     if let Ok(conn) = Connection::open(&state.transactions_db_path) {
         let _ = conn.execute(
-            "UPDATE notifications SET is_read = 1 WHERE email = ?",
-            params![email],
+            "UPDATE notifications SET is_read = 1 WHERE user_id = ? OR email = ?",
+            params![user.user_id, user.email],
         );
         Json(serde_json::json!({ "success": true })).into_response()
     } else {
@@ -3546,15 +3678,15 @@ async fn mark_single_notification_read(
     Path(id): Path<i64>,
 ) -> impl IntoResponse {
     let session_id = jar.get("session_id").map(|c| c.value().to_string());
-    let email = match session_id.and_then(|sid| verify_session(&state, &sid)) {
-        Some(sess) => sess.email,
+    let user = match session_id.and_then(|sid| verify_session(&state, &sid)) {
+        Some(sess) => sess,
         None => return (StatusCode::UNAUTHORIZED, "Unauthorized").into_response(),
     };
 
     if let Ok(conn) = Connection::open(&state.transactions_db_path) {
         let _ = conn.execute(
-            "UPDATE notifications SET is_read = 1 WHERE id = ? AND email = ?",
-            params![id, email],
+            "UPDATE notifications SET is_read = 1 WHERE id = ? AND (user_id = ? OR email = ?)",
+            params![id, user.user_id, user.email],
         );
         Json(serde_json::json!({ "success": true })).into_response()
     } else {
@@ -3567,15 +3699,15 @@ async fn get_unread_notifications_count(
     State(state): State<AppState>,
 ) -> impl IntoResponse {
     let session_id = jar.get("session_id").map(|c| c.value().to_string());
-    let email = match session_id.and_then(|sid| verify_session(&state, &sid)) {
-        Some(sess) => sess.email,
+    let user = match session_id.and_then(|sid| verify_session(&state, &sid)) {
+        Some(sess) => sess,
         None => return (StatusCode::UNAUTHORIZED, "Unauthorized").into_response(),
     };
 
     if let Ok(conn) = Connection::open(&state.transactions_db_path) {
         let count: i64 = conn.query_row(
-            "SELECT COUNT(*) FROM notifications WHERE email = ? AND is_read = 0",
-            params![email],
+            "SELECT COUNT(*) FROM notifications WHERE (user_id = ? OR email = ?) AND is_read = 0",
+            params![user.user_id, user.email],
             |row| row.get(0),
         ).unwrap_or(0);
         Json(serde_json::json!({ "success": true, "unread_count": count })).into_response()
