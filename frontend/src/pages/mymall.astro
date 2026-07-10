@@ -672,11 +672,10 @@ import BottomNav from '../components/BottomNav.astro';
                 <div class="form-group">
                     <label for="apply-store-category">Kategori Toko *</label>
                     <select id="apply-store-category" class="form-control" required>
-                        <option value="digital">Digital & Lisensi</option>
-                        <option value="jasa">Jasa & Freelancing</option>
-                        <option value="layanan">Layanan Online / VPS</option>
-                        <option value="voucher">Voucher & Top Up</option>
-                        <option value="ebook">E-Book & Kursus</option>
+                        <option value="perangkat-lunak-aplikasi">Perangkat Lunak & Aplikasi</option>
+                        <option value="jasa-desain-kreatif">Jasa Desain & Kreatif</option>
+                        <option value="jasa-pengembangan-it">Jasa Pengembangan & IT</option>
+                        <option value="konten-digital-edukasi">Konten Digital & Edukasi</option>
                         <option value="lainnya">Lainnya</option>
                     </select>
                 </div>
@@ -770,11 +769,10 @@ import BottomNav from '../components/BottomNav.astro';
                     <div class="form-group">
                         <label for="settings-store-category">Kategori Toko</label>
                         <select id="settings-store-category" class="form-control" required>
-                            <option value="digital">Digital & Lisensi</option>
-                            <option value="jasa">Jasa & Freelancing</option>
-                            <option value="layanan">Layanan Online / VPS</option>
-                            <option value="voucher">Voucher & Top Up</option>
-                            <option value="ebook">E-Book & Kursus</option>
+                            <option value="perangkat-lunak-aplikasi">Perangkat Lunak & Aplikasi</option>
+                            <option value="jasa-desain-kreatif">Jasa Desain & Kreatif</option>
+                            <option value="jasa-pengembangan-it">Jasa Pengembangan & IT</option>
+                            <option value="konten-digital-edukasi">Konten Digital & Edukasi</option>
                             <option value="lainnya">Lainnya</option>
                         </select>
                     </div>
@@ -905,22 +903,20 @@ import BottomNav from '../components/BottomNav.astro';
         }
 
         const categoryMap = {
-            'digital': 'Produk Digital & Lisensi',
-            'jasa': 'Jasa & Freelancing',
-            'layanan': 'Layanan Online / VPS',
-            'voucher': 'Voucher Game & Top Up',
-            'ebook': 'E-Book & Kursus',
+            'perangkat-lunak-aplikasi': 'Perangkat Lunak & Aplikasi',
+            'jasa-desain-kreatif': 'Jasa Desain & Kreatif',
+            'jasa-pengembangan-it': 'Jasa Pengembangan & IT',
+            'konten-digital-edukasi': 'Konten Digital & Edukasi',
             'lainnya': 'Lainnya'
         };
 
         function getCategorySvg(slug) {
             const icons = {
-                'digital': `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: middle; display: inline-block; margin-right: 4px;"><path d="M5 0a.5.5 0 0 1 .5.5V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 .5-.5h.5a1.5 1.5 0 0 1 1.5 1.5v.5h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v.5a1.5 1.5 0 0 1-1.5 1.5h-.5v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-.5a1.5 1.5 0 0 1-1.5-1.5V12H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2V8H.5a.5.5 0 0 1 0-1H2V6H.5a.5.5 0 0 1 0-1H2v-.5A1.5 1.5 0 0 1 3.5 3H4V.5a.5.5 0 0 1 .5-.5zm7 12a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.5-.5h-7a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .5.5z"/></svg>`,
-                'jasa': `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: middle; display: inline-block; margin-right: 4px;"><path d="M9.5 0a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h.5V.5a.5.5 0 0 1 .5-.5zM2 11.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5zm1-3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5zm-2-3.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5z"/></svg>`,
-                'layanan': `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: middle; display: inline-block; margin-right: 4px;"><path d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 1.917 5.385 4.48a3.502 3.502 0 0 1-.382 6.962l-.123.003h-8.8a4.498 4.498 0 0 1-.166-8.98L4.4 4.56zm-.086 1.077A3.498 3.498 0 0 0 4.5 11.4h8.375a2.5 2.5 0 0 0 .125-4.976t-.707-.464l-.328-.095-.084-.337A4.53 4.53 0 0 0 8 3c-1.996 0-3.666 1.353-4.106 3.255l-.088.38-.387.054a3.5 3.5 0 0 0-.109 7.03z"/></svg>`,
-                'voucher': `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: middle; display: inline-block; margin-right: 4px;"><path d="M2.758 11.586l-.004-.004A1.5 1.5 0 0 1 2 10.514V5.486a1.5 1.5 0 0 1 .754-1.068l.004-.004c.244-.127.512-.2.785-.21l3.057-.102a.5.5 0 0 1-.033 1l-3.057.102a.5.5 0 0 0-.262.07L2.558 5.72a.5.5 0 0 0-.251.356v4.848a.5.5 0 0 0 .251.356l.756.446a.5.5 0 0 0 .262.07l3.057.102a.5.5 0 0 1-.033 1l-3.057-.102a1.5 1.5 0 0 1-.785-.21M13.242 4.414A1.5 1.5 0 0 1 14 5.486v5.028a1.5 1.5 0 0 1-.754 1.068l-.004.004a1.5 1.5 0 0 1-.785.21l-3.057.102a.5.5 0 0 1-.033-1l3.057-.102a.5.5 0 0 0 .262-.07l.756-.446a.5.5 0 0 0 .251-.356V6.076a.5.5 0 0 0-.251-.356l-.756-.446a.5.5 0 0 0-.262-.07l-3.057-.102a.5.5 0 0 1 .033-1l3.057.102a1.5 1.5 0 0 1 .785.21zM5 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2m0 3a1 1 0 1 0 0 2 1 1 0 0 0 0-2m5-3a1 1 0 1 0 0 2 1 1 0 0 0 0-2m0 3a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>`,
-                'ebook': `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: middle; display: inline-block; margin-right: 4px;"><path d="M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783"/></svg>`,
-                'lainnya': `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: middle; display: inline-block; margin-right: 4px;"><path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5 8 5.961 14.154 3.5zM15 4.239l-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923z"/></svg>`
+                'perangkat-lunak-aplikasi': `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; display: inline-block; margin-right: 4px;"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><line x1="12" x2="12.01" y1="18" y2="18"/></svg>`,
+                'jasa-desain-kreatif': `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; display: inline-block; margin-right: 4px;"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 14.7255 3.09032 17.1962 4.85857 19C4.94902 19.092 5 19.2166 5 19.3478V20C5 21.1046 5.89543 22 7 22H12Z"/><circle cx="7.5" cy="10.5" r="1.5"/><circle cx="11.5" cy="7.5" r="1.5"/><circle cx="16.5" cy="9.5" r="1.5"/></svg>`,
+                'jasa-pengembangan-it': `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; display: inline-block; margin-right: 4px;"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>`,
+                'konten-digital-edukasi': `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; display: inline-block; margin-right: 4px;"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>`,
+                'lainnya': `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; display: inline-block; margin-right: 4px;"><path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5 8 5.961 14.154 3.5zM15 4.239l-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923z"/></svg>`
             };
             return icons[slug] || '';
         }
