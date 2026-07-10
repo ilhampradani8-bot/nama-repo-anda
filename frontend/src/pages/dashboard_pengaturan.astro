@@ -10,14 +10,16 @@ import BottomNav from '../components/BottomNav.astro';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pengaturan Akun | EasyMall</title>
+    <title>Pengaturan Akun & Toko | EasyMall</title>
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <style>
         :root {
-            --bg-color: #f8f9fa;
-            --text-color: #212529;
-            --border-color: #dee2e6;
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+            --primary: #6f42c1;
+            --primary-hover: #5a32a3;
         }
 
         * {
@@ -43,7 +45,7 @@ import BottomNav from '../components/BottomNav.astro';
             padding: 0 1rem;
             flex-grow: 1;
             display: grid;
-            grid-template-columns: 280px 1fr;
+            grid-template-columns: 260px 1fr;
             gap: 1.5rem;
         }
 
@@ -56,98 +58,243 @@ import BottomNav from '../components/BottomNav.astro';
         .content-area {
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 1rem;
         }
 
+        /* Tabs Header */
+        .tabs-header {
+            display: flex;
+            gap: 6px;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .tabs-header .tab-btn {
+            background: none;
+            border: none;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s ease;
+        }
+
+        .tabs-header .tab-btn:hover {
+            color: #0f172a;
+        }
+
+        .tabs-header .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Compact Premium Cards */
         .card {
             background: #ffffff;
-            border: 2px solid #dee2e6;
-            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
             overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
         }
 
         .card-header {
-            background: #f8f9fa;
+            background: #f8fafc;
             padding: 0.75rem 1.25rem;
-            border-bottom: 2px solid #dee2e6;
-            font-weight: bold;
-            font-size: 1rem;
-            color: #212529;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .card-body {
-            padding: 1.5rem;
+            padding: 1.25rem;
         }
 
-        /* Classic Form Styling */
+        /* Compact Form Elements */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 0.75rem;
+        }
+
         .form-group {
-            margin-bottom: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: #495057;
+            margin-bottom: 0.25rem;
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: #475569;
         }
 
         .form-control {
             width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            font-size: 0.9rem;
+            padding: 7px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.85rem;
             outline: none;
-            background-color: #f8f9fa;
-            color: #495057;
+            background-color: #ffffff;
+            color: #1e293b;
+            transition: all 0.15s ease;
         }
 
         .form-control:focus {
-            border-color: #80bdff;
-            background-color: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(111, 66, 193, 0.15);
         }
 
         .form-control[readonly] {
-            background-color: #e9ecef;
+            background-color: #f1f5f9;
+            color: #64748b;
             cursor: not-allowed;
         }
 
+        /* Social prefix */
+        .social-input-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .social-icon-prefix {
+            position: absolute;
+            left: 10px;
+            color: #64748b;
+            font-size: 1rem;
+        }
+
+        .social-input-group .form-control {
+            padding-left: 2.25rem;
+        }
+
+        /* Custom Switch and Checkboxes */
         .checkbox-group {
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-bottom: 1rem;
+            margin-bottom: 0.6rem;
         }
 
         .checkbox-group input {
-            width: 16px;
-            height: 16px;
+            width: 15px;
+            height: 15px;
             cursor: pointer;
         }
 
         .checkbox-group label {
-            font-size: 0.9rem;
-            color: #495057;
+            font-size: 0.825rem;
+            color: #475569;
             cursor: pointer;
             user-select: none;
         }
 
-        .btn-save {
-            padding: 8px 20px;
-            background: #28a745;
-            color: white;
-            border: 1px solid #28a745;
-            border-radius: 4px;
+        .switch-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 0.75rem;
+            background: #f8fafc;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 0.75rem;
+        }
+
+        .switch-label-desc {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
             cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9rem;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #cbd5e1;
+            transition: .3s;
+            border-radius: 22px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        .btn-save {
+            padding: 8px 18px;
+            background: #22c55e;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.85rem;
             transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .btn-save:hover {
-            background: #218838;
-            border-color: #1e7e34;
+            background: #16a34a;
+            transform: translateY(-1px);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         @media (max-width: 768px) {
@@ -156,6 +303,7 @@ import BottomNav from '../components/BottomNav.astro';
             }
             .container {
                 grid-template-columns: 1fr;
+                margin: 0.75rem auto;
             }
             .sidebar-col {
                 display: none !important;
@@ -172,103 +320,188 @@ import BottomNav from '../components/BottomNav.astro';
         </div>
 
         <div class="content-area">
-            <div class="card">
-                <div class="card-header">⚙️ Pengaturan Profil & Keamanan</div>
-                <div class="card-body">
-                    <form onsubmit="saveSettings(event)">
-                        <div class="form-group">
-                            <label for="usernameInput">Nama Lengkap</label>
-                            <input type="text" id="usernameInput" class="form-control" placeholder="Nama Anda">
-                        </div>
+            <!-- Tabs Menu -->
+            <div class="tabs-header">
+                <button type="button" class="tab-btn active" onclick="switchSettingsTab('akun')">⚙️ Profil & Keamanan</button>
+                <button type="button" class="tab-btn" onclick="switchSettingsTab('toko')">🏰 Pengaturan Toko / Mall</button>
+            </div>
 
-                        <div class="form-group">
-                            <label for="emailInput">Alamat Surel (Email)</label>
-                            <input type="email" id="emailInput" class="form-control" readonly>
-                        </div>
+            <!-- Tab 1: Akun & Keamanan -->
+            <div id="tab-akun" class="tab-content active">
+                <div class="card">
+                    <div class="card-header">⚙️ Pengaturan Profil & Keamanan</div>
+                    <div class="card-body">
+                        <form onsubmit="saveSettings(event)">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="usernameInput">Nama Lengkap</label>
+                                    <input type="text" id="usernameInput" class="form-control" placeholder="Nama Anda" required>
+                                </div>
 
-                        <div class="form-group">
-                            <label for="phoneInput">Nomor WhatsApp Kontak</label>
-                            <input type="text" id="phoneInput" class="form-control" placeholder="Contoh: 081234567890">
-                        </div>
+                                <div class="form-group">
+                                    <label for="emailInput">Alamat Surel (Email)</label>
+                                    <input type="email" id="emailInput" class="form-control" readonly>
+                                </div>
 
-                        <div class="form-group">
-                            <label for="recoveryEmail1Input">Email Pemulihan 1</label>
-                            <input type="email" id="recoveryEmail1Input" class="form-control" placeholder="email1@pemulihan.com">
-                        </div>
+                                <div class="form-group">
+                                    <label for="phoneInput">Nomor WhatsApp Kontak</label>
+                                    <input type="text" id="phoneInput" class="form-control" placeholder="Contoh: 081234567890">
+                                </div>
 
-                        <div class="form-group">
-                            <label for="recoveryEmail2Input">Email Pemulihan 2</label>
-                            <input type="email" id="recoveryEmail2Input" class="form-control" placeholder="email2@pemulihan.com">
-                        </div>
+                                <div class="form-group">
+                                    <label for="recoveryEmail1Input">Email Pemulihan 1</label>
+                                    <input type="email" id="recoveryEmail1Input" class="form-control" placeholder="email1@pemulihan.com">
+                                </div>
 
-                        <hr style="border: 0; border-top: 1px solid #dee2e6; margin: 1.5rem 0;" />
+                                <div class="form-group">
+                                    <label for="recoveryEmail2Input">Email Pemulihan 2</label>
+                                    <input type="email" id="recoveryEmail2Input" class="form-control" placeholder="email2@pemulihan.com">
+                                </div>
+                            </div>
 
-                        <!-- Withdrawal Bank Information -->
-                        <h4 style="margin-bottom: 1rem; font-weight: bold; color: #212529;">🏦 Informasi Rekening Bank (Withdraw/Penarikan)</h4>
-                        
-                        <div class="form-group">
-                            <label for="bankNameInput">Nama Bank / E-Wallet</label>
-                            <input type="text" id="bankNameInput" class="form-control" placeholder="Contoh: BCA, Mandiri, BNI, DANA, GoPay">
-                        </div>
+                            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 1rem 0;" />
 
-                        <div class="form-group">
-                            <label for="bankAccountNumberInput">Nomor Rekening / No. E-Wallet</label>
-                            <input type="text" id="bankAccountNumberInput" class="form-control" placeholder="Contoh: 8835123456 atau 0812XXXXXXXX">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="bankAccountHolderInput">Nama Pemilik Rekening / Akun</label>
-                            <input type="text" id="bankAccountHolderInput" class="form-control" placeholder="Nama lengkap sesuai terdaftar di bank/e-wallet">
-                        </div>
-
-                        <hr style="border: 0; border-top: 1px solid #dee2e6; margin: 1.5rem 0;" />
-
-                        <div class="form-group">
-                            <label style="font-weight: bold; margin-bottom: 0.75rem;">Preferensi Notifikasi</label>
+                            <!-- Withdrawal Bank Information -->
+                            <h4 style="margin-bottom: 0.75rem; font-weight: bold; font-size: 0.9rem; color: #1e293b;">🏦 Informasi Rekening Bank (Withdraw/Penarikan)</h4>
                             
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="notifyEmail" checked>
-                                <label for="notifyEmail">Kirim rincian invoice / transaksi ke Email saya</label>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="bankNameInput">Nama Bank / E-Wallet</label>
+                                    <input type="text" id="bankNameInput" class="form-control" placeholder="Contoh: BCA, Mandiri, BNI, DANA, GoPay">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="bankAccountNumberInput">Nomor Rekening / No. E-Wallet</label>
+                                    <input type="text" id="bankAccountNumberInput" class="form-control" placeholder="Contoh: 8835123456 atau 0812XXXXXXXX">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="bankAccountHolderInput">Nama Pemilik Rekening / Akun</label>
+                                    <input type="text" id="bankAccountHolderInput" class="form-control" placeholder="Nama lengkap sesuai akun">
+                                </div>
                             </div>
 
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="notifyWA" checked>
-                                <label for="notifyWA">Kirim status pesanan realtime ke WhatsApp saya</label>
-                            </div>
-                        </div>
+                            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 1rem 0;" />
 
-                        <button type="submit" class="btn-save">Simpan Perubahan</button>
-                    </form>
+                            <div class="form-group">
+                                <label style="font-weight: bold; margin-bottom: 0.5rem; font-size: 0.85rem;">Preferensi Notifikasi</label>
+                                
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="notifyEmail" checked>
+                                    <label for="notifyEmail">Kirim rincian invoice / transaksi ke Email saya</label>
+                                </div>
+
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="notifyWA" checked>
+                                    <label for="notifyWA">Kirim status pesanan realtime ke WhatsApp saya</label>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-save">💾 Simpan Perubahan Profil</button>
+                        </form>
+                    </div>
                 </div>
             </div>
 
-            <!-- Store / Mall Settings Card -->
-            <div class="card">
-                <div class="card-header">🏰 Pengaturan Mall / Toko</div>
-                <div class="card-body">
-                    <form onsubmit="saveStoreSettings(event)">
-                        <div class="form-group">
-                            <label for="storeNameInput">Nama Toko / Mall</label>
-                            <input type="text" id="storeNameInput" class="form-control" placeholder="Contoh: Lapak Ganteng, My Mall Premium">
+            <!-- Tab 2: Pengaturan Toko -->
+            <div id="tab-toko" class="tab-content">
+                <div class="card">
+                    <div class="card-header">🏰 Pengaturan Mall / Toko</div>
+                    <div class="card-body">
+                        <div id="store-unregistered-msg" style="display: none; text-align: center; padding: 2rem; color: #64748b;">
+                            <p style="margin-bottom: 1rem;">Anda belum memiliki toko aktif di EasyMall.</p>
+                            <a href="/mymall.html" class="btn-save" style="background: var(--primary); text-decoration: none;">Buka Toko Sekarang</a>
                         </div>
 
-                        <div class="form-group">
-                            <label for="storeCategoryInput">Kategori Toko</label>
-                            <input type="text" id="storeCategoryInput" class="form-control" placeholder="Contoh: Digital Store, Voucher Game, Jasa IT">
-                        </div>
+                        <form id="store-settings-form" onsubmit="saveStoreSettings(event)">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="storeNameInput">Nama Toko / Mall</label>
+                                    <input type="text" id="storeNameInput" class="form-control" placeholder="Contoh: Lapak Ganteng, My Mall Premium" required>
+                                </div>
 
-                        <div class="form-group">
-                            <label for="storeDescriptionInput">Deskripsi Toko</label>
-                            <textarea id="storeDescriptionInput" class="form-control" rows="3" placeholder="Jelaskan deskripsi atau tagline toko digital Anda..."></textarea>
-                        </div>
+                                <div class="form-group">
+                                    <label for="storeCategoryInput">Kategori Toko</label>
+                                    <select id="storeCategoryInput" class="form-control" required>
+                                        <option value="perangkat-lunak-aplikasi">Perangkat Lunak & Aplikasi</option>
+                                        <option value="jasa-desain-kreatif">Jasa Desain & Kreatif</option>
+                                        <option value="jasa-pengembangan-it">Jasa Pengembangan & IT</option>
+                                        <option value="konten-digital-edukasi">Konten Digital & Edukasi</option>
+                                        <option value="lainnya">Lainnya</option>
+                                    </select>
+                                </div>
 
-                        <div class="form-group">
-                            <label for="storeInterestsInput">Minat / Fokus Penjualan</label>
-                            <input type="text" id="storeInterestsInput" class="form-control" placeholder="Contoh: Scripting, Web Dev, Mobile Legends, Cloud Hosting">
-                        </div>
+                                <div class="form-group full-width">
+                                    <label for="storeDescriptionInput">Deskripsi Toko</label>
+                                    <textarea id="storeDescriptionInput" class="form-control" rows="3" placeholder="Jelaskan deskripsi atau tagline toko digital Anda..." required></textarea>
+                                </div>
 
-                        <button type="submit" class="btn-save" style="background: #6f42c1; border-color: #6f42c1;">Simpan Pengaturan Toko</button>
-                    </form>
+                                <div class="form-group">
+                                    <label for="storeInterestsInput">Minat / Fokus Penjualan (Pisahkan dengan koma)</label>
+                                    <input type="text" id="storeInterestsInput" class="form-control" placeholder="Contoh: Scripting, Web Dev, Mobile Legends, Cloud Hosting">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="storePhoneInput">No. WhatsApp</label>
+                                    <div class="social-input-group">
+                                        <span class="social-icon-prefix">💬</span>
+                                        <input type="text" id="storePhoneInput" class="form-control" placeholder="Contoh: 6281234567890">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="switch-group" style="margin-top: 0.5rem; margin-bottom: 1rem;">
+                                <div>
+                                    <span style="font-weight: 700; font-size: 0.8rem; color: #475569;">Tampilkan Toko</span>
+                                    <div class="switch-label-desc">Sembunyikan toko jika sedang maintenance.</div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="storeVisibleInput" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 1rem 0;" />
+
+                            <h4 style="margin-bottom: 0.75rem; font-weight: bold; font-size: 0.9rem; color: #1e293b;">🔗 Tautan Media Sosial Toko</h4>
+                            
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="storeInstagramInput">Instagram Link</label>
+                                    <div class="social-input-group">
+                                        <span class="social-icon-prefix">📸</span>
+                                        <input type="text" id="storeInstagramInput" class="form-control" placeholder="https://instagram.com/username">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="storeFacebookInput">Facebook Link</label>
+                                    <div class="social-input-group">
+                                        <span class="social-icon-prefix">👤</span>
+                                        <input type="text" id="storeFacebookInput" class="form-control" placeholder="https://facebook.com/username">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="storeTiktokInput">TikTok Link</label>
+                                    <div class="social-input-group">
+                                        <span class="social-icon-prefix">🎵</span>
+                                        <input type="text" id="storeTiktokInput" class="form-control" placeholder="https://tiktok.com/@username">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="storeYoutubeInput">YouTube Link</label>
+                                    <div class="social-input-group">
+                                        <span class="social-icon-prefix">📺</span>
+                                        <input type="text" id="storeYoutubeInput" class="form-control" placeholder="https://youtube.com/channel/...">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-save" style="background: var(--primary); margin-top: 1rem;">💾 Simpan Pengaturan Toko</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -280,9 +513,21 @@ import BottomNav from '../components/BottomNav.astro';
             API_BASE_URL = 'https://api.ilhampradani.me';
         }
 
+        function switchSettingsTab(tabName) {
+            document.querySelectorAll('.tabs-header .tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            if (tabName === 'akun') {
+                document.querySelector('.tabs-header .tab-btn:nth-child(1)').classList.add('active');
+                document.getElementById('tab-akun').classList.add('active');
+            } else if (tabName === 'toko') {
+                document.querySelector('.tabs-header .tab-btn:nth-child(2)').classList.add('active');
+                document.getElementById('tab-toko').classList.add('active');
+            }
+        }
+
         async function fetchUserData() {
             try {
-                // Fetch settings from DB
                 const settingsRes = await fetch(`${API_BASE_URL}/api/user/settings`, { credentials: 'include' });
                 if (!settingsRes.ok) {
                     window.location.href = '/login.html';
@@ -294,15 +539,6 @@ import BottomNav from '../components/BottomNav.astro';
                     return;
                 }
 
-                // Populate header & card info
-                const nameEl = document.getElementById('user-name');
-                const emailEl = document.getElementById('user-email');
-                const avatarEl = document.getElementById('avatar-initial');
-                if (nameEl) nameEl.textContent = data.name;
-                if (emailEl) emailEl.textContent = data.email;
-                if (avatarEl) avatarEl.textContent = data.name.charAt(0).toUpperCase();
-
-                // Populate form fields
                 document.getElementById('usernameInput').value = data.name;
                 document.getElementById('emailInput').value = data.email;
                 document.getElementById('phoneInput').value = data.phone;
@@ -348,7 +584,7 @@ import BottomNav from '../components/BottomNav.astro';
                 });
 
                 if (res.ok) {
-                    alert('Sukses! Pengaturan akun Anda berhasil diperbarui di database.');
+                    alert('Sukses! Pengaturan akun Anda berhasil diperbarui.');
                     window.location.reload();
                 } else {
                     alert('Gagal memperbarui pengaturan.');
@@ -359,24 +595,32 @@ import BottomNav from '../components/BottomNav.astro';
             }
         }
 
-        async function performLogout() {
-            try {
-                await fetch(`${API_BASE_URL}/logout`, { credentials: 'include' });
-            } catch(e){}
-            window.location.href = '/login.html';
-        }
-
         async function fetchStoreData() {
             try {
                 const res = await fetch(`${API_BASE_URL}/api/user/store`, { credentials: 'include' });
                 if (res.ok) {
                     const data = await res.json();
-                    if (data.success) {
+                    if (data.success && data.id) {
+                        document.getElementById('store-settings-form').style.display = 'block';
+                        document.getElementById('store-unregistered-msg').style.display = 'none';
+
                         document.getElementById('storeNameInput').value = data.store_name || '';
-                        document.getElementById('storeCategoryInput').value = data.store_category || '';
+                        document.getElementById('storeCategoryInput').value = data.store_category || 'perangkat-lunak-aplikasi';
                         document.getElementById('storeDescriptionInput').value = data.description || '';
                         document.getElementById('storeInterestsInput').value = data.interests || '';
+                        document.getElementById('storeVisibleInput').checked = data.is_visible !== false && data.is_visible !== 0;
+                        document.getElementById('storePhoneInput').value = data.phone || '';
+                        document.getElementById('storeInstagramInput').value = data.instagram || '';
+                        document.getElementById('storeFacebookInput').value = data.facebook || '';
+                        document.getElementById('storeTiktokInput').value = data.tiktok || '';
+                        document.getElementById('storeYoutubeInput').value = data.youtube || '';
+                    } else {
+                        document.getElementById('store-settings-form').style.display = 'none';
+                        document.getElementById('store-unregistered-msg').style.display = 'block';
                     }
+                } else {
+                    document.getElementById('store-settings-form').style.display = 'none';
+                    document.getElementById('store-unregistered-msg').style.display = 'block';
                 }
             } catch (err) {
                 console.error("Error fetching store data:", err);
@@ -386,9 +630,15 @@ import BottomNav from '../components/BottomNav.astro';
         async function saveStoreSettings(e) {
             e.preventDefault();
             const store_name = document.getElementById('storeNameInput').value.trim();
-            const store_category = document.getElementById('storeCategoryInput').value.trim();
+            const store_category = document.getElementById('storeCategoryInput').value;
             const description = document.getElementById('storeDescriptionInput').value.trim();
             const interests = document.getElementById('storeInterestsInput').value.trim();
+            const is_visible = document.getElementById('storeVisibleInput').checked;
+            const phone = document.getElementById('storePhoneInput').value.trim();
+            const instagram = document.getElementById('storeInstagramInput').value.trim();
+            const facebook = document.getElementById('storeFacebookInput').value.trim();
+            const tiktok = document.getElementById('storeTiktokInput').value.trim();
+            const youtube = document.getElementById('storeYoutubeInput').value.trim();
 
             try {
                 const res = await fetch(`${API_BASE_URL}/api/user/store`, {
@@ -398,13 +648,21 @@ import BottomNav from '../components/BottomNav.astro';
                         store_name,
                         store_category,
                         description,
-                        interests
+                        interests,
+                        is_visible,
+                        phone,
+                        instagram,
+                        facebook,
+                        tiktok,
+                        youtube,
+                        whatsapp: phone
                     }),
                     credentials: 'include'
                 });
 
                 if (res.ok) {
                     alert('Sukses! Pengaturan Toko Anda berhasil disimpan.');
+                    window.location.reload();
                 } else {
                     alert('Gagal menyimpan pengaturan toko.');
                 }
